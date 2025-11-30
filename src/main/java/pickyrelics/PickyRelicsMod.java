@@ -31,7 +31,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
     private static final String CONFIG_APPLY_TO_CHESTS = "applyToChests";
     private static final String CONFIG_APPLY_TO_EVENTS = "applyToEvents";
 
-    // Default: 2 choices (like elite fights give less than boss fights)
+    // Default: 2 total choices (1 additional)
     public static int numChoices = 2;
     public static boolean applyToChests = true;
     public static boolean applyToEvents = true;
@@ -59,7 +59,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
             applyToChests = config.getBool(CONFIG_APPLY_TO_CHESTS);
             applyToEvents = config.getBool(CONFIG_APPLY_TO_EVENTS);
 
-            // Clamp numChoices to valid range
+            // Clamp numChoices to valid range (1-5 total, displayed as 0-4 additional)
             if (numChoices < 1) numChoices = 1;
             if (numChoices > 5) numChoices = 5;
 
@@ -96,15 +96,15 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
         float yPos = 750.0f;
         float xPos = 350.0f;
 
-        // Number of choices slider
+        // Number of additional choices slider (0-4 additional, stored as 1-5 total)
         settingsPanel.addUIElement(new ModMinMaxSlider(
-                "Relic Choices",
+                "Additional Relic Choices",
                 xPos, yPos,
-                1.0f, 5.0f, (float) numChoices,
+                0.0f, 4.0f, (float) (numChoices - 1),
                 "%.0f",
                 settingsPanel,
                 (slider) -> {
-                    numChoices = Math.round(slider.getValue());
+                    numChoices = Math.round(slider.getValue()) + 1;
                     saveConfig();
                 }
         ));

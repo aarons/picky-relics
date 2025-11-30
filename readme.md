@@ -2,7 +2,7 @@
 
 A mod for Slay The Spire.
 
-Picky Relics is like Bossy Relics, except more flexible. Instead of selecting one relic from a choice of 3, this mod provides a choice of 2 by default... or 3, or more - you can configure the behavior in the config menu.
+Picky Relics is like the excellent Bossy Relics mod, except it is configurable. Instead of selecting one relic from a choice of 3, this mod provides a choice of 2 by default... or more; you can configure the behavior in the config menu.
 
 ## Features
 

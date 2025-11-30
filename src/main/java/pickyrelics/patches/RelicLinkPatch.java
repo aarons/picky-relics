@@ -3,17 +3,13 @@ package pickyrelics.patches;
 import basemod.ReflectionHacks;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.evacipated.cardcrawl.modthespire.lib.*;
-import com.evacipated.cardcrawl.modthespire.lib.LineFinder;
-import com.evacipated.cardcrawl.modthespire.lib.Matcher;
 import com.megacrit.cardcrawl.core.Settings;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
-import com.megacrit.cardcrawl.helpers.FontHelper;
 import com.megacrit.cardcrawl.helpers.TipHelper;
 import com.megacrit.cardcrawl.helpers.input.InputHelper;
 import com.megacrit.cardcrawl.relics.AbstractRelic;
 import com.megacrit.cardcrawl.rewards.RewardItem;
 import com.megacrit.cardcrawl.screens.CombatRewardScreen;
-import javassist.CtBehavior;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import pickyrelics.PickyRelicsMod;
@@ -92,28 +88,35 @@ public class RelicLinkPatch {
 
     /**
      * When hovering over a linked relic, highlight all other linked relics with red text.
-     * Insert at the point where the game checks relicLink.
+     * Uses a postfix patch so we run AFTER the game's native relicLink handling.
+     * Only the first item in each group performs the logic to avoid conflicts.
      */
     @SpirePatch2(clz = RewardItem.class, method = "update")
     public static class UpdateHighlightPatch {
-        @SpireInsertPatch(locator = RelicLinkLocator.class)
-        public static void Insert(RewardItem __instance) {
+        @SpirePostfixPatch
+        public static void Postfix(RewardItem __instance) {
             ArrayList<RewardItem> linked = RelicLinkFields.linkedRelics.get(__instance);
-            if (linked == null) return;
+            if (linked == null || linked.isEmpty()) return;
 
-            // When hovering, highlight all linked relics
-            for (RewardItem other : linked) {
-                if (other != __instance) {
-                    other.redText = __instance.hb.hovered;
+            // Only the LAST item in the group handles redText for the whole group
+            // This ensures we run AFTER all native relicLink updates have occurred
+            // (Native code: each item sets relicLink.redText = hovered, which can overwrite our values)
+            if (linked.get(linked.size() - 1) != __instance) return;
+
+            // Find which item (if any) is being hovered
+            for (RewardItem hoveredItem : linked) {
+                if (hoveredItem.hb.hovered) {
+                    // Set redText on all OTHER linked items
+                    for (RewardItem other : linked) {
+                        other.redText = (other != hoveredItem);
+                    }
+                    return;
                 }
             }
-        }
 
-        private static class RelicLinkLocator extends SpireInsertLocator {
-            @Override
-            public int[] Locate(CtBehavior ctMethodToPatch) throws Exception {
-                Matcher matcher = new Matcher.FieldAccessMatcher(RewardItem.class, "relicLink");
-                return LineFinder.findInOrder(ctMethodToPatch, matcher);
+            // Nobody in the group is hovered, reset all redText
+            for (RewardItem r : linked) {
+                r.redText = false;
             }
         }
     }

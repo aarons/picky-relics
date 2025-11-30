@@ -56,7 +56,7 @@ public class RelicRewardPatch {
 
             logger.info("Picky Relics: Adding " + (numChoices - 1) + " additional relic choices");
 
-            // Create linked group - original is marked as isOriginal=true (default)
+            // Create linked group - original is NOT marked as addedByPickyRelics (default false)
             ArrayList<RewardItem> linkedGroup = new ArrayList<>();
             linkedGroup.add(originalReward);
 
@@ -68,7 +68,7 @@ public class RelicRewardPatch {
             for (int i = 1; i < numChoices; i++) {
                 AbstractRelic additionalRelic = AbstractDungeon.returnRandomRelic(tier);
                 RewardItem newReward = new RewardItem(additionalRelic);
-                RelicLinkPatch.RelicLinkFields.isOriginal.set(newReward, false);
+                RelicLinkPatch.RelicLinkFields.addedByPickyRelics.set(newReward, true);
                 __instance.rewards.add(insertIndex, newReward);
                 insertIndex++; // Next one goes after this one
                 linkedGroup.add(newReward);

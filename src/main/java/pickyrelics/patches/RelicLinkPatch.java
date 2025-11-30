@@ -25,14 +25,14 @@ public class RelicLinkPatch {
     private static final Logger logger = LogManager.getLogger(RelicLinkPatch.class.getName());
 
     /**
-     * Add SpireFields to RewardItem to track linked relics and original status.
+     * Add SpireFields to RewardItem to track linked relics and ownership.
      */
     @SpirePatch(clz = RewardItem.class, method = SpirePatch.CLASS)
     public static class RelicLinkFields {
         // The group of linked relics (all share the same ArrayList reference)
         public static SpireField<ArrayList<RewardItem>> linkedRelics = new SpireField<>(() -> null);
-        // Whether this is the original relic (true) or added by our patch (false)
-        public static SpireField<Boolean> isOriginal = new SpireField<>(() -> true);
+        // Whether this reward was added by Picky Relics (not the original game/other mods)
+        public static SpireField<Boolean> addedByPickyRelics = new SpireField<>(() -> false);
     }
 
     /**
@@ -192,16 +192,16 @@ public class RelicLinkPatch {
     public static void refreshRelicLinks(ArrayList<RewardItem> rewards) {
         int numChoices = PickyRelicsMod.numChoices;
 
-        // Find all original relic rewards
+        // Find all original relic rewards (those NOT added by Picky Relics)
         ArrayList<RewardItem> originalRelics = new ArrayList<>();
         for (RewardItem r : rewards) {
-            if (r.type == RewardItem.RewardType.RELIC && RelicLinkFields.isOriginal.get(r)) {
+            if (r.type == RewardItem.RewardType.RELIC && !RelicLinkFields.addedByPickyRelics.get(r)) {
                 originalRelics.add(r);
             }
         }
 
-        // Remove all non-original (added) relics first
-        rewards.removeIf(r -> r.type == RewardItem.RewardType.RELIC && !RelicLinkFields.isOriginal.get(r));
+        // Remove all relics that were added by Picky Relics
+        rewards.removeIf(r -> r.type == RewardItem.RewardType.RELIC && RelicLinkFields.addedByPickyRelics.get(r));
 
         // For each original relic, rebuild its group based on current numChoices
         for (RewardItem original : originalRelics) {
@@ -221,7 +221,7 @@ public class RelicLinkPatch {
             for (int i = 1; i < numChoices; i++) {
                 AbstractRelic additionalRelic = AbstractDungeon.returnRandomRelic(tier);
                 RewardItem newReward = new RewardItem(additionalRelic);
-                RelicLinkFields.isOriginal.set(newReward, false);
+                RelicLinkFields.addedByPickyRelics.set(newReward, true);
                 rewards.add(insertIndex, newReward);
                 insertIndex++; // Next one goes after this one
                 group.add(newReward);

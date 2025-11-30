@@ -23,29 +23,3 @@ public static void createLinkedRelicGroup(ArrayList<RewardItem> rewards, RewardI
 
 Then both `RelicRewardPatch.Postfix` and `RelicLinkPatch.refreshRelicLinks` can call this helper, eliminating the duplication.
 
----
-
-## Simplify isLinkTarget check in RenderLinkPatch
-
-**File:** `src/main/java/pickyrelics/patches/RelicLinkPatch.java`
-**Location:** Lines 136-145 in `RenderLinkPatch.Postfix`
-
-**Problem:** The current code iterates through all linked items to check if any item's `relicLink` field points to the current instance:
-```java
-boolean isLinkTarget = false;
-for (RewardItem other : linked) {
-    if (other != __instance && other.relicLink == __instance) {
-        isLinkTarget = true;
-        break;
-    }
-}
-```
-
-Since `linkRelicGroup` always sets up a linear chain A→B→C (first links to second, second links to third, etc.), an item is a "link target" if and only if it is NOT the first item in the group. The chain icon renders ABOVE an item to connect it to the one above, so we want to render on items 2, 3, etc. but not item 1.
-
-**Fix:** Replace the loop with a simple index check:
-```java
-boolean isLinkTarget = linked.get(0) != __instance;
-```
-
-This is clearer, more efficient, and directly expresses the intent: "render the chain icon on all items except the first."

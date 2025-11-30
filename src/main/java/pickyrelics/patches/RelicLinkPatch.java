@@ -135,18 +135,9 @@ public class RelicLinkPatch {
             ArrayList<RewardItem> linked = RelicLinkFields.linkedRelics.get(__instance);
             if (linked == null || linked.size() < 2) return;
 
-            // Chain renders ABOVE the item, so we render on items that are TARGETS of a link
-            // (i.e., not the first item in the chain)
-            // Check if any other item in the group has relicLink pointing to us
-            boolean isLinkTarget = false;
-            for (RewardItem other : linked) {
-                if (other != __instance && other.relicLink == __instance) {
-                    isLinkTarget = true;
-                    break;
-                }
-            }
-
-            if (isLinkTarget) {
+            // Chain renders ABOVE the item, so we render on all items except the first
+            // (the first item has no chain above it connecting to a previous item)
+            if (linked.get(0) != __instance) {
                 ReflectionHacks.privateMethod(RewardItem.class, "renderRelicLink", SpriteBatch.class)
                         .invoke(__instance, sb);
             }

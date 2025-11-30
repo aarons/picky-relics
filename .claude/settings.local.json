@@ -6,7 +6,8 @@
       "WebFetch(domain:gist.github.com)",
       "WebFetch(domain:steamcommunity.com)",
       "Bash(mvn clean package:*)",
-      "Bash(unzip:*)"
+      "Bash(unzip:*)",
+      "Bash(./scripts/extract-api-reference.sh:*)"
     ],
     "deny": [],
     "ask": []

@@ -60,13 +60,17 @@ public class RelicRewardPatch {
             ArrayList<RewardItem> linkedGroup = new ArrayList<>();
             linkedGroup.add(originalReward);
 
-            // Add additional relic rewards of the same tier
+            // Find the index of the original reward so we can insert after it
+            int insertIndex = __instance.rewards.indexOf(originalReward) + 1;
+
+            // Add additional relic rewards of the same tier, inserting right after the original
             AbstractRelic.RelicTier tier = relic.tier;
             for (int i = 1; i < numChoices; i++) {
                 AbstractRelic additionalRelic = AbstractDungeon.returnRandomRelic(tier);
                 RewardItem newReward = new RewardItem(additionalRelic);
                 RelicLinkPatch.RelicLinkFields.isOriginal.set(newReward, false);
-                __instance.rewards.add(newReward);
+                __instance.rewards.add(insertIndex, newReward);
+                insertIndex++; // Next one goes after this one
                 linkedGroup.add(newReward);
             }
 

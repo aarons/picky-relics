@@ -1,10 +1,19 @@
 package pickyrelics.patches;
 
+import basemod.ReflectionHacks;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.evacipated.cardcrawl.modthespire.lib.*;
+import com.evacipated.cardcrawl.modthespire.lib.LineFinder;
+import com.evacipated.cardcrawl.modthespire.lib.Matcher;
+import com.megacrit.cardcrawl.core.Settings;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
+import com.megacrit.cardcrawl.helpers.FontHelper;
+import com.megacrit.cardcrawl.helpers.TipHelper;
+import com.megacrit.cardcrawl.helpers.input.InputHelper;
 import com.megacrit.cardcrawl.relics.AbstractRelic;
 import com.megacrit.cardcrawl.rewards.RewardItem;
 import com.megacrit.cardcrawl.screens.CombatRewardScreen;
+import javassist.CtBehavior;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import pickyrelics.PickyRelicsMod;
@@ -41,14 +50,16 @@ public class RelicLinkPatch {
             RelicLinkFields.linkedRelics.set(r, relics);
         }
 
-        // Set the game's relicLink field in a circular chain for visual display
-        // A→B→C→A (each item links to the next, last links to first)
+        // Set the game's relicLink field in a linear chain for visual display
+        // A→B→C (each item links to the next, last item has no link)
         if (relics.size() >= 2) {
-            for (int i = 0; i < relics.size(); i++) {
+            for (int i = 0; i < relics.size() - 1; i++) {
                 RewardItem current = relics.get(i);
-                RewardItem next = relics.get((i + 1) % relics.size());
+                RewardItem next = relics.get(i + 1);
                 current.relicLink = next;
             }
+            // Last item doesn't link to anything (no chain below it)
+            relics.get(relics.size() - 1).relicLink = null;
         }
     }
 
@@ -75,6 +86,74 @@ public class RelicLinkPatch {
                     // Prevent the relic from being obtained
                     other.ignoreReward = true;
                 }
+            }
+        }
+    }
+
+    /**
+     * When hovering over a linked relic, highlight all other linked relics with red text.
+     * Insert at the point where the game checks relicLink.
+     */
+    @SpirePatch2(clz = RewardItem.class, method = "update")
+    public static class UpdateHighlightPatch {
+        @SpireInsertPatch(locator = RelicLinkLocator.class)
+        public static void Insert(RewardItem __instance) {
+            ArrayList<RewardItem> linked = RelicLinkFields.linkedRelics.get(__instance);
+            if (linked == null) return;
+
+            // When hovering, highlight all linked relics
+            for (RewardItem other : linked) {
+                if (other != __instance) {
+                    other.redText = __instance.hb.hovered;
+                }
+            }
+        }
+
+        private static class RelicLinkLocator extends SpireInsertLocator {
+            @Override
+            public int[] Locate(CtBehavior ctMethodToPatch) throws Exception {
+                Matcher matcher = new Matcher.FieldAccessMatcher(RewardItem.class, "relicLink");
+                return LineFinder.findInOrder(ctMethodToPatch, matcher);
+            }
+        }
+    }
+
+    /**
+     * Render the chain icon and tooltip for linked relic rewards.
+     */
+    @SpirePatch2(clz = RewardItem.class, method = "render")
+    public static class RenderLinkPatch {
+        @SpirePostfixPatch
+        public static void Postfix(RewardItem __instance, SpriteBatch sb) {
+            if (__instance.type != RewardItem.RewardType.RELIC) return;
+
+            ArrayList<RewardItem> linked = RelicLinkFields.linkedRelics.get(__instance);
+            if (linked == null || linked.size() < 2) return;
+
+            // Chain renders ABOVE the item, so we render on items that are TARGETS of a link
+            // (i.e., not the first item in the chain)
+            // Check if any other item in the group has relicLink pointing to us
+            boolean isLinkTarget = false;
+            for (RewardItem other : linked) {
+                if (other != __instance && other.relicLink == __instance) {
+                    isLinkTarget = true;
+                    break;
+                }
+            }
+
+            if (isLinkTarget) {
+                ReflectionHacks.privateMethod(RewardItem.class, "renderRelicLink", SpriteBatch.class)
+                        .invoke(__instance, sb);
+            }
+
+            // Render tooltip when hovering
+            if (__instance.hb.hovered) {
+                String title = "Linked";
+                String body = "Obtaining this relic will remove the other #y" + (linked.size() - 1) + " linked relic choices.";
+                TipHelper.renderGenericTip(
+                        360.0F * Settings.scale,
+                        InputHelper.mY + 50.0F * Settings.scale,
+                        title, body);
             }
         }
     }
@@ -130,12 +209,16 @@ public class RelicLinkPatch {
             ArrayList<RewardItem> group = new ArrayList<>();
             group.add(original);
 
+            // Find the index of the original reward so we can insert after it
+            int insertIndex = rewards.indexOf(original) + 1;
+
             AbstractRelic.RelicTier tier = original.relic.tier;
             for (int i = 1; i < numChoices; i++) {
                 AbstractRelic additionalRelic = AbstractDungeon.returnRandomRelic(tier);
                 RewardItem newReward = new RewardItem(additionalRelic);
                 RelicLinkFields.isOriginal.set(newReward, false);
-                rewards.add(newReward);
+                rewards.add(insertIndex, newReward);
+                insertIndex++; // Next one goes after this one
                 group.add(newReward);
             }
 

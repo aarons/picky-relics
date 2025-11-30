@@ -23,3 +23,6 @@ Thumbs.db
 # Build artifacts
 *.jar
 *.class
+
+# API reference (extracted from game/mod JARs - regenerate with setup script)
+api-reference/

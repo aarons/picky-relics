@@ -3,7 +3,7 @@ package pickyrelics;
 import basemod.BaseMod;
 import basemod.ModLabeledToggleButton;
 import basemod.ModPanel;
-import basemod.ModSlider;
+import basemod.ModMinMaxSlider;
 import basemod.interfaces.PostInitializeSubscriber;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
@@ -97,11 +97,11 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
         float xPos = 350.0f;
 
         // Number of choices slider
-        settingsPanel.addUIElement(new ModSlider(
+        settingsPanel.addUIElement(new ModMinMaxSlider(
                 "Relic Choices",
                 xPos, yPos,
-                1.0f, 5.0f, numChoices,
-                "%d",
+                1.0f, 5.0f, (float) numChoices,
+                "%.0f",
                 settingsPanel,
                 (slider) -> {
                     numChoices = Math.round(slider.getValue());

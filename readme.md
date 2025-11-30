@@ -16,7 +16,7 @@ Picky Relics is like Bossy Relics, except more flexible. Instead of selecting on
 
 1. **Slay the Spire** (Steam version recommended)
 2. **ModTheSpire** - Install from [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=1605060445)
-3. **BaseMod** - Install from [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=2819140563)
+3. **BaseMod** - Install from [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=1605833019)
 
 ### Installing the Mod
 
@@ -55,7 +55,7 @@ Access the mod settings through the in-game mod config menu:
 
 2. Verify dependencies exist (the pom.xml expects Workshop mods):
    - ModTheSpire: Steam Workshop ID `1605060445`
-   - BaseMod: Steam Workshop ID `2819140563`
+   - BaseMod: Steam Workshop ID `1605833019`
    - Slay the Spire: `desktop-1.0.jar` in game directory
 
 3. Update `pom.xml` paths if needed:
@@ -86,6 +86,8 @@ Access the mod settings through the in-game mod config menu:
 picky-relics/
 ├── pom.xml                                    # Maven build config
 ├── readme.md
+├── scripts/
+│   └── extract-api-reference.sh              # API extraction script
 └── src/main/
     ├── java/pickyrelics/
     │   ├── PickyRelicsMod.java               # Main mod class, config UI
@@ -94,6 +96,82 @@ picky-relics/
     └── resources/
         └── ModTheSpire.json                  # Mod metadata
 ```
+
+### API Reference
+
+The game and BaseMod don't provide source JARs, so we extract the compiled JARs for API exploration. Run the setup script after cloning:
+
+```bash
+./scripts/extract-api-reference.sh
+```
+
+This creates (gitignored):
+```
+api-reference/
+├── slaythespire/                        # Extracted desktop-1.0.jar
+│   └── com/megacrit/cardcrawl/          # Game classes
+│       ├── relics/                      # AbstractRelic, relic implementations
+│       ├── rewards/                     # RewardItem, RewardType
+│       ├── rooms/                       # AbstractRoom, MonsterRoom, etc.
+│       ├── dungeons/                    # AbstractDungeon
+│       └── ...
+└── basemod/                             # Extracted BaseMod.jar
+    └── basemod/                         # Mod utilities
+        ├── BaseMod.class                # Main mod registration
+        ├── ModPanel.class               # Settings UI
+        ├── ModMinMaxSlider.class        # UI components
+        ├── interfaces/                  # Subscriber interfaces
+        └── patches/                     # SpirePatch utilities
+```
+
+#### Browsing the API
+
+**List class members with strings:**
+```bash
+strings api-reference/slaythespire/com/megacrit/cardcrawl/rewards/RewardItem.class
+```
+
+**Decompile a class with javap:**
+```bash
+# Show all members (including private)
+javap -p api-reference/slaythespire/com/megacrit/cardcrawl/rewards/RewardItem.class
+
+# Show method signatures with types
+javap -s api-reference/slaythespire/com/megacrit/cardcrawl/relics/AbstractRelic.class
+```
+
+**Search for classes by name:**
+```bash
+find api-reference -name "*.class" | grep -i reward
+```
+
+**Search for method/field names across all classes:**
+```bash
+# Find classes that reference "relicLink"
+grep -r "relicLink" api-reference --include="*.class" -l
+
+# Search with strings for more context
+for f in api-reference/slaythespire/com/megacrit/cardcrawl/rewards/*.class; do
+  echo "=== $f ===" && strings "$f" | grep -i "relic"
+done
+```
+
+**Find enum values:**
+```bash
+strings api-reference/slaythespire/com/megacrit/cardcrawl/rewards/RewardItem\$RewardType.class
+```
+
+#### Key Classes
+
+| Class | Purpose |
+|-------|---------|
+| `AbstractRoom` | Base room class, has `addRelicToRewards()` |
+| `RewardItem` | Individual reward entry (relic, gold, card, etc.) |
+| `AbstractRelic` | Base relic class with `tier` field |
+| `AbstractDungeon` | Static methods like `returnRandomRelic()` |
+| `BaseMod` | Mod registration and subscriptions |
+| `ModPanel` / `ModMinMaxSlider` | Settings UI components |
+| `SpireConfig` | Persistent mod configuration |
 
 ### How It Works
 

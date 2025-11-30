@@ -19,11 +19,11 @@
 
         <!-- Update these paths to match your system -->
         <steamapps.path>${user.home}/Library/Application Support/Steam/steamapps</steamapps.path>
-        <sts.path>${steamapps.path}/common/SlayTheSpire</sts.path>
+        <sts.path>${steamapps.path}/common/SlayTheSpire/SlayTheSpire.app/Contents/Resources</sts.path>
         <workshop.path>${steamapps.path}/workshop/content/646570</workshop.path>
 
         <!-- Workshop mod IDs -->
-        <basemod.id>2819140563</basemod.id>
+        <basemod.id>1605833019</basemod.id>
         <modthespire.id>1605060445</modthespire.id>
     </properties>
 
@@ -94,7 +94,7 @@
                         <configuration>
                             <target>
                                 <copy file="target/${project.build.finalName}.jar"
-                                      tofile="${sts.path}/mods/${project.build.finalName}.jar"/>
+                                      tofile="${steamapps.path}/common/SlayTheSpire/SlayTheSpire.app/Contents/Resources/mods/${project.build.finalName}.jar"/>
                             </target>
                         </configuration>
                         <goals>

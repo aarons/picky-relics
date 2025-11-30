@@ -65,8 +65,19 @@ public class RelicLinkPatch {
      * When the combat reward screen opens, rebuild linked groups based on current config.
      * This handles the case where player exits to menu, changes numChoices, and returns.
      */
-    @SpirePatch2(clz = CombatRewardScreen.class, method = "open")
+    @SpirePatch2(clz = CombatRewardScreen.class, method = "open", paramtypez = {})
     public static class RefreshLinksOnOpen {
+        @SpirePostfixPatch
+        public static void Postfix(CombatRewardScreen __instance) {
+            refreshRelicLinks(__instance.rewards);
+        }
+    }
+
+    /**
+     * Also patch the String overload of open() for completeness.
+     */
+    @SpirePatch2(clz = CombatRewardScreen.class, method = "open", paramtypez = {String.class})
+    public static class RefreshLinksOnOpenString {
         @SpirePostfixPatch
         public static void Postfix(CombatRewardScreen __instance) {
             refreshRelicLinks(__instance.rewards);

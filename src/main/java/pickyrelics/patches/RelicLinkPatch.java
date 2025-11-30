@@ -36,6 +36,34 @@ public class RelicLinkPatch {
     }
 
     /**
+     * Create a linked group of relic rewards for the given original relic.
+     * Generates additional relics of the same tier, inserts them after the original,
+     * marks them as added by Picky Relics, and links them all together.
+     *
+     * @param rewards    The rewards list to modify
+     * @param original   The original relic reward to build a group around
+     * @param numChoices Total number of relics in the group (including original)
+     */
+    public static void createLinkedRelicGroup(ArrayList<RewardItem> rewards, RewardItem original, int numChoices) {
+        ArrayList<RewardItem> group = new ArrayList<>();
+        group.add(original);
+
+        int insertIndex = rewards.indexOf(original) + 1;
+        AbstractRelic.RelicTier tier = original.relic.tier;
+
+        for (int i = 1; i < numChoices; i++) {
+            AbstractRelic additionalRelic = AbstractDungeon.returnRandomRelic(tier);
+            RewardItem newReward = new RewardItem(additionalRelic);
+            RelicLinkFields.addedByPickyRelics.set(newReward, true);
+            rewards.add(insertIndex, newReward);
+            insertIndex++;
+            group.add(newReward);
+        }
+
+        linkRelicGroup(group);
+    }
+
+    /**
      * Link a group of relic rewards together.
      * Sets both our custom linkedRelics field (for removal logic) and
      * the game's built-in relicLink field (for visual chain icons).
@@ -202,24 +230,8 @@ public class RelicLinkPatch {
                 continue;
             }
 
-            ArrayList<RewardItem> group = new ArrayList<>();
-            group.add(original);
-
-            // Find the index of the original reward so we can insert after it
-            int insertIndex = rewards.indexOf(original) + 1;
-
-            AbstractRelic.RelicTier tier = original.relic.tier;
-            for (int i = 1; i < numChoices; i++) {
-                AbstractRelic additionalRelic = AbstractDungeon.returnRandomRelic(tier);
-                RewardItem newReward = new RewardItem(additionalRelic);
-                RelicLinkFields.addedByPickyRelics.set(newReward, true);
-                rewards.add(insertIndex, newReward);
-                insertIndex++; // Next one goes after this one
-                group.add(newReward);
-            }
-
-            linkRelicGroup(group);
-            logger.info("Picky Relics: Refreshed relic group with " + group.size() + " choices");
+            createLinkedRelicGroup(rewards, original, numChoices);
+            logger.info("Picky Relics: Refreshed relic group with " + numChoices + " choices");
         }
     }
 }

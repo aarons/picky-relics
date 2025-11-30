@@ -1,15 +1,12 @@
 package pickyrelics.patches;
 
 import com.evacipated.cardcrawl.modthespire.lib.*;
-import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
 import com.megacrit.cardcrawl.relics.AbstractRelic;
 import com.megacrit.cardcrawl.rewards.RewardItem;
 import com.megacrit.cardcrawl.rooms.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import pickyrelics.PickyRelicsMod;
-
-import java.util.ArrayList;
 
 /**
  * Patches to provide multiple relic choices.
@@ -56,26 +53,7 @@ public class RelicRewardPatch {
 
             logger.info("Picky Relics: Adding " + (numChoices - 1) + " additional relic choices");
 
-            // Create linked group - original is NOT marked as addedByPickyRelics (default false)
-            ArrayList<RewardItem> linkedGroup = new ArrayList<>();
-            linkedGroup.add(originalReward);
-
-            // Find the index of the original reward so we can insert after it
-            int insertIndex = __instance.rewards.indexOf(originalReward) + 1;
-
-            // Add additional relic rewards of the same tier, inserting right after the original
-            AbstractRelic.RelicTier tier = relic.tier;
-            for (int i = 1; i < numChoices; i++) {
-                AbstractRelic additionalRelic = AbstractDungeon.returnRandomRelic(tier);
-                RewardItem newReward = new RewardItem(additionalRelic);
-                RelicLinkPatch.RelicLinkFields.addedByPickyRelics.set(newReward, true);
-                __instance.rewards.add(insertIndex, newReward);
-                insertIndex++; // Next one goes after this one
-                linkedGroup.add(newReward);
-            }
-
-            // Link them all together
-            RelicLinkPatch.linkRelicGroup(linkedGroup);
+            RelicLinkPatch.createLinkedRelicGroup(__instance.rewards, originalReward, numChoices);
         }
     }
 

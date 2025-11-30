@@ -89,7 +89,9 @@ public class RelicLinkPatch {
     /**
      * When hovering over a linked relic, highlight all other linked relics with red text.
      * Uses a postfix patch so we run AFTER the game's native relicLink handling.
-     * Only the first item in each group performs the logic to avoid conflicts.
+     * Only the LAST item in each group performs the logic - this ensures we execute after
+     * all native relicLink updates have completed (native code sets relicLink.redText = hovered,
+     * which would overwrite our values if we ran earlier in the chain).
      */
     @SpirePatch2(clz = RewardItem.class, method = "update")
     public static class UpdateHighlightPatch {

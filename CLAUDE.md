@@ -33,16 +33,20 @@ The mod uses SpirePatch annotations to modify game behavior:
 - `@SpirePostfixPatch` - Runs after the original method
 - First parameter `__instance` receives the patched object instance
 
-### API Reference
+### Reference Materials
 
-Since game JARs lack source, run `./scripts/extract-api-reference.sh` to extract class files for API exploration:
+Reference materials for exploring game APIs and example mods are stored in the `api-reference/` folder. Initialize or update these by running:
 
 ```bash
-# Decompile a class
-javap -p api-reference/slaythespire/com/megacrit/cardcrawl/rewards/RewardItem.class
-
-# Search for methods/fields
-strings api-reference/slaythespire/com/megacrit/cardcrawl/relics/AbstractRelic.class
+./scripts/extract-api-reference.sh
 ```
 
-Key classes: `AbstractRoom`, `RewardItem`, `AbstractRelic`, `AbstractDungeon.returnRandomRelic(tier)`, `BaseMod`, `SpireConfig`.
+Contents of `api-reference/`:
+
+- **slaythespire/** - Extracted class files from the game JAR. Use `javap -p <class>` to inspect methods/fields. Key classes: `AbstractRoom`, `RewardItem`, `AbstractRelic`, `AbstractDungeon`.
+
+- **basemod/** - Extracted class files from BaseMod. Key classes: `BaseMod`, `SpireConfig`, and various subscriber interfaces.
+
+- **sts-orison-mod/** - Reference mod demonstrating reward mechanics, linked reward items, and dynamic reward updates based on settings changes.
+
+- **ProTemplate/** - Advanced mod template with utilities for X-cost actions, lambda powers, improved image loading, and card recoloring.

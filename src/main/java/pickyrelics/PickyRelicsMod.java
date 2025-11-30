@@ -153,13 +153,13 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
     }
 
     private Texture createBadgeTexture() {
-        // Create a simple 64x64 texture as a placeholder
+        // Create a simple 32x32 texture as a placeholder (standard mod badge size)
         // In a real mod, you'd load an actual image file
-        com.badlogic.gdx.graphics.Pixmap pixmap = new com.badlogic.gdx.graphics.Pixmap(64, 64, com.badlogic.gdx.graphics.Pixmap.Format.RGBA8888);
+        com.badlogic.gdx.graphics.Pixmap pixmap = new com.badlogic.gdx.graphics.Pixmap(32, 32, com.badlogic.gdx.graphics.Pixmap.Format.RGBA8888);
         pixmap.setColor(Color.GOLD);
         pixmap.fill();
         pixmap.setColor(Color.DARK_GRAY);
-        pixmap.drawRectangle(0, 0, 64, 64);
+        pixmap.drawRectangle(0, 0, 32, 32);
         Texture texture = new Texture(pixmap);
         pixmap.dispose();
         return texture;

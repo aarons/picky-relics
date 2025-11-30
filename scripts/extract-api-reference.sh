@@ -84,4 +84,24 @@ if [ -n "$BASEMOD_JAR" ]; then
 fi
 
 echo ""
+echo "Cloning reference mod repositories..."
+
+# Clone reference mod repositories (or update if they exist)
+if [ -d "$API_DIR/ProTemplate" ]; then
+    echo "  Updating ProTemplate..."
+    git -C "$API_DIR/ProTemplate" pull --quiet
+else
+    echo "  Cloning ProTemplate..."
+    git clone --quiet git@github.com:DarkVexon/ProTemplate.git "$API_DIR/ProTemplate"
+fi
+
+if [ -d "$API_DIR/sts-orison-mod" ]; then
+    echo "  Updating sts-orison-mod..."
+    git -C "$API_DIR/sts-orison-mod" pull --quiet
+else
+    echo "  Cloning sts-orison-mod..."
+    git clone --quiet git@github.com:C-W-Z/sts-orison-mod.git "$API_DIR/sts-orison-mod"
+fi
+
+echo ""
 echo "Done! API reference extracted to $API_DIR"

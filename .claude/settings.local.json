@@ -7,7 +7,9 @@
       "WebFetch(domain:steamcommunity.com)",
       "Bash(mvn clean package:*)",
       "Bash(unzip:*)",
-      "Bash(./scripts/extract-api-reference.sh:*)"
+      "Bash(./scripts/extract-api-reference.sh:*)",
+      "Bash(find:*)",
+      "Bash(javap:*)"
     ],
     "deny": [],
     "ask": []

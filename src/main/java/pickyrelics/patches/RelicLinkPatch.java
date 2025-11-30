@@ -32,15 +32,30 @@ public class RelicLinkPatch {
 
     /**
      * Link a group of relic rewards together.
+     * Sets both our custom linkedRelics field (for removal logic) and
+     * the game's built-in relicLink field (for visual chain icons).
      */
     public static void linkRelicGroup(ArrayList<RewardItem> relics) {
+        // Set our custom field for tracking the full group
         for (RewardItem r : relics) {
             RelicLinkFields.linkedRelics.set(r, relics);
+        }
+
+        // Set the game's relicLink field in a circular chain for visual display
+        // A→B→C→A (each item links to the next, last links to first)
+        if (relics.size() >= 2) {
+            for (int i = 0; i < relics.size(); i++) {
+                RewardItem current = relics.get(i);
+                RewardItem next = relics.get((i + 1) % relics.size());
+                current.relicLink = next;
+            }
         }
     }
 
     /**
-     * When a relic reward is claimed, remove all other linked relics.
+     * When a relic reward is claimed, mark all other linked relics as done.
+     * Using isDone=true instead of remove() avoids ConcurrentModificationException
+     * since claimReward is called during the reward list iteration.
      */
     @SpirePatch2(clz = RewardItem.class, method = "claimReward")
     public static class ClaimRewardPatch {
@@ -51,11 +66,14 @@ public class RelicLinkPatch {
             ArrayList<RewardItem> linked = RelicLinkFields.linkedRelics.get(__instance);
             if (linked == null) return;
 
-            logger.info("Picky Relics: Relic claimed, removing " + (linked.size() - 1) + " linked relics");
+            logger.info("Picky Relics: Relic claimed, marking " + (linked.size() - 1) + " linked relics as done");
 
             for (RewardItem other : linked) {
                 if (other != __instance) {
-                    AbstractDungeon.combatRewardScreen.rewards.remove(other);
+                    // Mark as done - the game will remove it after iteration completes
+                    other.isDone = true;
+                    // Prevent the relic from being obtained
+                    other.ignoreReward = true;
                 }
             }
         }
@@ -105,6 +123,7 @@ public class RelicLinkPatch {
         for (RewardItem original : originalRelics) {
             if (numChoices <= 1) {
                 RelicLinkFields.linkedRelics.set(original, null);
+                original.relicLink = null; // Clear visual link
                 continue;
             }
 

@@ -1,6 +1,7 @@
 package pickyrelics;
 
 import basemod.BaseMod;
+import basemod.ModLabel;
 import basemod.ModLabeledToggleButton;
 import basemod.ModPanel;
 import basemod.ModMinMaxSlider;
@@ -94,12 +95,21 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
 
         // Title
         float yPos = 750.0f;
-        float xPos = 350.0f;
+        float xPos = 380.0f;
 
         // Number of additional choices slider (0-4 additional, stored as 1-5 total)
-        settingsPanel.addUIElement(new ModMinMaxSlider(
+        settingsPanel.addUIElement(new ModLabel(
                 "Additional Relic Choices",
                 xPos, yPos,
+                Settings.CREAM_COLOR,
+                FontHelper.charDescFont,
+                settingsPanel,
+                (label) -> {}
+        ));
+
+        settingsPanel.addUIElement(new ModMinMaxSlider(
+                "",
+                xPos + 325.0f, yPos,
                 0.0f, 4.0f, (float) (numChoices - 1),
                 "%.0f",
                 settingsPanel,

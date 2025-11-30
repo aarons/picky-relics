@@ -29,12 +29,8 @@ public class RelicRewardPatch {
 
         @SpirePostfixPatch
         public static void Postfix(AbstractRoom __instance, AbstractRelic relic) {
-            if (!shouldApplyPatch(__instance)) {
-                return;
-            }
-
-            int numChoices = PickyRelicsMod.numChoices;
-            if (numChoices <= 1) {
+            int totalChoices = getTotalChoices(__instance);
+            if (totalChoices <= 1) {
                 return;
             }
 
@@ -51,40 +47,36 @@ public class RelicRewardPatch {
                 return;
             }
 
-            logger.info("Picky Relics: Adding " + (numChoices - 1) + " additional relic choices");
+            logger.info("Picky Relics: Adding " + (totalChoices - 1) + " additional relic choices");
 
-            RelicLinkPatch.createLinkedRelicGroup(__instance.rewards, originalReward, numChoices);
+            RelicLinkPatch.createLinkedRelicGroup(__instance.rewards, originalReward, totalChoices);
         }
     }
 
     /**
-     * Determines if the patch should apply based on the current room type.
+     * Returns the total number of relic choices for the given room type.
+     * Returns 1 (base game) if the patch should not apply.
      */
-    private static boolean shouldApplyPatch(AbstractRoom room) {
+    private static int getTotalChoices(AbstractRoom room) {
         if (room == null) {
-            return false;
+            return 1;
         }
 
-        // Apply to monster rooms (elite/regular combat rewards)
+        // Combat rewards (regular and elite)
         if (room instanceof MonsterRoom || room instanceof MonsterRoomElite) {
-            return true;
+            return PickyRelicsMod.combatChoices;
         }
 
-        // Don't apply to boss rooms - they already have their own relic selection
+        // Boss rooms have their own relic selection
         if (room instanceof MonsterRoomBoss) {
-            return false;
+            return 1;
         }
 
-        // Apply to treasure rooms (chests) if enabled
+        // Treasure chests
         if (room instanceof TreasureRoom || room instanceof TreasureRoomBoss) {
-            return PickyRelicsMod.applyToChests;
+            return PickyRelicsMod.chestChoices;
         }
 
-        // Apply to event rooms if enabled
-        if (room instanceof EventRoom) {
-            return PickyRelicsMod.applyToEvents;
-        }
-
-        return false;
+        return 1;
     }
 }

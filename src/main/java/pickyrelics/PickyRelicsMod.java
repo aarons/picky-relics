@@ -2,7 +2,6 @@ package pickyrelics;
 
 import basemod.BaseMod;
 import basemod.ModLabel;
-import basemod.ModLabeledToggleButton;
 import basemod.ModPanel;
 import basemod.ModMinMaxSlider;
 import basemod.interfaces.PostInitializeSubscriber;
@@ -28,14 +27,12 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
 
     // Config
     private static SpireConfig config;
-    private static final String CONFIG_NUM_CHOICES = "numChoices";
-    private static final String CONFIG_APPLY_TO_CHESTS = "applyToChests";
-    private static final String CONFIG_APPLY_TO_EVENTS = "applyToEvents";
+    private static final String CONFIG_COMBAT_CHOICES = "combatChoices";
+    private static final String CONFIG_CHEST_CHOICES = "chestChoices";
 
-    // Default: 2 total choices (1 additional)
-    public static int numChoices = 2;
-    public static boolean applyToChests = true;
-    public static boolean applyToEvents = true;
+    // Default: 2 total choices (1 = base game, 2-5 = mod choices)
+    public static int combatChoices = 2;
+    public static int chestChoices = 2;
 
     public PickyRelicsMod() {
         logger.info("Initializing " + MOD_NAME);
@@ -50,33 +47,29 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
     private void loadConfig() {
         try {
             Properties defaults = new Properties();
-            defaults.setProperty(CONFIG_NUM_CHOICES, "2");
-            defaults.setProperty(CONFIG_APPLY_TO_CHESTS, "true");
-            defaults.setProperty(CONFIG_APPLY_TO_EVENTS, "true");
+            defaults.setProperty(CONFIG_COMBAT_CHOICES, "2");
+            defaults.setProperty(CONFIG_CHEST_CHOICES, "2");
 
             config = new SpireConfig(MOD_ID, "config", defaults);
 
-            numChoices = config.getInt(CONFIG_NUM_CHOICES);
-            applyToChests = config.getBool(CONFIG_APPLY_TO_CHESTS);
-            applyToEvents = config.getBool(CONFIG_APPLY_TO_EVENTS);
+            combatChoices = clamp(config.getInt(CONFIG_COMBAT_CHOICES), 1, 5);
+            chestChoices = clamp(config.getInt(CONFIG_CHEST_CHOICES), 1, 5);
 
-            // Clamp numChoices to valid range (1-5 total, displayed as 0-4 additional)
-            if (numChoices < 1) numChoices = 1;
-            if (numChoices > 5) numChoices = 5;
-
-            logger.info("Config loaded: numChoices=" + numChoices +
-                    ", applyToChests=" + applyToChests +
-                    ", applyToEvents=" + applyToEvents);
+            logger.info("Config loaded: combatChoices=" + combatChoices +
+                    ", chestChoices=" + chestChoices);
         } catch (IOException e) {
             logger.error("Failed to load config", e);
         }
     }
 
+    private static int clamp(int value, int min, int max) {
+        return Math.max(min, Math.min(max, value));
+    }
+
     public static void saveConfig() {
         try {
-            config.setInt(CONFIG_NUM_CHOICES, numChoices);
-            config.setBool(CONFIG_APPLY_TO_CHESTS, applyToChests);
-            config.setBool(CONFIG_APPLY_TO_EVENTS, applyToEvents);
+            config.setInt(CONFIG_COMBAT_CHOICES, combatChoices);
+            config.setInt(CONFIG_CHEST_CHOICES, chestChoices);
             config.save();
         } catch (IOException e) {
             logger.error("Failed to save config", e);
@@ -93,13 +86,49 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
         // Create settings panel
         ModPanel settingsPanel = new ModPanel();
 
-        // Title
         float yPos = 750.0f;
         float xPos = 380.0f;
+        float sliderX = xPos + 250.0f;
 
-        // Number of additional choices slider (0-4 additional, stored as 1-5 total)
+        // Title
         settingsPanel.addUIElement(new ModLabel(
-                "Additional Relic Choices",
+                "Picky Relics",
+                xPos, yPos,
+                Settings.CREAM_COLOR,
+                FontHelper.charDescFont,
+                settingsPanel,
+                (label) -> {}
+        ));
+
+        yPos -= 50.0f;
+
+        // Subtitle
+        settingsPanel.addUIElement(new ModLabel(
+                "When a relic is rewarded, how many options are provided?",
+                xPos, yPos,
+                Settings.CREAM_COLOR,
+                FontHelper.tipBodyFont,
+                settingsPanel,
+                (label) -> {}
+        ));
+
+        yPos -= 35.0f;
+
+        // Hint text
+        settingsPanel.addUIElement(new ModLabel(
+                "1 = original game behavior",
+                xPos, yPos,
+                Settings.GOLD_COLOR,
+                FontHelper.tipBodyFont,
+                settingsPanel,
+                (label) -> {}
+        ));
+
+        yPos -= 50.0f;
+
+        // Combat Rewards slider
+        settingsPanel.addUIElement(new ModLabel(
+                "Combat Rewards",
                 xPos, yPos,
                 Settings.CREAM_COLOR,
                 FontHelper.charDescFont,
@@ -109,46 +138,36 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
 
         settingsPanel.addUIElement(new ModMinMaxSlider(
                 "",
-                xPos + 325.0f, yPos,
-                0.0f, 4.0f, (float) (numChoices - 1),
+                sliderX, yPos,
+                1.0f, 5.0f, (float) combatChoices,
                 "%.0f",
                 settingsPanel,
                 (slider) -> {
-                    numChoices = Math.round(slider.getValue()) + 1;
+                    combatChoices = Math.round(slider.getValue());
                     saveConfig();
                 }
         ));
 
-        yPos -= 80.0f;
+        yPos -= 60.0f;
 
-        // Apply to chests toggle
-        settingsPanel.addUIElement(new ModLabeledToggleButton(
-                "Apply to treasure chests",
+        // Treasure Chests slider
+        settingsPanel.addUIElement(new ModLabel(
+                "Treasure Chests",
                 xPos, yPos,
                 Settings.CREAM_COLOR,
                 FontHelper.charDescFont,
-                applyToChests,
                 settingsPanel,
-                (label) -> {},
-                (button) -> {
-                    applyToChests = button.enabled;
-                    saveConfig();
-                }
+                (label) -> {}
         ));
 
-        yPos -= 50.0f;
-
-        // Apply to events toggle
-        settingsPanel.addUIElement(new ModLabeledToggleButton(
-                "Apply to event rewards",
-                xPos, yPos,
-                Settings.CREAM_COLOR,
-                FontHelper.charDescFont,
-                applyToEvents,
+        settingsPanel.addUIElement(new ModMinMaxSlider(
+                "",
+                sliderX, yPos,
+                1.0f, 5.0f, (float) chestChoices,
+                "%.0f",
                 settingsPanel,
-                (label) -> {},
-                (button) -> {
-                    applyToEvents = button.enabled;
+                (slider) -> {
+                    chestChoices = Math.round(slider.getValue());
                     saveConfig();
                 }
         ));

@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.evacipated.cardcrawl.modthespire.lib.*;
 import com.megacrit.cardcrawl.core.Settings;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
+import com.megacrit.cardcrawl.rooms.*;
 import com.megacrit.cardcrawl.helpers.TipHelper;
 import com.megacrit.cardcrawl.helpers.input.InputHelper;
 import com.megacrit.cardcrawl.relics.AbstractRelic;
@@ -209,7 +210,7 @@ public class RelicLinkPatch {
      * Rebuild linked relic groups based on current config settings.
      */
     public static void refreshRelicLinks(ArrayList<RewardItem> rewards) {
-        int numChoices = PickyRelicsMod.numChoices;
+        int totalChoices = getTotalChoicesForCurrentRoom();
 
         // Find all original relic rewards (those NOT added by Picky Relics)
         ArrayList<RewardItem> originalRelics = new ArrayList<>();
@@ -222,16 +223,36 @@ public class RelicLinkPatch {
         // Remove all relics that were added by Picky Relics
         rewards.removeIf(r -> r.type == RewardItem.RewardType.RELIC && RelicLinkFields.addedByPickyRelics.get(r));
 
-        // For each original relic, rebuild its group based on current numChoices
+        // For each original relic, rebuild its group based on current settings
         for (RewardItem original : originalRelics) {
-            if (numChoices <= 1) {
+            if (totalChoices <= 1) {
                 RelicLinkFields.linkedRelics.set(original, null);
                 original.relicLink = null; // Clear visual link
                 continue;
             }
 
-            createLinkedRelicGroup(rewards, original, numChoices);
-            logger.info("Picky Relics: Refreshed relic group with " + numChoices + " choices");
+            createLinkedRelicGroup(rewards, original, totalChoices);
+            logger.info("Picky Relics: Refreshed relic group with " + totalChoices + " choices");
         }
+    }
+
+    /**
+     * Returns the total number of relic choices for the current room.
+     */
+    private static int getTotalChoicesForCurrentRoom() {
+        AbstractRoom room = AbstractDungeon.getCurrRoom();
+        if (room == null) {
+            return 1;
+        }
+
+        if (room instanceof MonsterRoom || room instanceof MonsterRoomElite) {
+            return PickyRelicsMod.combatChoices;
+        }
+
+        if (room instanceof TreasureRoom || room instanceof TreasureRoomBoss) {
+            return PickyRelicsMod.chestChoices;
+        }
+
+        return 1;
     }
 }

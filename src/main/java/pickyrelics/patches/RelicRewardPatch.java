@@ -5,7 +5,6 @@ import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
 import com.megacrit.cardcrawl.relics.AbstractRelic;
 import com.megacrit.cardcrawl.rewards.RewardItem;
 import com.megacrit.cardcrawl.rooms.*;
-import javassist.CtBehavior;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import pickyrelics.PickyRelicsMod;
@@ -13,74 +12,89 @@ import pickyrelics.PickyRelicsMod;
 import java.util.ArrayList;
 
 /**
- * Patches the RewardItem constructor for relics to provide multiple choices
- * similar to boss relic rewards.
+ * Patches to provide multiple relic choices.
+ * When a relic reward is added, this creates additional relic reward options
+ * and links them together so picking one removes the others.
  */
 public class RelicRewardPatch {
 
     private static final Logger logger = LogManager.getLogger(RelicRewardPatch.class.getName());
 
     /**
-     * Patch the RewardItem constructor that takes a single AbstractRelic.
-     * This is called when creating relic rewards from chests, events, and combat.
+     * Patch AbstractRoom.addRelicToRewards to add additional relic choices.
      */
     @SpirePatch(
-            clz = RewardItem.class,
-            method = SpirePatch.CONSTRUCTOR,
+            clz = AbstractRoom.class,
+            method = "addRelicToRewards",
             paramtypez = {AbstractRelic.class}
     )
-    public static class SingleRelicRewardPatch {
+    public static class AddRelicToRewardsPatch {
 
         @SpirePostfixPatch
-        public static void Postfix(RewardItem __instance, AbstractRelic relic) {
-            if (!shouldApplyPatch()) {
+        public static void Postfix(AbstractRoom __instance, AbstractRelic relic) {
+            if (!shouldApplyPatch(__instance)) {
                 return;
             }
 
             int numChoices = PickyRelicsMod.numChoices;
             if (numChoices <= 1) {
-                return; // No choices needed, just the original relic
+                return;
             }
 
-            logger.info("Picky Relics: Creating " + numChoices + " relic choices");
+            // Find the reward item that was just added for this relic
+            RewardItem originalReward = null;
+            for (int i = __instance.rewards.size() - 1; i >= 0; i--) {
+                RewardItem r = __instance.rewards.get(i);
+                if (r.type == RewardItem.RewardType.RELIC && r.relic == relic) {
+                    originalReward = r;
+                    break;
+                }
+            }
+            if (originalReward == null) {
+                return;
+            }
 
-            // Convert to a linked relic reward (like boss relics)
-            __instance.relicLink = new RewardItem.RewardLinkedList();
+            logger.info("Picky Relics: Adding " + (numChoices - 1) + " additional relic choices");
 
-            // The original relic is already set in __instance.relic
-            // We need to add additional choices
+            // Create linked group - original is marked as isOriginal=true (default)
+            ArrayList<RewardItem> linkedGroup = new ArrayList<>();
+            linkedGroup.add(originalReward);
+
+            // Find the index of the original reward so we can insert after it
+            int insertIndex = __instance.rewards.indexOf(originalReward) + 1;
+
+            // Add additional relic rewards of the same tier, inserting right after the original
+            AbstractRelic.RelicTier tier = relic.tier;
             for (int i = 1; i < numChoices; i++) {
-                AbstractRelic additionalRelic = AbstractDungeon.returnRandomRelic(
-                        getRelicTier(relic)
-                );
-                __instance.relicLink.add(additionalRelic);
+                AbstractRelic additionalRelic = AbstractDungeon.returnRandomRelic(tier);
+                RewardItem newReward = new RewardItem(additionalRelic);
+                RelicLinkPatch.RelicLinkFields.isOriginal.set(newReward, false);
+                __instance.rewards.add(insertIndex, newReward);
+                insertIndex++; // Next one goes after this one
+                linkedGroup.add(newReward);
             }
-        }
 
-        private static AbstractRelic.RelicTier getRelicTier(AbstractRelic relic) {
-            // Return the same tier as the original relic
-            return relic.tier;
+            // Link them all together
+            RelicLinkPatch.linkRelicGroup(linkedGroup);
         }
     }
 
     /**
-     * Determines if the patch should apply based on the current room type
-     * and config settings.
+     * Determines if the patch should apply based on the current room type.
      */
-    private static boolean shouldApplyPatch() {
-        if (AbstractDungeon.getCurrRoom() == null) {
+    private static boolean shouldApplyPatch(AbstractRoom room) {
+        if (room == null) {
             return false;
         }
 
-        AbstractRoom room = AbstractDungeon.getCurrRoom();
-
-        // Always apply to monster rooms (elite/regular combat rewards)
-        if (room instanceof MonsterRoom || room instanceof MonsterRoomElite || room instanceof MonsterRoomBoss) {
-            // Don't apply to boss rooms - they already have 3 choices for boss relics
-            if (room instanceof MonsterRoomBoss) {
-                return false;
-            }
+        // Apply to monster rooms (elite/regular combat rewards)
+        if (room instanceof MonsterRoom || room instanceof MonsterRoomElite) {
             return true;
+        }
+
+        // Don't apply to boss rooms - they already have their own relic selection
+        if (room instanceof MonsterRoomBoss) {
+            return false;
         }
 
         // Apply to treasure rooms (chests) if enabled
@@ -92,9 +106,6 @@ public class RelicRewardPatch {
         if (room instanceof EventRoom) {
             return PickyRelicsMod.applyToEvents;
         }
-
-        // Apply to shop rooms for relic purchases? Probably not by default
-        // if (room instanceof ShopRoom) { return false; }
 
         return false;
     }

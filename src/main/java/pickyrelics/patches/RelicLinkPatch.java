@@ -34,18 +34,32 @@ public class RelicLinkPatch {
         public static SpireField<ArrayList<RewardItem>> linkedRelics = new SpireField<>(() -> null);
         // Whether this reward was added by Picky Relics (not the original game/other mods)
         public static SpireField<Boolean> addedByPickyRelics = new SpireField<>(() -> false);
+        // The original external tail (e.g., Sapphire Key) that should be preserved at end of chain
+        // Stored on the original relic so we can restore it during refresh
+        public static SpireField<RewardItem> originalExternalTail = new SpireField<>(() -> null);
     }
 
     /**
      * Create a linked group of relic rewards for the given original relic.
      * Generates additional relics of the same tier, inserts them after the original,
      * marks them as added by Picky Relics, and links them all together.
+     * Preserves any existing relicLink (e.g., to a Sapphire Key) at the end of the chain.
      *
      * @param rewards    The rewards list to modify
      * @param original   The original relic reward to build a group around
      * @param numChoices Total number of relics in the group (including original)
      */
     public static void createLinkedRelicGroup(ArrayList<RewardItem> rewards, RewardItem original, int numChoices) {
+        // Get the external tail to preserve at end of chain
+        // First time: save original's relicLink (e.g., Sapphire Key) for future refreshes
+        // On refresh: use the saved value since original.relicLink now points to our (removed) relic
+        RewardItem existingTail = RelicLinkFields.originalExternalTail.get(original);
+        if (existingTail == null && original.relicLink != null) {
+            // First time setup - save the original's external link
+            existingTail = original.relicLink;
+            RelicLinkFields.originalExternalTail.set(original, existingTail);
+        }
+
         ArrayList<RewardItem> group = new ArrayList<>();
         group.add(original);
 
@@ -61,30 +75,36 @@ public class RelicLinkPatch {
             group.add(newReward);
         }
 
-        linkRelicGroup(group);
+        linkRelicGroup(group, existingTail);
     }
 
     /**
      * Link a group of relic rewards together.
      * Sets both our custom linkedRelics field (for removal logic) and
      * the game's built-in relicLink field (for visual chain icons).
+     *
+     * @param relics      The group of relics to link together
+     * @param existingTail Optional existing relicLink to preserve at the end of the chain
+     *                     (e.g., a Sapphire Key that was already linked to the original)
      */
-    public static void linkRelicGroup(ArrayList<RewardItem> relics) {
+    public static void linkRelicGroup(ArrayList<RewardItem> relics, RewardItem existingTail) {
         // Set our custom field for tracking the full group
         for (RewardItem r : relics) {
             RelicLinkFields.linkedRelics.set(r, relics);
         }
 
         // Set the game's relicLink field in a linear chain for visual display
-        // A→B→C (each item links to the next, last item has no link)
+        // A→B→C→existingTail (each item links to the next)
         if (relics.size() >= 2) {
             for (int i = 0; i < relics.size() - 1; i++) {
                 RewardItem current = relics.get(i);
                 RewardItem next = relics.get(i + 1);
                 current.relicLink = next;
             }
-            // Last item doesn't link to anything (no chain below it)
-            relics.get(relics.size() - 1).relicLink = null;
+        }
+        // Last item links to the existing tail (e.g., Sapphire Key) or null
+        if (!relics.isEmpty()) {
+            relics.get(relics.size() - 1).relicLink = existingTail;
         }
     }
 
@@ -227,7 +247,9 @@ public class RelicLinkPatch {
         for (RewardItem original : originalRelics) {
             if (totalChoices <= 1) {
                 RelicLinkFields.linkedRelics.set(original, null);
-                original.relicLink = null; // Clear visual link
+                // Restore original's direct link to external tail (e.g., Sapphire Key)
+                RewardItem externalTail = RelicLinkFields.originalExternalTail.get(original);
+                original.relicLink = externalTail;
                 continue;
             }
 

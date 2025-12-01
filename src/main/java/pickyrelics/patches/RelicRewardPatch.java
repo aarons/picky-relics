@@ -34,6 +34,17 @@ public class RelicRewardPatch {
                 return;
             }
 
+            // Skip SPECIAL tier relics when config is enabled (mod compatibility)
+            if (relic.tier == AbstractRelic.RelicTier.SPECIAL) {
+                if (PickyRelicsMod.ignoreSpecialTier) {
+                    logger.info("Picky Relics: Skipping SPECIAL tier relic: " + relic.relicId);
+                    return;
+                } else {
+                    logger.info("Picky Relics: SPECIAL tier relic " + relic.relicId +
+                            " - ignoreSpecialTier is disabled, adding choices");
+                }
+            }
+
             // Find the reward item that was just added for this relic
             RewardItem originalReward = null;
             for (int i = __instance.rewards.size() - 1; i >= 0; i--) {

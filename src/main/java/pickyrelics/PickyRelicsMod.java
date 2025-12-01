@@ -4,6 +4,7 @@ import basemod.BaseMod;
 import basemod.ModLabel;
 import basemod.ModPanel;
 import basemod.ModMinMaxSlider;
+import basemod.ModToggleButton;
 import basemod.interfaces.PostInitializeSubscriber;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
@@ -29,10 +30,13 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
     private static SpireConfig config;
     private static final String CONFIG_COMBAT_CHOICES = "combatChoices";
     private static final String CONFIG_CHEST_CHOICES = "chestChoices";
+    private static final String CONFIG_IGNORE_SPECIAL_TIER = "ignoreSpecialTier";
 
     // Default: 2 total choices (1 = base game, 2-5 = mod choices)
     public static int combatChoices = 2;
     public static int chestChoices = 2;
+    // Default: true - skip SPECIAL tier relics (improves mod compatibility)
+    public static boolean ignoreSpecialTier = true;
 
     public PickyRelicsMod() {
         logger.info("Initializing " + MOD_NAME);
@@ -49,14 +53,17 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
             Properties defaults = new Properties();
             defaults.setProperty(CONFIG_COMBAT_CHOICES, "2");
             defaults.setProperty(CONFIG_CHEST_CHOICES, "2");
+            defaults.setProperty(CONFIG_IGNORE_SPECIAL_TIER, "true");
 
             config = new SpireConfig(MOD_ID, "config", defaults);
 
             combatChoices = clamp(config.getInt(CONFIG_COMBAT_CHOICES), 1, 5);
             chestChoices = clamp(config.getInt(CONFIG_CHEST_CHOICES), 1, 5);
+            ignoreSpecialTier = config.getBool(CONFIG_IGNORE_SPECIAL_TIER);
 
             logger.info("Config loaded: combatChoices=" + combatChoices +
-                    ", chestChoices=" + chestChoices);
+                    ", chestChoices=" + chestChoices +
+                    ", ignoreSpecialTier=" + ignoreSpecialTier);
         } catch (IOException e) {
             logger.error("Failed to load config", e);
         }
@@ -70,6 +77,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
         try {
             config.setInt(CONFIG_COMBAT_CHOICES, combatChoices);
             config.setInt(CONFIG_CHEST_CHOICES, chestChoices);
+            config.setBool(CONFIG_IGNORE_SPECIAL_TIER, ignoreSpecialTier);
             config.save();
         } catch (IOException e) {
             logger.error("Failed to save config", e);
@@ -171,6 +179,56 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
                     chestChoices = Math.round(slider.getValue());
                     saveConfig();
                 }
+        ));
+
+        yPos -= 80.0f;
+
+        // Mod Compatibility section
+        settingsPanel.addUIElement(new ModLabel(
+                "Mod Compatibility",
+                xPos, yPos,
+                Settings.CREAM_COLOR,
+                FontHelper.charDescFont,
+                settingsPanel,
+                (label) -> {}
+        ));
+
+        yPos -= 50.0f;
+
+        float toggleX = xPos;
+        float toggleYOffset = -8.0f;
+        float labelXOffset = 40.0f;
+
+        // Ignore Special Tier checkbox
+        settingsPanel.addUIElement(new ModToggleButton(
+                toggleX, yPos + toggleYOffset,
+                ignoreSpecialTier,
+                false,
+                settingsPanel,
+                (button) -> {
+                    ignoreSpecialTier = button.enabled;
+                    saveConfig();
+                }
+        ));
+
+        settingsPanel.addUIElement(new ModLabel(
+                "Ignore Special tier relics",
+                xPos + labelXOffset, yPos,
+                Settings.CREAM_COLOR,
+                FontHelper.tipHeaderFont,
+                settingsPanel,
+                (label) -> {}
+        ));
+
+        yPos -= 25.0f;
+
+        settingsPanel.addUIElement(new ModLabel(
+                "Prevents adding choices for unique relics from other mods",
+                xPos + labelXOffset, yPos,
+                Settings.GOLD_COLOR,
+                FontHelper.tipBodyFont,
+                settingsPanel,
+                (label) -> {}
         ));
 
         BaseMod.registerModBadge(

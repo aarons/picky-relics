@@ -225,7 +225,13 @@ public class RelicLinkPatch {
 
         // For each original relic, rebuild its group based on current settings
         for (RewardItem original : originalRelics) {
-            if (totalChoices <= 1) {
+            // Skip if only 1 choice or if SPECIAL tier and config is enabled
+            boolean shouldSkip = totalChoices <= 1 ||
+                    (PickyRelicsMod.ignoreSpecialTier &&
+                            original.relic != null &&
+                            original.relic.tier == AbstractRelic.RelicTier.SPECIAL);
+
+            if (shouldSkip) {
                 RelicLinkFields.linkedRelics.set(original, null);
                 original.relicLink = null; // Clear visual link
                 continue;

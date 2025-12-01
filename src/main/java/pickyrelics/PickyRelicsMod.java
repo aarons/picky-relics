@@ -86,9 +86,10 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
         // Create settings panel
         ModPanel settingsPanel = new ModPanel();
 
-        float yPos = 750.0f;
+        float yPos = 800.0f;
         float xPos = 380.0f;
         float sliderX = xPos + 250.0f;
+        float sliderYOffset = 6.0f;
 
         // Title
         settingsPanel.addUIElement(new ModLabel(
@@ -131,14 +132,14 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
                 "Combat Rewards",
                 xPos, yPos,
                 Settings.CREAM_COLOR,
-                FontHelper.charDescFont,
+                FontHelper.tipHeaderFont,
                 settingsPanel,
                 (label) -> {}
         ));
 
         settingsPanel.addUIElement(new ModMinMaxSlider(
                 "",
-                sliderX, yPos,
+                sliderX, yPos + sliderYOffset,
                 1.0f, 5.0f, (float) combatChoices,
                 "%.0f",
                 settingsPanel,
@@ -155,14 +156,14 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
                 "Treasure Chests",
                 xPos, yPos,
                 Settings.CREAM_COLOR,
-                FontHelper.charDescFont,
+                FontHelper.tipHeaderFont,
                 settingsPanel,
                 (label) -> {}
         ));
 
         settingsPanel.addUIElement(new ModMinMaxSlider(
                 "",
-                sliderX, yPos,
+                sliderX, yPos + sliderYOffset,
                 1.0f, 5.0f, (float) chestChoices,
                 "%.0f",
                 settingsPanel,

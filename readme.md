@@ -7,8 +7,8 @@ Picky Relics is like the excellent Bossy Relics mod, except it is configurable. 
 ## Features
 
 - **Configurable Choices**: Choose how many relic options you want (1-5, default: 2)
-- **Selective Application**: Enable/disable for treasure chests and events separately
-- **Combat Rewards**: Always applies to combat relic rewards (elite fights, etc.)
+- **Separate Settings**: Configure combat rewards and treasure chests independently
+- **Original Behavior**: Set to 1 to restore vanilla game behavior for either context
 
 ## Installation
 
@@ -32,9 +32,10 @@ Picky Relics is like the excellent Bossy Relics mod, except it is configurable. 
 
 Access the mod settings through the in-game mod config menu:
 
-- **Relic Choices**: Number of relics to choose from (1-5)
-- **Apply to Chests**: Enable/disable for treasure chest rewards
-- **Apply to Events**: Enable/disable for event relic rewards
+- **Combat Rewards**: Number of relic choices for combat rewards like elite fights (1-5, default: 2)
+- **Treasure Chests**: Number of relic choices for treasure chest rewards (1-5, default: 2)
+
+Set either option to 1 for original game behavior in that context.
 
 ## Development Setup
 

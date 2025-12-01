@@ -6,7 +6,7 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
-API_DIR="$PROJECT_DIR/api-reference"
+API_DIR="$PROJECT_DIR/references"
 
 # Detect steamapps path based on OS
 detect_steamapps() {

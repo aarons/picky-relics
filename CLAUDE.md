@@ -35,13 +35,13 @@ The mod uses SpirePatch annotations to modify game behavior:
 
 ### Reference Materials
 
-Reference materials for exploring game APIs and example mods are stored in the `api-reference/` folder. Initialize or update these by running:
+Reference materials for exploring game APIs and example mods are stored in the `references/` folder. Initialize or update these by running:
 
 ```bash
 ./scripts/extract-api-reference.sh
 ```
 
-Contents of `api-reference/`:
+Contents of `references/`:
 
 - **slaythespire/** - Extracted class files from the game JAR. Use `javap -p <class>` to inspect methods/fields. Key classes: `AbstractRoom`, `RewardItem`, `AbstractRelic`, `AbstractDungeon`.
 
@@ -50,3 +50,7 @@ Contents of `api-reference/`:
 - **sts-orison-mod/** - Reference mod demonstrating reward mechanics, linked reward items, and dynamic reward updates based on settings changes.
 
 - **ProTemplate/** - Advanced mod template with utilities for X-cost actions, lambda powers, improved image loading, and card recoloring.
+
+- **corruptthespire/** - A mod that adds custom treasure rooms with multiple chests, useful for reproducing tricky rendering issues.
+
+- **bugs/** - Bug investigation notes and reproduction cases.

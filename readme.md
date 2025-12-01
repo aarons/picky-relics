@@ -108,7 +108,7 @@ The game and BaseMod don't provide source JARs, so we extract the compiled JARs 
 
 This creates (gitignored):
 ```
-api-reference/
+references/
 ├── slaythespire/                        # Extracted desktop-1.0.jar
 │   └── com/megacrit/cardcrawl/          # Game classes
 │       ├── relics/                      # AbstractRelic, relic implementations
@@ -116,50 +116,54 @@ api-reference/
 │       ├── rooms/                       # AbstractRoom, MonsterRoom, etc.
 │       ├── dungeons/                    # AbstractDungeon
 │       └── ...
-└── basemod/                             # Extracted BaseMod.jar
-    └── basemod/                         # Mod utilities
-        ├── BaseMod.class                # Main mod registration
-        ├── ModPanel.class               # Settings UI
-        ├── ModMinMaxSlider.class        # UI components
-        ├── interfaces/                  # Subscriber interfaces
-        └── patches/                     # SpirePatch utilities
+├── basemod/                             # Extracted BaseMod.jar
+│   └── basemod/                         # Mod utilities
+│       ├── BaseMod.class                # Main mod registration
+│       ├── ModPanel.class               # Settings UI
+│       ├── ModMinMaxSlider.class        # UI components
+│       ├── interfaces/                  # Subscriber interfaces
+│       └── patches/                     # SpirePatch utilities
+├── sts-orison-mod/                      # Reference mod for reward mechanics
+├── ProTemplate/                         # Advanced mod template
+├── corruptthespire/                     # Mod with custom treasure rooms, useful for rendering issues
+└── bugs/                                # Bug investigation notes
 ```
 
 #### Browsing the API
 
 **List class members with strings:**
 ```bash
-strings api-reference/slaythespire/com/megacrit/cardcrawl/rewards/RewardItem.class
+strings references/slaythespire/com/megacrit/cardcrawl/rewards/RewardItem.class
 ```
 
 **Decompile a class with javap:**
 ```bash
 # Show all members (including private)
-javap -p api-reference/slaythespire/com/megacrit/cardcrawl/rewards/RewardItem.class
+javap -p references/slaythespire/com/megacrit/cardcrawl/rewards/RewardItem.class
 
 # Show method signatures with types
-javap -s api-reference/slaythespire/com/megacrit/cardcrawl/relics/AbstractRelic.class
+javap -s references/slaythespire/com/megacrit/cardcrawl/relics/AbstractRelic.class
 ```
 
 **Search for classes by name:**
 ```bash
-find api-reference -name "*.class" | grep -i reward
+find references -name "*.class" | grep -i reward
 ```
 
 **Search for method/field names across all classes:**
 ```bash
 # Find classes that reference "relicLink"
-grep -r "relicLink" api-reference --include="*.class" -l
+grep -r "relicLink" references --include="*.class" -l
 
 # Search with strings for more context
-for f in api-reference/slaythespire/com/megacrit/cardcrawl/rewards/*.class; do
+for f in references/slaythespire/com/megacrit/cardcrawl/rewards/*.class; do
   echo "=== $f ===" && strings "$f" | grep -i "relic"
 done
 ```
 
 **Find enum values:**
 ```bash
-strings api-reference/slaythespire/com/megacrit/cardcrawl/rewards/RewardItem\$RewardType.class
+strings references/slaythespire/com/megacrit/cardcrawl/rewards/RewardItem\$RewardType.class
 ```
 
 #### Key Classes

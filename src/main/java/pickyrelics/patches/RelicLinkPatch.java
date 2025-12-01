@@ -54,6 +54,13 @@ public class RelicLinkPatch {
 
         for (int i = 1; i < numChoices; i++) {
             AbstractRelic additionalRelic = AbstractDungeon.returnRandomRelic(tier);
+
+            // Skip Circlet - it's a placeholder relic when no relics of the tier are available
+            if ("Circlet".equals(additionalRelic.relicId)) {
+                logger.info("Picky Relics: Skipping Circlet placeholder relic");
+                continue;
+            }
+
             RewardItem newReward = new RewardItem(additionalRelic);
             RelicLinkFields.addedByPickyRelics.set(newReward, true);
             rewards.add(insertIndex, newReward);

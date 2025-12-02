@@ -34,6 +34,8 @@ public class RelicLinkPatch {
         public static SpireField<ArrayList<RewardItem>> linkedRelics = new SpireField<>(() -> null);
         // Whether this reward was added by Picky Relics (not the original game/other mods)
         public static SpireField<Boolean> addedByPickyRelics = new SpireField<>(() -> false);
+        // The original relicLink that existed before we modified the chain (e.g., Sapphire Key)
+        public static SpireField<RewardItem> originalRelicLink = new SpireField<>(() -> null);
     }
 
     /**
@@ -46,6 +48,14 @@ public class RelicLinkPatch {
      * @param numChoices Total number of relics in the group (including original)
      */
     public static void createLinkedRelicGroup(ArrayList<RewardItem> rewards, RewardItem original, int numChoices) {
+        // Save the original relicLink before we modify the chain (e.g., Sapphire Key)
+        // Only save if we haven't already (handles refresh case)
+        if (RelicLinkFields.originalRelicLink.get(original) == null && original.relicLink != null) {
+            RelicLinkFields.originalRelicLink.set(original, original.relicLink);
+        }
+        // Use stored value (handles refresh case where original.relicLink was already modified)
+        RewardItem originalLink = RelicLinkFields.originalRelicLink.get(original);
+
         ArrayList<RewardItem> group = new ArrayList<>();
         group.add(original);
 
@@ -68,30 +78,33 @@ public class RelicLinkPatch {
             group.add(newReward);
         }
 
-        linkRelicGroup(group);
+        linkRelicGroup(group, originalLink);
     }
 
     /**
      * Link a group of relic rewards together.
      * Sets both our custom linkedRelics field (for removal logic) and
      * the game's built-in relicLink field (for visual chain icons).
+     *
+     * @param relics       The group of relics to link together
+     * @param originalLink The original relicLink from the first relic (e.g., Sapphire Key), or null
      */
-    public static void linkRelicGroup(ArrayList<RewardItem> relics) {
+    public static void linkRelicGroup(ArrayList<RewardItem> relics, RewardItem originalLink) {
         // Set our custom field for tracking the full group
         for (RewardItem r : relics) {
             RelicLinkFields.linkedRelics.set(r, relics);
         }
 
         // Set the game's relicLink field in a linear chain for visual display
-        // A→B→C (each item links to the next, last item has no link)
+        // A→B→C→originalLink (each item links to the next, last item links to original link)
         if (relics.size() >= 2) {
             for (int i = 0; i < relics.size() - 1; i++) {
                 RewardItem current = relics.get(i);
                 RewardItem next = relics.get(i + 1);
                 current.relicLink = next;
             }
-            // Last item doesn't link to anything (no chain below it)
-            relics.get(relics.size() - 1).relicLink = null;
+            // Last item links to the original link (e.g., Sapphire Key) if it exists
+            relics.get(relics.size() - 1).relicLink = originalLink;
         }
     }
 
@@ -141,12 +154,19 @@ public class RelicLinkPatch {
             // (Native code: each item sets relicLink.redText = hovered, which can overwrite our values)
             if (linked.get(linked.size() - 1) != __instance) return;
 
+            // Get the original link (e.g., Sapphire Key) from the first item in the group
+            RewardItem originalLink = RelicLinkFields.originalRelicLink.get(linked.get(0));
+
             // Find which item (if any) is being hovered
             for (RewardItem hoveredItem : linked) {
                 if (hoveredItem.hb.hovered) {
                     // Set redText on all OTHER linked items
                     for (RewardItem other : linked) {
                         other.redText = (other != hoveredItem);
+                    }
+                    // Also set redText on the original link (e.g., Sapphire Key)
+                    if (originalLink != null) {
+                        originalLink.redText = true;
                     }
                     return;
                 }
@@ -155,6 +175,10 @@ public class RelicLinkPatch {
             // Nobody in the group is hovered, reset all redText
             for (RewardItem r : linked) {
                 r.redText = false;
+            }
+            // Also reset redText on the original link
+            if (originalLink != null) {
+                originalLink.redText = false;
             }
         }
     }
@@ -240,7 +264,8 @@ public class RelicLinkPatch {
 
             if (shouldSkip) {
                 RelicLinkFields.linkedRelics.set(original, null);
-                original.relicLink = null; // Clear visual link
+                // Restore original link (e.g., Sapphire Key) instead of clearing
+                original.relicLink = RelicLinkFields.originalRelicLink.get(original);
                 continue;
             }
 

@@ -74,47 +74,24 @@ public class RelicRewardPatch {
             return 1;
         }
 
-        // Log room info for debugging
         String roomClass = room.getClass().getSimpleName();
-        String eventInfo = room.event == null
-                ? "event=null"
-                : "event=" + room.event.getClass().getSimpleName() + ", noCardsInRewards=" + room.event.noCardsInRewards;
-        logger.info("Picky Relics: Room detection - " + roomClass + ", " + eventInfo);
+        logger.info("Picky Relics: Room detection - " + roomClass);
 
-        // Treasure chests
+        // Treasure chests use chest settings
         if (room instanceof TreasureRoom || room instanceof TreasureRoomBoss) {
             logger.info("Picky Relics: Detected as treasure room, returning chestChoices=" + PickyRelicsMod.chestChoices);
             return PickyRelicsMod.chestChoices;
         }
 
-        // Boss rooms have their own relic selection
+        // Boss rooms have their own relic selection (don't interfere)
         if (room instanceof MonsterRoomBoss) {
             logger.info("Picky Relics: Detected as boss room, returning 1");
             return 1;
         }
 
-        // Combat-like rooms (catches MonsterRoom, MonsterRoomElite, EventRoom, custom rooms)
-        boolean afterCombat = isAfterCombat(room);
-        logger.info("Picky Relics: isAfterCombat=" + afterCombat);
-        if (afterCombat) {
-            logger.info("Picky Relics: Detected as combat room, returning combatChoices=" + PickyRelicsMod.combatChoices);
-            return PickyRelicsMod.combatChoices;
-        }
-
-        logger.info("Picky Relics: No match, returning 1 (base game behavior)");
-        return 1;
-    }
-
-    /**
-     * Detects if the current room is a combat-like context where relic rewards apply.
-     * Uses a blacklist approach: excludes known non-combat rooms, includes everything else.
-     * This catches EventRooms with combat and custom mod room types.
-     */
-    private static boolean isAfterCombat(AbstractRoom room) {
-        return (room.event == null || !room.event.noCardsInRewards)
-                && !(room instanceof TreasureRoom)
-                && !(room instanceof TreasureRoomBoss)
-                && !(room instanceof RestRoom)
-                && !(room instanceof ShopRoom);
+        // Everything else uses combat settings
+        // (MonsterRoom, MonsterRoomElite, EventRoom, custom mod rooms, etc.)
+        logger.info("Picky Relics: Applying combatChoices=" + PickyRelicsMod.combatChoices);
+        return PickyRelicsMod.combatChoices;
     }
 }

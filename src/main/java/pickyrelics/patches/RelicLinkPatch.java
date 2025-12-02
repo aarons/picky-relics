@@ -75,6 +75,12 @@ public class RelicLinkPatch {
             RewardItem newReward = new RewardItem(additionalRelic);
             RelicLinkFields.addedByPickyRelics.set(newReward, true);
             rewards.add(insertIndex, newReward);
+
+            // Position the new reward so it renders immediately (mirrors CombatRewardScreen.positionRewards)
+            float yPos = (float)Settings.HEIGHT / 2.0F - 124.0F * Settings.scale
+                         - (float)insertIndex * 100.0F * Settings.scale;
+            newReward.move(yPos);
+
             insertIndex++;
             group.add(newReward);
         }

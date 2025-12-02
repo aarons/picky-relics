@@ -28,13 +28,14 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
 
     // Config
     private static SpireConfig config;
+    private static final String CONFIG_RELIC_CHOICES = "relicChoices";
+    private static final String CONFIG_IGNORE_SPECIAL_TIER = "ignoreSpecialTier";
+    // Legacy keys for migration
     private static final String CONFIG_COMBAT_CHOICES = "combatChoices";
     private static final String CONFIG_CHEST_CHOICES = "chestChoices";
-    private static final String CONFIG_IGNORE_SPECIAL_TIER = "ignoreSpecialTier";
 
     // Default: 2 total choices (1 = base game, 2-5 = mod choices)
-    public static int combatChoices = 2;
-    public static int chestChoices = 2;
+    public static int relicChoices = 2;
     // Default: true - skip SPECIAL tier relics (improves mod compatibility)
     public static boolean ignoreSpecialTier = true;
 
@@ -51,18 +52,28 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
     private void loadConfig() {
         try {
             Properties defaults = new Properties();
-            defaults.setProperty(CONFIG_COMBAT_CHOICES, "2");
-            defaults.setProperty(CONFIG_CHEST_CHOICES, "2");
+            defaults.setProperty(CONFIG_RELIC_CHOICES, "2");
             defaults.setProperty(CONFIG_IGNORE_SPECIAL_TIER, "true");
 
             config = new SpireConfig(MOD_ID, "config", defaults);
 
-            combatChoices = clamp(config.getInt(CONFIG_COMBAT_CHOICES), 1, 5);
-            chestChoices = clamp(config.getInt(CONFIG_CHEST_CHOICES), 1, 5);
+            // Check for new key first, then migrate from legacy keys if needed
+            if (config.has(CONFIG_RELIC_CHOICES)) {
+                relicChoices = clamp(config.getInt(CONFIG_RELIC_CHOICES), 1, 5);
+            } else if (config.has(CONFIG_COMBAT_CHOICES) || config.has(CONFIG_CHEST_CHOICES)) {
+                // Migration: take the max of old values
+                int oldCombat = config.has(CONFIG_COMBAT_CHOICES) ? config.getInt(CONFIG_COMBAT_CHOICES) : 2;
+                int oldChest = config.has(CONFIG_CHEST_CHOICES) ? config.getInt(CONFIG_CHEST_CHOICES) : 2;
+                relicChoices = clamp(Math.max(oldCombat, oldChest), 1, 5);
+                logger.info("Migrated config from legacy keys: combatChoices=" + oldCombat +
+                        ", chestChoices=" + oldChest + " -> relicChoices=" + relicChoices);
+                // Save with new key
+                saveConfig();
+            }
+
             ignoreSpecialTier = config.getBool(CONFIG_IGNORE_SPECIAL_TIER);
 
-            logger.info("Config loaded: combatChoices=" + combatChoices +
-                    ", chestChoices=" + chestChoices +
+            logger.info("Config loaded: relicChoices=" + relicChoices +
                     ", ignoreSpecialTier=" + ignoreSpecialTier);
         } catch (IOException e) {
             logger.error("Failed to load config", e);
@@ -75,8 +86,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
 
     public static void saveConfig() {
         try {
-            config.setInt(CONFIG_COMBAT_CHOICES, combatChoices);
-            config.setInt(CONFIG_CHEST_CHOICES, chestChoices);
+            config.setInt(CONFIG_RELIC_CHOICES, relicChoices);
             config.setBool(CONFIG_IGNORE_SPECIAL_TIER, ignoreSpecialTier);
             config.save();
         } catch (IOException e) {
@@ -135,9 +145,9 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
 
         yPos -= 50.0f;
 
-        // Combat Rewards slider
+        // Relic Choices slider
         settingsPanel.addUIElement(new ModLabel(
-                "Combat Rewards",
+                "Relic Choices",
                 xPos, yPos,
                 Settings.CREAM_COLOR,
                 FontHelper.tipHeaderFont,
@@ -148,40 +158,16 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
         settingsPanel.addUIElement(new ModMinMaxSlider(
                 "",
                 sliderX, yPos + sliderYOffset,
-                1.0f, 5.0f, (float) combatChoices,
+                1.0f, 5.0f, (float) relicChoices,
                 "%.0f",
                 settingsPanel,
                 (slider) -> {
-                    combatChoices = Math.round(slider.getValue());
+                    relicChoices = Math.round(slider.getValue());
                     saveConfig();
                 }
         ));
 
         yPos -= 60.0f;
-
-        // Treasure Chests slider
-        settingsPanel.addUIElement(new ModLabel(
-                "Treasure Chests",
-                xPos, yPos,
-                Settings.CREAM_COLOR,
-                FontHelper.tipHeaderFont,
-                settingsPanel,
-                (label) -> {}
-        ));
-
-        settingsPanel.addUIElement(new ModMinMaxSlider(
-                "",
-                sliderX, yPos + sliderYOffset,
-                1.0f, 5.0f, (float) chestChoices,
-                "%.0f",
-                settingsPanel,
-                (slider) -> {
-                    chestChoices = Math.round(slider.getValue());
-                    saveConfig();
-                }
-        ));
-
-        yPos -= 80.0f;
 
         // Mod Compatibility section
         settingsPanel.addUIElement(new ModLabel(

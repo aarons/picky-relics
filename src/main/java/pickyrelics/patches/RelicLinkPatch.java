@@ -5,8 +5,6 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.evacipated.cardcrawl.modthespire.lib.*;
 import com.megacrit.cardcrawl.core.Settings;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
-import com.megacrit.cardcrawl.rooms.*;
-import com.megacrit.cardcrawl.rooms.MonsterRoomBoss;
 import com.megacrit.cardcrawl.helpers.TipHelper;
 import com.megacrit.cardcrawl.helpers.input.InputHelper;
 import com.megacrit.cardcrawl.relics.AbstractRelic;
@@ -222,82 +220,66 @@ public class RelicLinkPatch {
     }
 
     /**
-     * When the combat reward screen opens, rebuild linked groups based on current config.
-     * This handles the case where player exits to menu, changes numChoices, and returns.
+     * Primary hook: Process relic rewards at display time.
+     * This runs after setupItemReward() copies rewards from room to screen,
+     * catching ALL relics regardless of their source (combat, events, chests, etc.).
      */
-    @SpirePatch2(clz = CombatRewardScreen.class, method = "open", paramtypez = {})
-    public static class RefreshLinksOnOpen {
+    @SpirePatch2(clz = CombatRewardScreen.class, method = "setupItemReward")
+    public static class ProcessRelicRewardsOnSetup {
         @SpirePostfixPatch
         public static void Postfix(CombatRewardScreen __instance) {
-            refreshRelicLinks(__instance.rewards);
+            processRelicRewards(__instance.rewards);
         }
     }
 
     /**
-     * Also patch the String overload of open() for completeness.
+     * Process all relic rewards in the list, creating linked groups for any
+     * that don't already have them.
      */
-    @SpirePatch2(clz = CombatRewardScreen.class, method = "open", paramtypez = {String.class})
-    public static class RefreshLinksOnOpenString {
-        @SpirePostfixPatch
-        public static void Postfix(CombatRewardScreen __instance) {
-            refreshRelicLinks(__instance.rewards);
+    public static void processRelicRewards(ArrayList<RewardItem> rewards) {
+        int totalChoices = PickyRelicsMod.relicChoices;
+
+        if (totalChoices <= 1) {
+            return; // No additional choices needed
         }
-    }
 
-    /**
-     * Rebuild linked relic groups based on current config settings.
-     */
-    public static void refreshRelicLinks(ArrayList<RewardItem> rewards) {
-        int totalChoices = getTotalChoicesForCurrentRoom();
-
-        // Find all original relic rewards (those NOT added by Picky Relics)
-        ArrayList<RewardItem> originalRelics = new ArrayList<>();
+        // Count total relics for logging
+        int totalRelicRewards = 0;
         for (RewardItem r : rewards) {
-            if (r.type == RewardItem.RewardType.RELIC && !RelicLinkFields.addedByPickyRelics.get(r)) {
-                originalRelics.add(r);
+            if (r.type == RewardItem.RewardType.RELIC) {
+                totalRelicRewards++;
+            }
+        }
+        logger.info("Picky Relics: Found " + totalRelicRewards + " relic reward(s) in screen");
+
+        // Find all relic rewards that don't already have linked groups
+        ArrayList<RewardItem> unlinkedRelics = new ArrayList<>();
+        for (RewardItem r : rewards) {
+            if (r.type == RewardItem.RewardType.RELIC) {
+                ArrayList<RewardItem> existingGroup = RelicLinkFields.linkedRelics.get(r);
+                if (existingGroup == null) {
+                    // Check if this is SPECIAL tier and config says to skip
+                    if (PickyRelicsMod.ignoreSpecialTier &&
+                            r.relic != null &&
+                            r.relic.tier == AbstractRelic.RelicTier.SPECIAL) {
+                        logger.info("Picky Relics: Skipping SPECIAL tier relic: " + r.relic.relicId);
+                        continue;
+                    }
+                    unlinkedRelics.add(r);
+                } else {
+                    logger.info("Picky Relics: Relic " + r.relic.relicId + " already has linked group, skipping");
+                }
             }
         }
 
-        // Remove all relics that were added by Picky Relics
-        rewards.removeIf(r -> r.type == RewardItem.RewardType.RELIC && RelicLinkFields.addedByPickyRelics.get(r));
+        logger.info("Picky Relics: Processing " + unlinkedRelics.size() + " unlinked relic(s)");
 
-        // For each original relic, rebuild its group based on current settings
-        for (RewardItem original : originalRelics) {
-            // Skip if only 1 choice or if SPECIAL tier and config is enabled
-            boolean shouldSkip = totalChoices <= 1 ||
-                    (PickyRelicsMod.ignoreSpecialTier &&
-                            original.relic != null &&
-                            original.relic.tier == AbstractRelic.RelicTier.SPECIAL);
-
-            if (shouldSkip) {
-                RelicLinkFields.linkedRelics.set(original, null);
-                // Restore original link (e.g., Sapphire Key) instead of clearing
-                original.relicLink = RelicLinkFields.originalRelicLink.get(original);
-                continue;
-            }
-
+        // Create linked groups for each unlinked relic
+        for (RewardItem original : unlinkedRelics) {
+            logger.info("Picky Relics: Creating linked group for " + original.relic.relicId +
+                    " (tier: " + original.relic.tier + ") with " + totalChoices + " choices");
             createLinkedRelicGroup(rewards, original, totalChoices);
-            logger.info("Picky Relics: Refreshed relic group with " + totalChoices + " choices");
         }
     }
 
-    /**
-     * Returns the total number of relic choices for the current room.
-     */
-    private static int getTotalChoicesForCurrentRoom() {
-        AbstractRoom room = AbstractDungeon.getCurrRoom();
-        if (room == null) {
-            return 1;
-        }
-
-        if (room instanceof MonsterRoom || room instanceof MonsterRoomElite || room instanceof MonsterRoomBoss) {
-            return PickyRelicsMod.combatChoices;
-        }
-
-        if (room instanceof TreasureRoom || room instanceof TreasureRoomBoss) {
-            return PickyRelicsMod.chestChoices;
-        }
-
-        return 1;
-    }
 }

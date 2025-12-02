@@ -212,6 +212,7 @@ public class RelicLinkPatch {
         @SpirePostfixPatch
         public static void Postfix(CombatRewardScreen __instance) {
             refreshRelicLinks(__instance.rewards);
+            __instance.positionRewards();
         }
     }
 
@@ -223,6 +224,7 @@ public class RelicLinkPatch {
         @SpirePostfixPatch
         public static void Postfix(CombatRewardScreen __instance) {
             refreshRelicLinks(__instance.rewards);
+            __instance.positionRewards();
         }
     }
 

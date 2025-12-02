@@ -10,9 +10,8 @@ import com.megacrit.cardcrawl.helpers.input.InputHelper;
 import com.megacrit.cardcrawl.relics.AbstractRelic;
 import com.megacrit.cardcrawl.rewards.RewardItem;
 import com.megacrit.cardcrawl.screens.CombatRewardScreen;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import pickyrelics.PickyRelicsMod;
+import pickyrelics.util.Log;
 
 import java.util.ArrayList;
 
@@ -21,8 +20,6 @@ import java.util.ArrayList;
  * Follows the pattern used by Orison mod's RewardLinkPatch.
  */
 public class RelicLinkPatch {
-
-    private static final Logger logger = LogManager.getLogger(RelicLinkPatch.class.getName());
 
     /**
      * Add SpireFields to RewardItem to track linked relics and ownership.
@@ -66,7 +63,7 @@ public class RelicLinkPatch {
 
             // Skip Circlet - it's a placeholder relic when no relics of the tier are available
             if ("Circlet".equals(additionalRelic.relicId)) {
-                logger.info("Picky Relics: Skipping Circlet placeholder relic");
+                Log.info("Picky Relics: Skipping Circlet placeholder relic");
                 continue;
             }
 
@@ -127,7 +124,7 @@ public class RelicLinkPatch {
             ArrayList<RewardItem> linked = RelicLinkFields.linkedRelics.get(__instance);
             if (linked == null) return;
 
-            logger.info("Picky Relics: Relic claimed, marking " + (linked.size() - 1) + " linked relics as done");
+            Log.info("Picky Relics: Relic claimed, marking " + (linked.size() - 1) + " linked relics as done");
 
             for (RewardItem other : linked) {
                 if (other != __instance) {
@@ -250,7 +247,7 @@ public class RelicLinkPatch {
                 totalRelicRewards++;
             }
         }
-        logger.info("Picky Relics: Found " + totalRelicRewards + " relic reward(s) in screen");
+        Log.info("Picky Relics: Found " + totalRelicRewards + " relic reward(s) in screen");
 
         // Find all relic rewards that don't already have linked groups
         ArrayList<RewardItem> unlinkedRelics = new ArrayList<>();
@@ -262,21 +259,21 @@ public class RelicLinkPatch {
                     if (PickyRelicsMod.ignoreSpecialTier &&
                             r.relic != null &&
                             r.relic.tier == AbstractRelic.RelicTier.SPECIAL) {
-                        logger.info("Picky Relics: Skipping SPECIAL tier relic: " + r.relic.relicId);
+                        Log.info("Picky Relics: Skipping SPECIAL tier relic: " + r.relic.relicId);
                         continue;
                     }
                     unlinkedRelics.add(r);
                 } else {
-                    logger.info("Picky Relics: Relic " + r.relic.relicId + " already has linked group, skipping");
+                    Log.info("Picky Relics: Relic " + r.relic.relicId + " already has linked group, skipping");
                 }
             }
         }
 
-        logger.info("Picky Relics: Processing " + unlinkedRelics.size() + " unlinked relic(s)");
+        Log.info("Picky Relics: Processing " + unlinkedRelics.size() + " unlinked relic(s)");
 
         // Create linked groups for each unlinked relic
         for (RewardItem original : unlinkedRelics) {
-            logger.info("Picky Relics: Creating linked group for " + original.relic.relicId +
+            Log.info("Picky Relics: Creating linked group for " + original.relic.relicId +
                     " (tier: " + original.relic.tier + ") with " + totalChoices + " choices");
             createLinkedRelicGroup(rewards, original, totalChoices);
         }

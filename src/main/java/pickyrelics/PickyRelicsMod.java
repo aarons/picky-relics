@@ -12,8 +12,7 @@ import com.evacipated.cardcrawl.modthespire.lib.SpireConfig;
 import com.evacipated.cardcrawl.modthespire.lib.SpireInitializer;
 import com.megacrit.cardcrawl.core.Settings;
 import com.megacrit.cardcrawl.helpers.FontHelper;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import pickyrelics.util.Log;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -23,8 +22,6 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
 
     public static final String MOD_ID = "pickyrelics";
     public static final String MOD_NAME = "Picky Relics";
-
-    private static final Logger logger = LogManager.getLogger(PickyRelicsMod.class.getName());
 
     // Config
     private static SpireConfig config;
@@ -40,7 +37,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
     public static boolean ignoreSpecialTier = true;
 
     public PickyRelicsMod() {
-        logger.info("Initializing " + MOD_NAME);
+        Log.info("Initializing " + MOD_NAME);
         BaseMod.subscribe(this);
         loadConfig();
     }
@@ -65,7 +62,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
                 int oldCombat = config.has(CONFIG_COMBAT_CHOICES) ? config.getInt(CONFIG_COMBAT_CHOICES) : 2;
                 int oldChest = config.has(CONFIG_CHEST_CHOICES) ? config.getInt(CONFIG_CHEST_CHOICES) : 2;
                 relicChoices = clamp(Math.max(oldCombat, oldChest), 1, 5);
-                logger.info("Migrated config from legacy keys: combatChoices=" + oldCombat +
+                Log.info("Migrated config from legacy keys: combatChoices=" + oldCombat +
                         ", chestChoices=" + oldChest + " -> relicChoices=" + relicChoices);
                 // Save with new key
                 saveConfig();
@@ -73,10 +70,10 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
 
             ignoreSpecialTier = config.getBool(CONFIG_IGNORE_SPECIAL_TIER);
 
-            logger.info("Config loaded: relicChoices=" + relicChoices +
+            Log.info("Config loaded: relicChoices=" + relicChoices +
                     ", ignoreSpecialTier=" + ignoreSpecialTier);
         } catch (IOException e) {
-            logger.error("Failed to load config", e);
+            Log.error("Failed to load config", e);
         }
     }
 
@@ -90,13 +87,13 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
             config.setBool(CONFIG_IGNORE_SPECIAL_TIER, ignoreSpecialTier);
             config.save();
         } catch (IOException e) {
-            logger.error("Failed to save config", e);
+            Log.error("Failed to save config", e);
         }
     }
 
     @Override
     public void receivePostInitialize() {
-        logger.info(MOD_NAME + " post-initialize");
+        Log.info(MOD_NAME + " post-initialize");
 
         // Create a simple colored texture for the mod badge
         Texture badgeTexture = createBadgeTexture();

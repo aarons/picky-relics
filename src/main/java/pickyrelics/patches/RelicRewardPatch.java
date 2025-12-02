@@ -73,14 +73,9 @@ public class RelicRewardPatch {
             return 1;
         }
 
-        // Combat rewards (regular and elite)
-        if (room instanceof MonsterRoom || room instanceof MonsterRoomElite) {
+        // Combat rewards (regular, elite, and boss rooms)
+        if (room instanceof MonsterRoom || room instanceof MonsterRoomElite || room instanceof MonsterRoomBoss) {
             return PickyRelicsMod.combatChoices;
-        }
-
-        // Boss rooms have their own relic selection
-        if (room instanceof MonsterRoomBoss) {
-            return 1;
         }
 
         // Treasure chests

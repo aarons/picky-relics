@@ -225,19 +225,66 @@ public class RelicLinkPatch {
     public static class ProcessRelicRewardsOnSetup {
         @SpirePostfixPatch
         public static void Postfix(CombatRewardScreen __instance) {
-            processRelicRewards(__instance.rewards);
+            processRelicRewards(__instance.rewards, "SETUP");
+        }
+    }
+
+    /**
+     * Secondary hook: Catches relics added after setupItemReward() by other mods.
+     * Some mods add relics directly to combatRewardScreen.rewards after setup,
+     * bypassing AbstractRoom.addRelicToRewards(). This hook ensures we process them.
+     */
+    @SpirePatch2(clz = CombatRewardScreen.class, method = "update")
+    public static class ProcessLateRelicRewards {
+        @SpirePostfixPatch
+        public static void Postfix(CombatRewardScreen __instance) {
+            if (PickyRelicsMod.relicChoices <= 1) return;
+
+            // Quick check: any unlinked relics?
+            boolean hasUnlinked = false;
+            for (RewardItem r : __instance.rewards) {
+                if (r.type == RewardItem.RewardType.RELIC &&
+                    RelicLinkFields.linkedRelics.get(r) == null) {
+                    // Check tier skip
+                    if (PickyRelicsMod.ignoreSpecialTier &&
+                        r.relic != null &&
+                        r.relic.tier == AbstractRelic.RelicTier.SPECIAL) {
+                        continue;
+                    }
+                    hasUnlinked = true;
+                    break;
+                }
+            }
+
+            if (hasUnlinked) {
+                Log.info("[UPDATE] Found unlinked relic(s) added after setup, processing...");
+                int sizeBefore = __instance.rewards.size();
+                int processed = processRelicRewards(__instance.rewards, "UPDATE");
+
+                // If we added relics, reposition everything
+                if (__instance.rewards.size() != sizeBefore) {
+                    Log.info("[UPDATE] Repositioning rewards after adding " +
+                            (__instance.rewards.size() - sizeBefore) + " new relic(s)");
+                    __instance.positionRewards();
+                }
+            }
         }
     }
 
     /**
      * Process all relic rewards in the list, creating linked groups for any
      * that don't already have them.
+     *
+     * @param rewards The rewards list to process
+     * @param source  Logging source to identify which hook triggered processing
+     *                (e.g., "SETUP", "UPDATE")
+     * @return The number of relics that were processed (had linked groups created)
      */
-    public static void processRelicRewards(ArrayList<RewardItem> rewards) {
+    public static int processRelicRewards(ArrayList<RewardItem> rewards, String source) {
         int totalChoices = PickyRelicsMod.relicChoices;
 
         if (totalChoices <= 1) {
-            return; // No additional choices needed
+            return 0; // No additional choices needed
         }
 
         // Count total relics for logging
@@ -247,7 +294,7 @@ public class RelicLinkPatch {
                 totalRelicRewards++;
             }
         }
-        Log.info("Picky Relics: Found " + totalRelicRewards + " relic reward(s) in screen");
+        Log.info("[" + source + "] Found " + totalRelicRewards + " relic reward(s) in screen");
 
         // Find all relic rewards that don't already have linked groups
         ArrayList<RewardItem> unlinkedRelics = new ArrayList<>();
@@ -259,24 +306,26 @@ public class RelicLinkPatch {
                     if (PickyRelicsMod.ignoreSpecialTier &&
                             r.relic != null &&
                             r.relic.tier == AbstractRelic.RelicTier.SPECIAL) {
-                        Log.info("Picky Relics: Skipping SPECIAL tier relic: " + r.relic.relicId);
+                        Log.info("[" + source + "] Skipping SPECIAL tier relic: " + r.relic.relicId);
                         continue;
                     }
                     unlinkedRelics.add(r);
                 } else {
-                    Log.info("Picky Relics: Relic " + r.relic.relicId + " already has linked group, skipping");
+                    Log.info("[" + source + "] Relic " + r.relic.relicId + " already has linked group, skipping");
                 }
             }
         }
 
-        Log.info("Picky Relics: Processing " + unlinkedRelics.size() + " unlinked relic(s)");
+        Log.info("[" + source + "] Processing " + unlinkedRelics.size() + " unlinked relic(s)");
 
         // Create linked groups for each unlinked relic
         for (RewardItem original : unlinkedRelics) {
-            Log.info("Picky Relics: Creating linked group for " + original.relic.relicId +
+            Log.info("[" + source + "] Creating linked group for " + original.relic.relicId +
                     " (tier: " + original.relic.tier + ") with " + totalChoices + " choices");
             createLinkedRelicGroup(rewards, original, totalChoices);
         }
+
+        return unlinkedRelics.size();
     }
 
 }

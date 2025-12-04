@@ -6,7 +6,6 @@ import basemod.ModPanel;
 import basemod.ModMinMaxSlider;
 import basemod.ModToggleButton;
 import basemod.interfaces.PostInitializeSubscriber;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.evacipated.cardcrawl.modthespire.lib.SpireConfig;
 import com.evacipated.cardcrawl.modthespire.lib.SpireInitializer;
@@ -224,15 +223,6 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
     }
 
     private Texture createBadgeTexture() {
-        // Create a simple 32x32 texture as a placeholder (standard mod badge size)
-        // In a real mod, you'd load an actual image file
-        com.badlogic.gdx.graphics.Pixmap pixmap = new com.badlogic.gdx.graphics.Pixmap(32, 32, com.badlogic.gdx.graphics.Pixmap.Format.RGBA8888);
-        pixmap.setColor(Color.GOLD);
-        pixmap.fill();
-        pixmap.setColor(Color.DARK_GRAY);
-        pixmap.drawRectangle(0, 0, 32, 32);
-        Texture texture = new Texture(pixmap);
-        pixmap.dispose();
-        return texture;
+        return new Texture("pickyrelics/badge.png");
     }
 }

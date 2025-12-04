@@ -103,5 +103,21 @@ else
     git clone --quiet git@github.com:C-W-Z/sts-orison-mod.git "$API_DIR/sts-orison-mod"
 fi
 
+if [ -d "$API_DIR/Loadout-Mod" ]; then
+    echo "  Updating Loadout-Mod..."
+    git -C "$API_DIR/Loadout-Mod" pull --quiet
+else
+    echo "  Cloning Loadout-Mod..."
+    git clone --quiet git@github.com:qw2341/Loadout-Mod.git "$API_DIR/Loadout-Mod"
+fi
+
+if [ -d "$API_DIR/RelicFilterPlus" ]; then
+    echo "  Updating RelicFilterPlus..."
+    git -C "$API_DIR/RelicFilterPlus" pull --quiet
+else
+    echo "  Cloning RelicFilterPlus..."
+    git clone --quiet git@github.com:JamesTripleQ/RelicFilterPlus.git "$API_DIR/RelicFilterPlus"
+fi
+
 echo ""
 echo "Done! API reference extracted to $API_DIR"

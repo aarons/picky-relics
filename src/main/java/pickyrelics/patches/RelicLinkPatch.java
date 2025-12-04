@@ -238,17 +238,13 @@ public class RelicLinkPatch {
     public static class ProcessLateRelicRewards {
         @SpirePostfixPatch
         public static void Postfix(CombatRewardScreen __instance) {
-            if (PickyRelicsMod.relicChoices <= 1) return;
-
-            // Quick check: any unlinked relics?
+            // Quick check: any unlinked relics that should have extra choices?
             boolean hasUnlinked = false;
             for (RewardItem r : __instance.rewards) {
                 if (r.type == RewardItem.RewardType.RELIC &&
                     RelicLinkFields.linkedRelics.get(r) == null) {
-                    // Check tier skip
-                    if (PickyRelicsMod.ignoreSpecialTier &&
-                        r.relic != null &&
-                        r.relic.tier == AbstractRelic.RelicTier.SPECIAL) {
+                    // Check if this tier should have extra choices
+                    if (r.relic != null && PickyRelicsMod.getChoicesForTier(r.relic.tier) <= 1) {
                         continue;
                     }
                     hasUnlinked = true;
@@ -281,12 +277,6 @@ public class RelicLinkPatch {
      * @return The number of relics that were processed (had linked groups created)
      */
     public static int processRelicRewards(ArrayList<RewardItem> rewards, String source) {
-        int totalChoices = PickyRelicsMod.relicChoices;
-
-        if (totalChoices <= 1) {
-            return 0; // No additional choices needed
-        }
-
         // Count total relics for logging
         int totalRelicRewards = 0;
         for (RewardItem r : rewards) {
@@ -302,11 +292,11 @@ public class RelicLinkPatch {
             if (r.type == RewardItem.RewardType.RELIC) {
                 ArrayList<RewardItem> existingGroup = RelicLinkFields.linkedRelics.get(r);
                 if (existingGroup == null) {
-                    // Check if this is SPECIAL tier and config says to skip
-                    if (PickyRelicsMod.ignoreSpecialTier &&
-                            r.relic != null &&
-                            r.relic.tier == AbstractRelic.RelicTier.SPECIAL) {
-                        Log.info("[" + source + "] Skipping SPECIAL tier relic: " + r.relic.relicId);
+                    // Get tier-specific choice count
+                    int tierChoices = PickyRelicsMod.getChoicesForTier(r.relic.tier);
+                    if (tierChoices <= 1) {
+                        Log.info("[" + source + "] Skipping " + r.relic.tier + " tier relic: " +
+                                r.relic.relicId + " (choices=1)");
                         continue;
                     }
                     unlinkedRelics.add(r);
@@ -320,9 +310,10 @@ public class RelicLinkPatch {
 
         // Create linked groups for each unlinked relic
         for (RewardItem original : unlinkedRelics) {
+            int tierChoices = PickyRelicsMod.getChoicesForTier(original.relic.tier);
             Log.info("[" + source + "] Creating linked group for " + original.relic.relicId +
-                    " (tier: " + original.relic.tier + ") with " + totalChoices + " choices");
-            createLinkedRelicGroup(rewards, original, totalChoices);
+                    " (tier: " + original.relic.tier + ") with " + tierChoices + " choices");
+            createLinkedRelicGroup(rewards, original, tierChoices);
         }
 
         return unlinkedRelics.size();

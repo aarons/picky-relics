@@ -4,13 +4,13 @@ import basemod.BaseMod;
 import basemod.ModLabel;
 import basemod.ModPanel;
 import basemod.ModMinMaxSlider;
-import basemod.ModToggleButton;
 import basemod.interfaces.PostInitializeSubscriber;
 import com.badlogic.gdx.graphics.Texture;
 import com.evacipated.cardcrawl.modthespire.lib.SpireConfig;
 import com.evacipated.cardcrawl.modthespire.lib.SpireInitializer;
 import com.megacrit.cardcrawl.core.Settings;
 import com.megacrit.cardcrawl.helpers.FontHelper;
+import com.megacrit.cardcrawl.relics.AbstractRelic;
 import pickyrelics.util.Log;
 
 import java.io.IOException;
@@ -24,16 +24,52 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
 
     // Config
     private static SpireConfig config;
-    private static final String CONFIG_RELIC_CHOICES = "relicChoices";
-    private static final String CONFIG_IGNORE_SPECIAL_TIER = "ignoreSpecialTier";
-    // Legacy keys for migration
-    private static final String CONFIG_COMBAT_CHOICES = "combatChoices";
-    private static final String CONFIG_CHEST_CHOICES = "chestChoices";
 
-    // Default: 2 total choices (1 = base game, 2-5 = mod choices)
-    public static int relicChoices = 2;
-    // Default: true - skip SPECIAL tier relics (improves mod compatibility)
-    public static boolean ignoreSpecialTier = true;
+    // Per-tier config keys
+    private static final String CONFIG_STARTER_CHOICES = "starterChoices";
+    private static final String CONFIG_COMMON_CHOICES = "commonChoices";
+    private static final String CONFIG_UNCOMMON_CHOICES = "uncommonChoices";
+    private static final String CONFIG_RARE_CHOICES = "rareChoices";
+    private static final String CONFIG_BOSS_CHOICES = "bossChoices";
+    private static final String CONFIG_SHOP_CHOICES = "shopChoices";
+    private static final String CONFIG_SPECIAL_CHOICES = "specialChoices";
+
+    // Per-tier choice counts (1-5, default 2)
+    // 1 = original game behavior (no extra choices)
+    // 2-5 = that many total options presented
+    public static int starterChoices = 2;
+    public static int commonChoices = 2;
+    public static int uncommonChoices = 2;
+    public static int rareChoices = 2;
+    public static int bossChoices = 2;
+    public static int shopChoices = 2;
+    public static int specialChoices = 2;
+
+    /**
+     * Get the configured choice count for a given relic tier.
+     * @param tier The relic tier
+     * @return Number of choices (1-5) for that tier
+     */
+    public static int getChoicesForTier(AbstractRelic.RelicTier tier) {
+        switch (tier) {
+            case STARTER:
+                return starterChoices;
+            case COMMON:
+                return commonChoices;
+            case UNCOMMON:
+                return uncommonChoices;
+            case RARE:
+                return rareChoices;
+            case BOSS:
+                return bossChoices;
+            case SHOP:
+                return shopChoices;
+            case SPECIAL:
+                return specialChoices;
+            default:
+                return 1; // DEPRECATED or unknown - no extra choices
+        }
+    }
 
     public PickyRelicsMod() {
         Log.info("Initializing " + MOD_NAME);
@@ -48,29 +84,27 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
     private void loadConfig() {
         try {
             Properties defaults = new Properties();
-            defaults.setProperty(CONFIG_RELIC_CHOICES, "2");
-            defaults.setProperty(CONFIG_IGNORE_SPECIAL_TIER, "true");
+            defaults.setProperty(CONFIG_STARTER_CHOICES, "2");
+            defaults.setProperty(CONFIG_COMMON_CHOICES, "2");
+            defaults.setProperty(CONFIG_UNCOMMON_CHOICES, "2");
+            defaults.setProperty(CONFIG_RARE_CHOICES, "2");
+            defaults.setProperty(CONFIG_BOSS_CHOICES, "2");
+            defaults.setProperty(CONFIG_SHOP_CHOICES, "2");
+            defaults.setProperty(CONFIG_SPECIAL_CHOICES, "2");
 
             config = new SpireConfig(MOD_ID, "config", defaults);
 
-            // Check for new key first, then migrate from legacy keys if needed
-            if (config.has(CONFIG_RELIC_CHOICES)) {
-                relicChoices = clamp(config.getInt(CONFIG_RELIC_CHOICES), 1, 5);
-            } else if (config.has(CONFIG_COMBAT_CHOICES) || config.has(CONFIG_CHEST_CHOICES)) {
-                // Migration: take the max of old values
-                int oldCombat = config.has(CONFIG_COMBAT_CHOICES) ? config.getInt(CONFIG_COMBAT_CHOICES) : 2;
-                int oldChest = config.has(CONFIG_CHEST_CHOICES) ? config.getInt(CONFIG_CHEST_CHOICES) : 2;
-                relicChoices = clamp(Math.max(oldCombat, oldChest), 1, 5);
-                Log.info("Migrated config from legacy keys: combatChoices=" + oldCombat +
-                        ", chestChoices=" + oldChest + " -> relicChoices=" + relicChoices);
-                // Save with new key
-                saveConfig();
-            }
+            starterChoices = clamp(config.getInt(CONFIG_STARTER_CHOICES), 1, 5);
+            commonChoices = clamp(config.getInt(CONFIG_COMMON_CHOICES), 1, 5);
+            uncommonChoices = clamp(config.getInt(CONFIG_UNCOMMON_CHOICES), 1, 5);
+            rareChoices = clamp(config.getInt(CONFIG_RARE_CHOICES), 1, 5);
+            bossChoices = clamp(config.getInt(CONFIG_BOSS_CHOICES), 1, 5);
+            shopChoices = clamp(config.getInt(CONFIG_SHOP_CHOICES), 1, 5);
+            specialChoices = clamp(config.getInt(CONFIG_SPECIAL_CHOICES), 1, 5);
 
-            ignoreSpecialTier = config.getBool(CONFIG_IGNORE_SPECIAL_TIER);
-
-            Log.info("Config loaded: relicChoices=" + relicChoices +
-                    ", ignoreSpecialTier=" + ignoreSpecialTier);
+            Log.info("Config loaded: starter=" + starterChoices + ", common=" + commonChoices +
+                    ", uncommon=" + uncommonChoices + ", rare=" + rareChoices +
+                    ", boss=" + bossChoices + ", shop=" + shopChoices + ", special=" + specialChoices);
         } catch (IOException e) {
             Log.error("Failed to load config", e);
         }
@@ -82,8 +116,13 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
 
     public static void saveConfig() {
         try {
-            config.setInt(CONFIG_RELIC_CHOICES, relicChoices);
-            config.setBool(CONFIG_IGNORE_SPECIAL_TIER, ignoreSpecialTier);
+            config.setInt(CONFIG_STARTER_CHOICES, starterChoices);
+            config.setInt(CONFIG_COMMON_CHOICES, commonChoices);
+            config.setInt(CONFIG_UNCOMMON_CHOICES, uncommonChoices);
+            config.setInt(CONFIG_RARE_CHOICES, rareChoices);
+            config.setInt(CONFIG_BOSS_CHOICES, bossChoices);
+            config.setInt(CONFIG_SHOP_CHOICES, shopChoices);
+            config.setInt(CONFIG_SPECIAL_CHOICES, specialChoices);
             config.save();
         } catch (IOException e) {
             Log.error("Failed to save config", e);
@@ -94,20 +133,18 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
     public void receivePostInitialize() {
         Log.info(MOD_NAME + " post-initialize");
 
-        // Create a simple colored texture for the mod badge
         Texture badgeTexture = createBadgeTexture();
-
-        // Create settings panel
         ModPanel settingsPanel = new ModPanel();
 
-        float yPos = 800.0f;
+        float yPos = 780.0f;
         float xPos = 380.0f;
-        float sliderX = xPos + 250.0f;
+        float sliderX = xPos + 180.0f;
         float sliderYOffset = 6.0f;
+        float rowHeight = 42.0f;
 
         // Title
         settingsPanel.addUIElement(new ModLabel(
-                "Picky Relics",
+                "Picky Relics - Choices Per Tier",
                 xPos, yPos,
                 Settings.CREAM_COLOR,
                 FontHelper.charDescFont,
@@ -115,23 +152,11 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
                 (label) -> {}
         ));
 
-        yPos -= 50.0f;
-
-        // Subtitle
-        settingsPanel.addUIElement(new ModLabel(
-                "When a relic is rewarded, how many options are provided?",
-                xPos, yPos,
-                Settings.CREAM_COLOR,
-                FontHelper.tipBodyFont,
-                settingsPanel,
-                (label) -> {}
-        ));
-
-        yPos -= 35.0f;
+        yPos -= 40.0f;
 
         // Hint text
         settingsPanel.addUIElement(new ModLabel(
-                "1 = original game behavior",
+                "1 = original game behavior (no extra choices)",
                 xPos, yPos,
                 Settings.GOLD_COLOR,
                 FontHelper.tipBodyFont,
@@ -141,72 +166,46 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
 
         yPos -= 50.0f;
 
-        // Relic Choices slider
+        // Starter tier slider
+        addSliderRow(settingsPanel, "Starter", xPos, sliderX, yPos, sliderYOffset, starterChoices,
+                (val) -> { starterChoices = val; saveConfig(); });
+        yPos -= rowHeight;
+
+        // Common tier slider
+        addSliderRow(settingsPanel, "Common", xPos, sliderX, yPos, sliderYOffset, commonChoices,
+                (val) -> { commonChoices = val; saveConfig(); });
+        yPos -= rowHeight;
+
+        // Uncommon tier slider
+        addSliderRow(settingsPanel, "Uncommon", xPos, sliderX, yPos, sliderYOffset, uncommonChoices,
+                (val) -> { uncommonChoices = val; saveConfig(); });
+        yPos -= rowHeight;
+
+        // Rare tier slider
+        addSliderRow(settingsPanel, "Rare", xPos, sliderX, yPos, sliderYOffset, rareChoices,
+                (val) -> { rareChoices = val; saveConfig(); });
+        yPos -= rowHeight;
+
+        // Boss tier slider
+        addSliderRow(settingsPanel, "Boss", xPos, sliderX, yPos, sliderYOffset, bossChoices,
+                (val) -> { bossChoices = val; saveConfig(); });
+        yPos -= rowHeight;
+
+        // Shop tier slider
+        addSliderRow(settingsPanel, "Shop", xPos, sliderX, yPos, sliderYOffset, shopChoices,
+                (val) -> { shopChoices = val; saveConfig(); });
+        yPos -= rowHeight;
+
+        // Special tier slider
+        addSliderRow(settingsPanel, "Special", xPos, sliderX, yPos, sliderYOffset, specialChoices,
+                (val) -> { specialChoices = val; saveConfig(); });
+        yPos -= rowHeight;
+
+        // Footer note
+        yPos -= 10.0f;
         settingsPanel.addUIElement(new ModLabel(
-                "Relic Choices",
+                "Special tier includes unique relics from events and mods",
                 xPos, yPos,
-                Settings.CREAM_COLOR,
-                FontHelper.tipHeaderFont,
-                settingsPanel,
-                (label) -> {}
-        ));
-
-        settingsPanel.addUIElement(new ModMinMaxSlider(
-                "",
-                sliderX, yPos + sliderYOffset,
-                1.0f, 5.0f, (float) relicChoices,
-                "%.0f",
-                settingsPanel,
-                (slider) -> {
-                    relicChoices = Math.round(slider.getValue());
-                    saveConfig();
-                }
-        ));
-
-        yPos -= 60.0f;
-
-        // Mod Compatibility section
-        settingsPanel.addUIElement(new ModLabel(
-                "Mod Compatibility",
-                xPos, yPos,
-                Settings.CREAM_COLOR,
-                FontHelper.charDescFont,
-                settingsPanel,
-                (label) -> {}
-        ));
-
-        yPos -= 50.0f;
-
-        float toggleX = xPos;
-        float toggleYOffset = -8.0f;
-        float labelXOffset = 40.0f;
-
-        // Ignore Special Tier checkbox
-        settingsPanel.addUIElement(new ModToggleButton(
-                toggleX, yPos + toggleYOffset,
-                ignoreSpecialTier,
-                false,
-                settingsPanel,
-                (button) -> {
-                    ignoreSpecialTier = button.enabled;
-                    saveConfig();
-                }
-        ));
-
-        settingsPanel.addUIElement(new ModLabel(
-                "Ignore Special tier relics",
-                xPos + labelXOffset, yPos,
-                Settings.CREAM_COLOR,
-                FontHelper.tipHeaderFont,
-                settingsPanel,
-                (label) -> {}
-        ));
-
-        yPos -= 25.0f;
-
-        settingsPanel.addUIElement(new ModLabel(
-                "Prevents adding choices for unique relics from other mods",
-                xPos + labelXOffset, yPos,
                 Settings.GOLD_COLOR,
                 FontHelper.tipBodyFont,
                 settingsPanel,
@@ -217,9 +216,31 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
                 badgeTexture,
                 MOD_NAME,
                 "Aaron",
-                "Choose from multiple relic options. Configurable choices (default: 2).",
+                "Choose from multiple relic options per tier. Configurable (default: 2).",
                 settingsPanel
         );
+    }
+
+    private void addSliderRow(ModPanel panel, String label, float labelX, float sliderX,
+                              float yPos, float sliderYOffset, int currentValue,
+                              java.util.function.IntConsumer onChange) {
+        panel.addUIElement(new ModLabel(
+                label,
+                labelX, yPos,
+                Settings.CREAM_COLOR,
+                FontHelper.tipHeaderFont,
+                panel,
+                (l) -> {}
+        ));
+
+        panel.addUIElement(new ModMinMaxSlider(
+                "",
+                sliderX, yPos + sliderYOffset,
+                1.0f, 5.0f, (float) currentValue,
+                "%.0f",
+                panel,
+                (slider) -> onChange.accept(Math.round(slider.getValue()))
+        ));
     }
 
     private Texture createBadgeTexture() {

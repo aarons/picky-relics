@@ -16,12 +16,16 @@ import pickyrelics.PickyRelicsMod;
 import pickyrelics.util.Log;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 /**
  * Patches to link relic rewards together so claiming one removes the others.
  * Follows the pattern used by Orison mod's RewardLinkPatch.
  */
 public class RelicLinkPatch {
+
+    // Random instance for tier change algorithm
+    private static final Random rng = new Random();
 
     /**
      * Add SpireFields to RewardItem to track linked relics and ownership.
@@ -66,6 +70,78 @@ public class RelicLinkPatch {
             case SPECIAL:  return Settings.PURPLE_COLOR;
             default:       return Settings.CREAM_COLOR;
         }
+    }
+
+    /**
+     * Get the next tier in the hierarchy based on direction.
+     * Standard tiers: Common → Uncommon → Rare → Boss
+     * Special tiers: Starter → Shop → Special
+     *
+     * @param currentTier The current tier
+     * @param isNegative True for moving down (negative change), false for moving up (positive change)
+     * @return The next tier, or the current tier if at the boundary
+     */
+    private static AbstractRelic.RelicTier getNextTier(AbstractRelic.RelicTier currentTier, boolean isNegative) {
+        switch (currentTier) {
+            case COMMON:
+                return isNegative ? currentTier : AbstractRelic.RelicTier.UNCOMMON; // Lowest in standard
+            case UNCOMMON:
+                return isNegative ? AbstractRelic.RelicTier.COMMON : AbstractRelic.RelicTier.RARE;
+            case RARE:
+                return isNegative ? AbstractRelic.RelicTier.UNCOMMON : AbstractRelic.RelicTier.BOSS;
+            case BOSS:
+                return isNegative ? AbstractRelic.RelicTier.RARE : currentTier; // Highest in standard
+            case STARTER:
+                return isNegative ? currentTier : AbstractRelic.RelicTier.SHOP; // Lowest in special
+            case SHOP:
+                return isNegative ? AbstractRelic.RelicTier.STARTER : AbstractRelic.RelicTier.SPECIAL;
+            case SPECIAL:
+                return isNegative ? AbstractRelic.RelicTier.SHOP : currentTier; // Highest in special
+            default:
+                return currentTier; // DEPRECATED or unknown - no changes
+        }
+    }
+
+    /**
+     * Apply tier change algorithm to a relic tier.
+     * Each additional relic rolls independently for tier changes.
+     *
+     * @param originalTier The original tier of the relic
+     * @param changePercentage The tier change percentage (-100 to +100)
+     * @return The potentially modified tier
+     */
+    private static AbstractRelic.RelicTier applyTierChangeAlgorithm(AbstractRelic.RelicTier originalTier, int changePercentage) {
+        if (changePercentage == 0) {
+            return originalTier; // No change requested
+        }
+
+        boolean isNegative = changePercentage < 0;
+        int changeChance = Math.abs(changePercentage);
+        
+        AbstractRelic.RelicTier currentTier = originalTier;
+        int changesApplied = 0;
+
+        // Continue rolling until we fail or hit the tier boundary
+        while (true) {
+            if (rng.nextInt(100) >= changeChance) {
+                break; // Roll failed - stop changing tiers
+            }
+
+            AbstractRelic.RelicTier newTier = getNextTier(currentTier, isNegative);
+            if (newTier == currentTier) {
+                break; // Hit tier boundary - can't change further in this direction
+            }
+
+            currentTier = newTier;
+            changesApplied++;
+        }
+
+        if (changesApplied > 0) {
+            Log.info("Tier change: " + originalTier + " → " + currentTier + " (" + changesApplied + " steps, " +
+                    (isNegative ? "negative" : "positive") + " " + changeChance + "% chance)");
+        }
+
+        return currentTier;
     }
 
     /**
@@ -122,7 +198,9 @@ public class RelicLinkPatch {
         AbstractRelic.RelicTier tier = original.relic.tier;
 
         for (int i = 1; i < numChoices; i++) {
-            AbstractRelic additionalRelic = AbstractDungeon.returnRandomRelic(tier);
+            // Apply tier change algorithm to additional relics only (not the original)
+            AbstractRelic.RelicTier modifiedTier = applyTierChangeAlgorithm(tier, PickyRelicsMod.tierChangePercentage);
+            AbstractRelic additionalRelic = AbstractDungeon.returnRandomRelic(modifiedTier);
 
             // Skip Circlet - it's a placeholder relic when no relics of the tier are available
             if ("Circlet".equals(additionalRelic.relicId)) {

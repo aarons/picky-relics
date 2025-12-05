@@ -76,13 +76,23 @@ public class RelicLinkPatch {
         if (tierText.isEmpty()) return;
 
         Color tierColor = getTierColor(reward.relic.tier);
+        // Reduce brightness by 10% for subtler appearance
+        Color dimmedColor = tierColor.cpy();
+        dimmedColor.r *= 0.9F;
+        dimmedColor.g *= 0.9F;
+        dimmedColor.b *= 0.9F;
 
         // Position at right edge of the reward hitbox (with small margin)
-        float x = reward.hb.x + reward.hb.width - 20.0F * Settings.scale;
+        float x = reward.hb.x + reward.hb.width - 15.0F * Settings.scale;
         float y = reward.hb.y + 18.0F * Settings.scale + FontHelper.tipBodyFont.getLineHeight() * 0.2F;
 
-        // Use right-aligned rendering so all tier labels align on their right edge
-        FontHelper.renderFontRightAligned(sb, FontHelper.tipBodyFont, tierText, x, y, tierColor);
+        // Calculate text width for right-aligned rendering
+        FontHelper.layout.setText(FontHelper.tipBodyFont, tierText);
+        float textX = x - FontHelper.layout.width;
+
+        // Render text without shadow
+        FontHelper.tipBodyFont.setColor(dimmedColor);
+        FontHelper.tipBodyFont.draw(sb, tierText, textX, y);
     }
 
     /**

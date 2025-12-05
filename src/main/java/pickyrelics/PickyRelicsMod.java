@@ -2,6 +2,7 @@ package pickyrelics;
 
 import basemod.BaseMod;
 import basemod.ModLabel;
+import basemod.ModLabeledToggleButton;
 import basemod.ModPanel;
 import basemod.ModMinMaxSlider;
 import basemod.interfaces.PostInitializeSubscriber;
@@ -25,7 +26,8 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
     // Config
     private static SpireConfig config;
 
-    // Per-tier config keys
+    // Config keys
+    private static final String CONFIG_SHOW_TIER_LABELS = "showTierLabels";
     private static final String CONFIG_STARTER_CHOICES = "starterChoices";
     private static final String CONFIG_COMMON_CHOICES = "commonChoices";
     private static final String CONFIG_UNCOMMON_CHOICES = "uncommonChoices";
@@ -33,6 +35,9 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
     private static final String CONFIG_BOSS_CHOICES = "bossChoices";
     private static final String CONFIG_SHOP_CHOICES = "shopChoices";
     private static final String CONFIG_SPECIAL_CHOICES = "specialChoices";
+
+    // Display settings
+    public static boolean showTierLabels = true;
 
     // Per-tier choice counts (1-5, default 2)
     // 1 = original game behavior (no extra choices)
@@ -84,6 +89,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
     private void loadConfig() {
         try {
             Properties defaults = new Properties();
+            defaults.setProperty(CONFIG_SHOW_TIER_LABELS, "true");
             defaults.setProperty(CONFIG_STARTER_CHOICES, "2");
             defaults.setProperty(CONFIG_COMMON_CHOICES, "2");
             defaults.setProperty(CONFIG_UNCOMMON_CHOICES, "2");
@@ -94,6 +100,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
 
             config = new SpireConfig(MOD_ID, "config", defaults);
 
+            showTierLabels = config.getBool(CONFIG_SHOW_TIER_LABELS);
             starterChoices = clamp(config.getInt(CONFIG_STARTER_CHOICES), 1, 5);
             commonChoices = clamp(config.getInt(CONFIG_COMMON_CHOICES), 1, 5);
             uncommonChoices = clamp(config.getInt(CONFIG_UNCOMMON_CHOICES), 1, 5);
@@ -102,7 +109,8 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
             shopChoices = clamp(config.getInt(CONFIG_SHOP_CHOICES), 1, 5);
             specialChoices = clamp(config.getInt(CONFIG_SPECIAL_CHOICES), 1, 5);
 
-            Log.info("Config loaded: starter=" + starterChoices + ", common=" + commonChoices +
+            Log.info("Config loaded: showTierLabels=" + showTierLabels +
+                    ", starter=" + starterChoices + ", common=" + commonChoices +
                     ", uncommon=" + uncommonChoices + ", rare=" + rareChoices +
                     ", boss=" + bossChoices + ", shop=" + shopChoices + ", special=" + specialChoices);
         } catch (IOException e) {
@@ -116,6 +124,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
 
     public static void saveConfig() {
         try {
+            config.setBool(CONFIG_SHOW_TIER_LABELS, showTierLabels);
             config.setInt(CONFIG_STARTER_CHOICES, starterChoices);
             config.setInt(CONFIG_COMMON_CHOICES, commonChoices);
             config.setInt(CONFIG_UNCOMMON_CHOICES, uncommonChoices);
@@ -196,20 +205,33 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
                 (val) -> { shopChoices = val; saveConfig(); });
         yPos -= rowHeight;
 
-        // Special tier slider
-        addSliderRow(settingsPanel, "Special", xPos, sliderX, yPos, sliderYOffset, specialChoices,
+        // Event tier slider (Special tier in game code)
+        addSliderRow(settingsPanel, "Event", xPos, sliderX, yPos, sliderYOffset, specialChoices,
                 (val) -> { specialChoices = val; saveConfig(); });
         yPos -= rowHeight;
 
         // Footer note
         yPos -= 10.0f;
         settingsPanel.addUIElement(new ModLabel(
-                "Special tier includes unique relics from events and mods",
+                "Event tier includes unique relics from events and mods",
                 xPos, yPos,
                 Settings.GOLD_COLOR,
                 FontHelper.tipBodyFont,
                 settingsPanel,
                 (label) -> {}
+        ));
+
+        // Show tier labels checkbox
+        yPos -= 50.0f;
+        settingsPanel.addUIElement(new ModLabeledToggleButton(
+                "Show relic tier labels on reward screen",
+                xPos, yPos,
+                Settings.CREAM_COLOR,
+                FontHelper.tipHeaderFont,
+                showTierLabels,
+                settingsPanel,
+                (label) -> {},
+                (toggle) -> { showTierLabels = toggle.enabled; saveConfig(); }
         ));
 
         BaseMod.registerModBadge(

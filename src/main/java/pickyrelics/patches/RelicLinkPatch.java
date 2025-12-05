@@ -47,7 +47,7 @@ public class RelicLinkPatch {
             case RARE:     return "Rare";
             case BOSS:     return "Boss";
             case SHOP:     return "Shop";
-            case SPECIAL:  return "Special";
+            case SPECIAL:  return "Event";
             default:       return "";
         }
     }
@@ -72,6 +72,8 @@ public class RelicLinkPatch {
      * Render tier label in bottom-right corner of reward item.
      */
     private static void renderTierLabel(RewardItem reward, SpriteBatch sb) {
+        if (!PickyRelicsMod.showTierLabels) return;
+
         String tierText = getTierDisplayText(reward.relic.tier);
         if (tierText.isEmpty()) return;
 

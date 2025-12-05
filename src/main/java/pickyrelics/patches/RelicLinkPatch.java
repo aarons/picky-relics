@@ -79,7 +79,7 @@ public class RelicLinkPatch {
 
         // Position in bottom-right corner of the reward hitbox
         float x = reward.hb.x + reward.hb.width - 80.0F * Settings.scale;
-        float y = reward.hb.y + 18.0F * Settings.scale;
+        float y = reward.hb.y + 18.0F * Settings.scale + FontHelper.tipBodyFont.getLineHeight() * 0.2F;
 
         FontHelper.renderFont(sb, FontHelper.tipBodyFont, tierText, x, y, tierColor);
     }

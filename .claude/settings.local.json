@@ -9,7 +9,8 @@
       "Bash(unzip:*)",
       "Bash(./scripts/extract-api-reference.sh:*)",
       "Bash(find:*)",
-      "Bash(javap:*)"
+      "Bash(javap:*)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []

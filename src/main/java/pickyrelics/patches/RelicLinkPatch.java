@@ -69,6 +69,58 @@ public class RelicLinkPatch {
     }
 
     /**
+     * Calculate a potentially modified tier for additional relic choices.
+     * Uses the tier change chance setting to probabilistically shift tiers.
+     * Only affects Common, Uncommon, Rare tiers. Others are unchanged.
+     *
+     * Algorithm: Roll against |tierChangeChance| repeatedly.
+     * Each success moves one tier in the direction indicated by the sign.
+     * Stops when roll fails or boundary reached.
+     *
+     * @param originalTier The original tier of the relic reward
+     * @return The (potentially modified) tier to use for selection
+     */
+    private static AbstractRelic.RelicTier calculateModifiedTier(AbstractRelic.RelicTier originalTier) {
+        int chance = PickyRelicsMod.tierChangeChance;
+        if (chance == 0) return originalTier;
+
+        // Only modify Common, Uncommon, Rare
+        if (originalTier != AbstractRelic.RelicTier.COMMON &&
+            originalTier != AbstractRelic.RelicTier.UNCOMMON &&
+            originalTier != AbstractRelic.RelicTier.RARE) {
+            return originalTier;
+        }
+
+        // Convert tier to numeric for manipulation
+        // Common=0, Uncommon=1, Rare=2
+        int tierIndex;
+        switch (originalTier) {
+            case COMMON: tierIndex = 0; break;
+            case UNCOMMON: tierIndex = 1; break;
+            case RARE: tierIndex = 2; break;
+            default: return originalTier;
+        }
+
+        int direction = chance > 0 ? 1 : -1;  // +1 = toward Rare, -1 = toward Common
+        float absChance = Math.abs(chance) / 100.0f;
+
+        // Roll repeatedly until failure or boundary
+        while (AbstractDungeon.relicRng.randomBoolean(absChance)) {
+            tierIndex += direction;
+            if (tierIndex <= 0 || tierIndex >= 2) break;  // Hit boundary
+        }
+
+        // Clamp and convert back to tier
+        tierIndex = Math.max(0, Math.min(2, tierIndex));
+        switch (tierIndex) {
+            case 0: return AbstractRelic.RelicTier.COMMON;
+            case 1: return AbstractRelic.RelicTier.UNCOMMON;
+            case 2: return AbstractRelic.RelicTier.RARE;
+            default: return originalTier;
+        }
+    }
+
+    /**
      * Render tier label in bottom-right corner of reward item.
      */
     private static void renderTierLabel(RewardItem reward, SpriteBatch sb) {
@@ -122,7 +174,11 @@ public class RelicLinkPatch {
         AbstractRelic.RelicTier tier = original.relic.tier;
 
         for (int i = 1; i < numChoices; i++) {
-            AbstractRelic additionalRelic = AbstractDungeon.returnRandomRelic(tier);
+            AbstractRelic.RelicTier tierToUse = calculateModifiedTier(tier);
+            if (tierToUse != tier) {
+                Log.info("Picky Relics: Tier changed from " + tier + " to " + tierToUse);
+            }
+            AbstractRelic additionalRelic = AbstractDungeon.returnRandomRelic(tierToUse);
 
             // Skip Circlet - it's a placeholder relic when no relics of the tier are available
             if ("Circlet".equals(additionalRelic.relicId)) {

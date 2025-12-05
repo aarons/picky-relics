@@ -1,6 +1,7 @@
 package pickyrelics;
 
 import basemod.BaseMod;
+import basemod.IUIElement;
 import basemod.ModLabel;
 import basemod.ModLabeledToggleButton;
 import basemod.ModPanel;
@@ -12,6 +13,8 @@ import com.evacipated.cardcrawl.modthespire.lib.SpireInitializer;
 import com.megacrit.cardcrawl.core.Settings;
 import com.megacrit.cardcrawl.helpers.FontHelper;
 import com.megacrit.cardcrawl.relics.AbstractRelic;
+import pickyrelics.ui.PagedElement;
+import pickyrelics.ui.TabButton;
 import pickyrelics.util.Log;
 
 import java.io.IOException;
@@ -35,6 +38,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
     private static final String CONFIG_BOSS_CHOICES = "bossChoices";
     private static final String CONFIG_SHOP_CHOICES = "shopChoices";
     private static final String CONFIG_SPECIAL_CHOICES = "specialChoices";
+    private static final String CONFIG_TIER_CHANGE_CHANCE = "tierChangeChance";
 
     // Display settings
     public static boolean showTierLabels = true;
@@ -49,6 +53,23 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
     public static int bossChoices = 2;
     public static int shopChoices = 2;
     public static int specialChoices = 2;
+
+    // Tier change chance: -100 to +100
+    // Negative = trend toward Common, Positive = trend toward Rare
+    public static int tierChangeChance = 0;
+
+    // UI page tracking
+    private static final int PAGE_CHOICES = 0;
+    private static final int PAGE_ALGORITHMS = 1;
+    private static int currentPage = PAGE_CHOICES;
+
+    public static int getCurrentPage() {
+        return currentPage;
+    }
+
+    public static void setCurrentPage(int page) {
+        currentPage = page;
+    }
 
     /**
      * Get the configured choice count for a given relic tier.
@@ -97,6 +118,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
             defaults.setProperty(CONFIG_BOSS_CHOICES, "2");
             defaults.setProperty(CONFIG_SHOP_CHOICES, "2");
             defaults.setProperty(CONFIG_SPECIAL_CHOICES, "2");
+            defaults.setProperty(CONFIG_TIER_CHANGE_CHANCE, "0");
 
             config = new SpireConfig(MOD_ID, "config", defaults);
 
@@ -108,11 +130,13 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
             bossChoices = clamp(config.getInt(CONFIG_BOSS_CHOICES), 1, 5);
             shopChoices = clamp(config.getInt(CONFIG_SHOP_CHOICES), 1, 5);
             specialChoices = clamp(config.getInt(CONFIG_SPECIAL_CHOICES), 1, 5);
+            tierChangeChance = clamp(config.getInt(CONFIG_TIER_CHANGE_CHANCE), -100, 100);
 
             Log.info("Config loaded: showTierLabels=" + showTierLabels +
                     ", starter=" + starterChoices + ", common=" + commonChoices +
                     ", uncommon=" + uncommonChoices + ", rare=" + rareChoices +
-                    ", boss=" + bossChoices + ", shop=" + shopChoices + ", special=" + specialChoices);
+                    ", boss=" + bossChoices + ", shop=" + shopChoices + ", special=" + specialChoices +
+                    ", tierChangeChance=" + tierChangeChance);
         } catch (IOException e) {
             Log.error("Failed to load config", e);
         }
@@ -132,6 +156,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
             config.setInt(CONFIG_BOSS_CHOICES, bossChoices);
             config.setInt(CONFIG_SHOP_CHOICES, shopChoices);
             config.setInt(CONFIG_SPECIAL_CHOICES, specialChoices);
+            config.setInt(CONFIG_TIER_CHANGE_CHANCE, tierChangeChance);
             config.save();
         } catch (IOException e) {
             Log.error("Failed to save config", e);
@@ -145,15 +170,26 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
         Texture badgeTexture = createBadgeTexture();
         ModPanel settingsPanel = new ModPanel();
 
-        float yPos = 780.0f;
         float xPos = 380.0f;
         float sliderX = xPos + 180.0f;
         float sliderYOffset = 6.0f;
         float rowHeight = 42.0f;
 
+        // Tab buttons at the top
+        float tabY = 780.0f;
+        settingsPanel.addUIElement(new TabButton("Choices", PAGE_CHOICES, xPos, tabY,
+                PickyRelicsMod::getCurrentPage, PickyRelicsMod::setCurrentPage));
+        settingsPanel.addUIElement(new TabButton("Algorithms", PAGE_ALGORITHMS, xPos + 180.0f, tabY,
+                PickyRelicsMod::getCurrentPage, PickyRelicsMod::setCurrentPage));
+
+        float contentY = tabY - 60.0f;
+
+        // ===== PAGE 0: Choices Per Tier =====
+        float yPos = contentY;
+
         // Title
-        settingsPanel.addUIElement(new ModLabel(
-                "Picky Relics - Choices Per Tier",
+        addPagedElement(settingsPanel, PAGE_CHOICES, new ModLabel(
+                "Choices Per Tier",
                 xPos, yPos,
                 Settings.CREAM_COLOR,
                 FontHelper.charDescFont,
@@ -164,7 +200,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
         yPos -= 40.0f;
 
         // Hint text
-        settingsPanel.addUIElement(new ModLabel(
+        addPagedElement(settingsPanel, PAGE_CHOICES, new ModLabel(
                 "1 = original game behavior (no extra choices)",
                 xPos, yPos,
                 Settings.GOLD_COLOR,
@@ -176,43 +212,43 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
         yPos -= 50.0f;
 
         // Starter tier slider
-        addSliderRow(settingsPanel, "Starter", xPos, sliderX, yPos, sliderYOffset, starterChoices,
+        addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Starter", xPos, sliderX, yPos, sliderYOffset, starterChoices,
                 (val) -> { starterChoices = val; saveConfig(); });
         yPos -= rowHeight;
 
         // Common tier slider
-        addSliderRow(settingsPanel, "Common", xPos, sliderX, yPos, sliderYOffset, commonChoices,
+        addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Common", xPos, sliderX, yPos, sliderYOffset, commonChoices,
                 (val) -> { commonChoices = val; saveConfig(); });
         yPos -= rowHeight;
 
         // Uncommon tier slider
-        addSliderRow(settingsPanel, "Uncommon", xPos, sliderX, yPos, sliderYOffset, uncommonChoices,
+        addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Uncommon", xPos, sliderX, yPos, sliderYOffset, uncommonChoices,
                 (val) -> { uncommonChoices = val; saveConfig(); });
         yPos -= rowHeight;
 
         // Rare tier slider
-        addSliderRow(settingsPanel, "Rare", xPos, sliderX, yPos, sliderYOffset, rareChoices,
+        addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Rare", xPos, sliderX, yPos, sliderYOffset, rareChoices,
                 (val) -> { rareChoices = val; saveConfig(); });
         yPos -= rowHeight;
 
         // Boss tier slider
-        addSliderRow(settingsPanel, "Boss", xPos, sliderX, yPos, sliderYOffset, bossChoices,
+        addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Boss", xPos, sliderX, yPos, sliderYOffset, bossChoices,
                 (val) -> { bossChoices = val; saveConfig(); });
         yPos -= rowHeight;
 
         // Shop tier slider
-        addSliderRow(settingsPanel, "Shop", xPos, sliderX, yPos, sliderYOffset, shopChoices,
+        addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Shop", xPos, sliderX, yPos, sliderYOffset, shopChoices,
                 (val) -> { shopChoices = val; saveConfig(); });
         yPos -= rowHeight;
 
         // Event tier slider (Special tier in game code)
-        addSliderRow(settingsPanel, "Event", xPos, sliderX, yPos, sliderYOffset, specialChoices,
+        addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Event", xPos, sliderX, yPos, sliderYOffset, specialChoices,
                 (val) -> { specialChoices = val; saveConfig(); });
         yPos -= rowHeight;
 
         // Footer note
         yPos -= 10.0f;
-        settingsPanel.addUIElement(new ModLabel(
+        addPagedElement(settingsPanel, PAGE_CHOICES, new ModLabel(
                 "Event tier includes unique relics from events and mods",
                 xPos, yPos,
                 Settings.GOLD_COLOR,
@@ -223,7 +259,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
 
         // Show tier labels checkbox
         yPos -= 50.0f;
-        settingsPanel.addUIElement(new ModLabeledToggleButton(
+        addPagedElement(settingsPanel, PAGE_CHOICES, new ModLabeledToggleButton(
                 "Show relic tier labels on reward screen",
                 xPos, yPos,
                 Settings.CREAM_COLOR,
@@ -232,6 +268,72 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
                 settingsPanel,
                 (label) -> {},
                 (toggle) -> { showTierLabels = toggle.enabled; saveConfig(); }
+        ));
+
+        // ===== PAGE 1: Algorithms =====
+        yPos = contentY;
+
+        // Title
+        addPagedElement(settingsPanel, PAGE_ALGORITHMS, new ModLabel(
+                "Algorithms",
+                xPos, yPos,
+                Settings.CREAM_COLOR,
+                FontHelper.charDescFont,
+                settingsPanel,
+                (label) -> {}
+        ));
+
+        yPos -= 40.0f;
+
+        // Hint text
+        addPagedElement(settingsPanel, PAGE_ALGORITHMS, new ModLabel(
+                "Modifies additional choices only (not the original)",
+                xPos, yPos,
+                Settings.GOLD_COLOR,
+                FontHelper.tipBodyFont,
+                settingsPanel,
+                (label) -> {}
+        ));
+
+        yPos -= 50.0f;
+
+        // Tier change chance slider
+        addPagedSliderRow(settingsPanel, PAGE_ALGORITHMS, "Tier change chance", xPos, sliderX + 60.0f, yPos, sliderYOffset,
+                tierChangeChance, -100.0f, 100.0f, "%+.0f%%",
+                (val) -> { tierChangeChance = val; saveConfig(); });
+
+        yPos -= rowHeight;
+
+        // Explanation text
+        addPagedElement(settingsPanel, PAGE_ALGORITHMS, new ModLabel(
+                "-100% = always lowest tier (Common)",
+                xPos, yPos,
+                Settings.GOLD_COLOR,
+                FontHelper.tipBodyFont,
+                settingsPanel,
+                (label) -> {}
+        ));
+
+        yPos -= 25.0f;
+
+        addPagedElement(settingsPanel, PAGE_ALGORITHMS, new ModLabel(
+                "+100% = always highest tier (Rare)",
+                xPos, yPos,
+                Settings.GOLD_COLOR,
+                FontHelper.tipBodyFont,
+                settingsPanel,
+                (label) -> {}
+        ));
+
+        yPos -= 25.0f;
+
+        addPagedElement(settingsPanel, PAGE_ALGORITHMS, new ModLabel(
+                "Affects Common/Uncommon/Rare tiers only",
+                xPos, yPos,
+                Settings.GOLD_COLOR,
+                FontHelper.tipBodyFont,
+                settingsPanel,
+                (label) -> {}
         ));
 
         BaseMod.registerModBadge(
@@ -243,10 +345,22 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
         );
     }
 
-    private void addSliderRow(ModPanel panel, String label, float labelX, float sliderX,
-                              float yPos, float sliderYOffset, int currentValue,
-                              java.util.function.IntConsumer onChange) {
-        panel.addUIElement(new ModLabel(
+    private void addPagedElement(ModPanel panel, int page, IUIElement element) {
+        panel.addUIElement(new PagedElement(element, page, PickyRelicsMod::getCurrentPage));
+    }
+
+    private void addPagedSliderRow(ModPanel panel, int page, String label, float labelX, float sliderX,
+                                   float yPos, float sliderYOffset, int currentValue,
+                                   java.util.function.IntConsumer onChange) {
+        addPagedSliderRow(panel, page, label, labelX, sliderX, yPos, sliderYOffset,
+                currentValue, 1.0f, 5.0f, "%.0f", onChange);
+    }
+
+    private void addPagedSliderRow(ModPanel panel, int page, String label, float labelX, float sliderX,
+                                   float yPos, float sliderYOffset, int currentValue,
+                                   float min, float max, String format,
+                                   java.util.function.IntConsumer onChange) {
+        addPagedElement(panel, page, new ModLabel(
                 label,
                 labelX, yPos,
                 Settings.CREAM_COLOR,
@@ -255,11 +369,11 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
                 (l) -> {}
         ));
 
-        panel.addUIElement(new ModMinMaxSlider(
+        addPagedElement(panel, page, new ModMinMaxSlider(
                 "",
                 sliderX, yPos + sliderYOffset,
-                1.0f, 5.0f, (float) currentValue,
-                "%.0f",
+                min, max, (float) currentValue,
+                format,
                 panel,
                 (slider) -> onChange.accept(Math.round(slider.getValue()))
         ));

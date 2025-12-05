@@ -1,11 +1,12 @@
 package pickyrelics.patches;
 
 import basemod.ReflectionHacks;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.evacipated.cardcrawl.modthespire.lib.*;
 import com.megacrit.cardcrawl.core.Settings;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
-import com.megacrit.cardcrawl.helpers.PowerTip;
+import com.megacrit.cardcrawl.helpers.FontHelper;
 import com.megacrit.cardcrawl.helpers.TipHelper;
 import com.megacrit.cardcrawl.helpers.input.InputHelper;
 import com.megacrit.cardcrawl.relics.AbstractRelic;
@@ -36,41 +37,51 @@ public class RelicLinkPatch {
     }
 
     /**
-     * Add SpireField to AbstractRelic to track if tier info has been injected.
+     * Get display text for a relic tier.
      */
-    @SpirePatch(clz = AbstractRelic.class, method = SpirePatch.CLASS)
-    public static class TierInfoFields {
-        public static SpireField<Boolean> tierInfoInjected = new SpireField<>(() -> false);
-    }
-
-    /**
-     * Get a formatted tier string for display in tooltips.
-     * Uses STS color codes for visual distinction.
-     */
-    private static String getRelicTierString(AbstractRelic.RelicTier tier) {
+    private static String getTierDisplayText(AbstractRelic.RelicTier tier) {
         switch (tier) {
-            case STARTER:  return "#pStarter #pRelic NL ";
-            case COMMON:   return "#gCommon #gRelic NL ";
-            case UNCOMMON: return "#bUncommon #bRelic NL ";
-            case RARE:     return "#yRare #yRelic NL ";
-            case BOSS:     return "#rBoss #rRelic NL ";
-            case SHOP:     return "#yShop #yRelic NL ";
-            case SPECIAL:  return "#pSpecial #pRelic NL ";
+            case STARTER:  return "Starter";
+            case COMMON:   return "Common";
+            case UNCOMMON: return "Uncommon";
+            case RARE:     return "Rare";
+            case BOSS:     return "Boss";
+            case SHOP:     return "Shop";
+            case SPECIAL:  return "Special";
             default:       return "";
         }
     }
 
     /**
-     * Inject tier information into a relic's tooltip.
-     * Modifies the first PowerTip's body to prepend the tier string.
+     * Get color for a relic tier.
      */
-    private static void injectTierInfo(AbstractRelic relic) {
-        if (relic == null || relic.tips == null || relic.tips.isEmpty()) return;
-        if (TierInfoFields.tierInfoInjected.get(relic)) return;
+    private static Color getTierColor(AbstractRelic.RelicTier tier) {
+        switch (tier) {
+            case STARTER:  return Settings.PURPLE_COLOR;
+            case COMMON:   return Settings.GREEN_TEXT_COLOR;
+            case UNCOMMON: return Settings.BLUE_TEXT_COLOR;
+            case RARE:     return Settings.GOLD_COLOR;
+            case BOSS:     return Settings.RED_TEXT_COLOR;
+            case SHOP:     return Settings.GOLD_COLOR;
+            case SPECIAL:  return Settings.PURPLE_COLOR;
+            default:       return Settings.CREAM_COLOR;
+        }
+    }
 
-        PowerTip mainTip = relic.tips.get(0);
-        mainTip.body = getRelicTierString(relic.tier) + mainTip.body;
-        TierInfoFields.tierInfoInjected.set(relic, true);
+    /**
+     * Render tier label in bottom-right corner of reward item.
+     */
+    private static void renderTierLabel(RewardItem reward, SpriteBatch sb) {
+        String tierText = getTierDisplayText(reward.relic.tier);
+        if (tierText.isEmpty()) return;
+
+        Color tierColor = getTierColor(reward.relic.tier);
+
+        // Position in bottom-right corner of the reward hitbox
+        float x = reward.hb.x + reward.hb.width - 80.0F * Settings.scale;
+        float y = reward.hb.y + 18.0F * Settings.scale;
+
+        FontHelper.renderFont(sb, FontHelper.tipBodyFont, tierText, x, y, tierColor);
     }
 
     /**
@@ -225,7 +236,7 @@ public class RelicLinkPatch {
     }
 
     /**
-     * Render the chain icon and tooltip for linked relic rewards.
+     * Render tier label and chain icon for relic rewards.
      */
     @SpirePatch2(clz = RewardItem.class, method = "render")
     public static class RenderLinkPatch {
@@ -233,6 +244,12 @@ public class RelicLinkPatch {
         public static void Postfix(RewardItem __instance, SpriteBatch sb) {
             if (__instance.type != RewardItem.RewardType.RELIC) return;
 
+            // Render tier label for all relic rewards
+            if (__instance.relic != null) {
+                renderTierLabel(__instance, sb);
+            }
+
+            // Render chain icon and tooltip for linked groups
             ArrayList<RewardItem> linked = RelicLinkFields.linkedRelics.get(__instance);
             if (linked == null || linked.size() < 2) return;
 
@@ -329,9 +346,6 @@ public class RelicLinkPatch {
         ArrayList<RewardItem> unlinkedRelics = new ArrayList<>();
         for (RewardItem r : rewards) {
             if (r.type == RewardItem.RewardType.RELIC && r.relic != null) {
-                // Inject tier info into tooltip for all relic rewards
-                injectTierInfo(r.relic);
-
                 ArrayList<RewardItem> existingGroup = RelicLinkFields.linkedRelics.get(r);
                 if (existingGroup == null) {
                     // Get tier-specific choice count

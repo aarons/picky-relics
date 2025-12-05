@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.evacipated.cardcrawl.modthespire.lib.*;
 import com.megacrit.cardcrawl.core.Settings;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
+import com.megacrit.cardcrawl.helpers.PowerTip;
 import com.megacrit.cardcrawl.helpers.TipHelper;
 import com.megacrit.cardcrawl.helpers.input.InputHelper;
 import com.megacrit.cardcrawl.relics.AbstractRelic;
@@ -32,6 +33,44 @@ public class RelicLinkPatch {
         public static SpireField<Boolean> addedByPickyRelics = new SpireField<>(() -> false);
         // The original relicLink that existed before we modified the chain (e.g., Sapphire Key)
         public static SpireField<RewardItem> originalRelicLink = new SpireField<>(() -> null);
+    }
+
+    /**
+     * Add SpireField to AbstractRelic to track if tier info has been injected.
+     */
+    @SpirePatch(clz = AbstractRelic.class, method = SpirePatch.CLASS)
+    public static class TierInfoFields {
+        public static SpireField<Boolean> tierInfoInjected = new SpireField<>(() -> false);
+    }
+
+    /**
+     * Get a formatted tier string for display in tooltips.
+     * Uses STS color codes for visual distinction.
+     */
+    private static String getRelicTierString(AbstractRelic.RelicTier tier) {
+        switch (tier) {
+            case STARTER:  return "#pStarter #pRelic NL ";
+            case COMMON:   return "#gCommon #gRelic NL ";
+            case UNCOMMON: return "#bUncommon #bRelic NL ";
+            case RARE:     return "#yRare #yRelic NL ";
+            case BOSS:     return "#rBoss #rRelic NL ";
+            case SHOP:     return "#yShop #yRelic NL ";
+            case SPECIAL:  return "#pSpecial #pRelic NL ";
+            default:       return "";
+        }
+    }
+
+    /**
+     * Inject tier information into a relic's tooltip.
+     * Modifies the first PowerTip's body to prepend the tier string.
+     */
+    private static void injectTierInfo(AbstractRelic relic) {
+        if (relic == null || relic.tips == null || relic.tips.isEmpty()) return;
+        if (TierInfoFields.tierInfoInjected.get(relic)) return;
+
+        PowerTip mainTip = relic.tips.get(0);
+        mainTip.body = getRelicTierString(relic.tier) + mainTip.body;
+        TierInfoFields.tierInfoInjected.set(relic, true);
     }
 
     /**
@@ -289,7 +328,10 @@ public class RelicLinkPatch {
         // Find all relic rewards that don't already have linked groups
         ArrayList<RewardItem> unlinkedRelics = new ArrayList<>();
         for (RewardItem r : rewards) {
-            if (r.type == RewardItem.RewardType.RELIC) {
+            if (r.type == RewardItem.RewardType.RELIC && r.relic != null) {
+                // Inject tier info into tooltip for all relic rewards
+                injectTierInfo(r.relic);
+
                 ArrayList<RewardItem> existingGroup = RelicLinkFields.linkedRelics.get(r);
                 if (existingGroup == null) {
                     // Get tier-specific choice count

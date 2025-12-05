@@ -196,24 +196,24 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
         yPos -= rowHeight;
 
         // Boss tier slider
-        addSliderRow(settingsPanel, "Boss", xPos, sliderX, yPos, sliderYOffset, bossChoices,
+        addSliderRow(settingsPanel, "Boss^", xPos, sliderX, yPos, sliderYOffset, bossChoices,
                 (val) -> { bossChoices = val; saveConfig(); });
         yPos -= rowHeight;
 
         // Shop tier slider
-        addSliderRow(settingsPanel, "Shop", xPos, sliderX, yPos, sliderYOffset, shopChoices,
+        addSliderRow(settingsPanel, "Shop^", xPos, sliderX, yPos, sliderYOffset, shopChoices,
                 (val) -> { shopChoices = val; saveConfig(); });
         yPos -= rowHeight;
 
         // Event tier slider (Special tier in game code)
-        addSliderRow(settingsPanel, "Event", xPos, sliderX, yPos, sliderYOffset, specialChoices,
+        addSliderRow(settingsPanel, "Event^", xPos, sliderX, yPos, sliderYOffset, specialChoices,
                 (val) -> { specialChoices = val; saveConfig(); });
         yPos -= rowHeight;
 
         // Footer note
         yPos -= 10.0f;
         settingsPanel.addUIElement(new ModLabel(
-                "Event tier includes unique relics from events and mods",
+                "^Boss, Shop, and Event choices are only shown when those relics appear in combat or chest rewards.",
                 xPos, yPos,
                 Settings.GOLD_COLOR,
                 FontHelper.tipBodyFont,
@@ -249,7 +249,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
         panel.addUIElement(new ModLabel(
                 label,
                 labelX, yPos,
-                Settings.CREAM_COLOR,
+                label.contains("Boss^") || label.contains("Shop^") || label.contains("Event^") ? Settings.GOLD_COLOR : Settings.CREAM_COLOR,
                 FontHelper.tipHeaderFont,
                 panel,
                 (l) -> {}

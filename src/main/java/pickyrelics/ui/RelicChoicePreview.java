@@ -23,14 +23,15 @@ public class RelicChoicePreview implements IUIElement {
     private final Supplier<Integer> countSupplier;
 
     private static final float ROW_HEIGHT = 50.0f;
-    private static final float CHAIN_ICON_SIZE = 48.0f;
-    private static final float ICON_SIZE = 48.0f;
+    private static final float CHAIN_ICON_SIZE = 64.0f;
+    private static final float ICON_SIZE = 64.0f;
     private static final float PANEL_WIDTH = 300.0f;
     private static final float PANEL_HEIGHT = 48.0f;
     private static final float BACKGROUND_PADDING = 40.0f;  // Wider padding for background
-    private static final float BANNER_WIDTH = 440.0f;       // 35% larger banner
-    private static final float BANNER_HEIGHT = 100.0f;       // 40% larger banner
+    private static final float BANNER_WIDTH = 506.0f;
+    private static final float BANNER_HEIGHT = 130.0f;
     private static final Color BACKGROUND_TINT = new Color(0.55f, 0.55f, 0.65f, 1.0f);  // Lighter tint
+    private static final Color SILHOUETTE_COLOR = new Color(0.3f, 0.3f, 0.35f, 1.0f);  // Dark gray for relic silhouette
 
     private static Texture circletTexture;
     private static Texture chainTexture;
@@ -86,7 +87,7 @@ public class RelicChoicePreview implements IUIElement {
         }
 
         // Preview title - "Loot Preview" centered on banner (moved up)
-        float previewYOffset = 20.0f * Settings.scale;
+        float previewYOffset = 28.0f * Settings.scale; // was 30.0f
         FontHelper.renderFontCentered(sb, FontHelper.tipHeaderFont,
                 "Loot Preview",
                 scaledX + panelW / 2.0f, startY + previewYOffset,
@@ -120,7 +121,7 @@ public class RelicChoicePreview implements IUIElement {
             float silhouetteX = scaledX + 40.0f * Settings.scale;
             float silhouetteY = currentY;
 
-            renderSilhouette(sb, silhouetteX, silhouetteY, tierColor);
+            renderSilhouette(sb, silhouetteX, silhouetteY);
 
             // Tier label
             float labelX = scaledX + 65.0f * Settings.scale;
@@ -160,15 +161,15 @@ public class RelicChoicePreview implements IUIElement {
                 size, size);
     }
 
-    private void renderSilhouette(SpriteBatch sb, float x, float y, Color tierColor) {
+    private void renderSilhouette(SpriteBatch sb, float x, float y) {
         // Lazy-load Circlet texture (meta-joke: Circlet is the game's "no relics left" placeholder)
         if (circletTexture == null) {
             circletTexture = new Circlet().img;
         }
 
-        // Draw scaled-down Circlet icon with tier color tint
+        // Draw Circlet icon with dark gray tint
         float size = ICON_SIZE * Settings.scale;
-        sb.setColor(tierColor);
+        sb.setColor(SILHOUETTE_COLOR);
         sb.draw(circletTexture,
                 x - size / 2,
                 y - size / 2,

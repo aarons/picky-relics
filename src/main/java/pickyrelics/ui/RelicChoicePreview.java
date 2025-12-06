@@ -185,7 +185,7 @@ public class RelicChoicePreview implements IUIElement {
 
     /**
      * Render tier label in bottom-right corner of panel.
-     * Matches the in-game styling from RelicLinkPatch.
+     * Uses cardDescFont_N for cleaner rendering without heavy drop shadows.
      */
     private void renderTierLabel(SpriteBatch sb, float panelX, float centerY,
                                  float panelW, String tierText, Color tierColor) {
@@ -196,24 +196,24 @@ public class RelicChoicePreview implements IUIElement {
         dimmed.b *= 0.9f;
 
         // Scale font to 80%
-        float originalScaleX = FontHelper.tipBodyFont.getData().scaleX;
-        float originalScaleY = FontHelper.tipBodyFont.getData().scaleY;
-        FontHelper.tipBodyFont.getData().setScale(originalScaleX * 0.8f, originalScaleY * 0.8f);
+        float originalScaleX = FontHelper.cardDescFont_N.getData().scaleX;
+        float originalScaleY = FontHelper.cardDescFont_N.getData().scaleY;
+        FontHelper.cardDescFont_N.getData().setScale(originalScaleX * 0.8f, originalScaleY * 0.8f);
 
         // Position at right edge with margin, raised by 40% of line height
         float x = panelX + panelW - 15.0f * Settings.scale;
-        float lineHeight = FontHelper.tipBodyFont.getLineHeight();
+        float lineHeight = FontHelper.cardDescFont_N.getLineHeight();
         float y = centerY - 12.0f * Settings.scale + lineHeight * 0.4f;
 
         // Right-align text (measure with scaled font)
-        FontHelper.layout.setText(FontHelper.tipBodyFont, tierText);
+        FontHelper.layout.setText(FontHelper.cardDescFont_N, tierText);
         float textX = x - FontHelper.layout.width;
 
-        FontHelper.tipBodyFont.setColor(dimmed);
-        FontHelper.tipBodyFont.draw(sb, tierText, textX, y);
+        FontHelper.cardDescFont_N.setColor(dimmed);
+        FontHelper.cardDescFont_N.draw(sb, tierText, textX, y);
 
         // Restore original scale
-        FontHelper.tipBodyFont.getData().setScale(originalScaleX, originalScaleY);
+        FontHelper.cardDescFont_N.getData().setScale(originalScaleX, originalScaleY);
     }
 
     @Override

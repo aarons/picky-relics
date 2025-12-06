@@ -189,11 +189,11 @@ public class RelicChoicePreview implements IUIElement {
      */
     private void renderTierLabel(SpriteBatch sb, float panelX, float centerY,
                                  float panelW, String tierText, Color tierColor) {
-        // Reduce brightness by 10% for subtler appearance
+        // Darken significantly for legibility on light background
         Color dimmed = tierColor.cpy();
-        dimmed.r *= 0.9f;
-        dimmed.g *= 0.9f;
-        dimmed.b *= 0.9f;
+        dimmed.r *= 0.35f;
+        dimmed.g *= 0.35f;
+        dimmed.b *= 0.35f;
 
         // Scale font to 80%
         float originalScaleX = FontHelper.cardDescFont_N.getData().scaleX;

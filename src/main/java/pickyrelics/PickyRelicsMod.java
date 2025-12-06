@@ -211,7 +211,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
         yPos -= 50.0f;
 
         // Starter tier slider
-        addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Starter", xPos, sliderX, yPos, sliderYOffset, starterChoices,
+        addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Starter*", xPos, sliderX, yPos, sliderYOffset, starterChoices,
                 (val) -> { starterChoices = val; saveConfig(); });
         yPos -= rowHeight;
 
@@ -230,25 +230,25 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
                 (val) -> { rareChoices = val; saveConfig(); });
         yPos -= rowHeight;
 
-        // Boss tier slider
-        addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Boss", xPos, sliderX, yPos, sliderYOffset, bossChoices,
-                (val) -> { bossChoices = val; saveConfig(); });
-        yPos -= rowHeight;
-
         // Shop tier slider
-        addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Shop", xPos, sliderX, yPos, sliderYOffset, shopChoices,
+        addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Shop*", xPos, sliderX, yPos, sliderYOffset, shopChoices,
                 (val) -> { shopChoices = val; saveConfig(); });
         yPos -= rowHeight;
 
         // Event tier slider (Special tier in game code)
-        addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Event", xPos, sliderX, yPos, sliderYOffset, specialChoices,
+        addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Event*", xPos, sliderX, yPos, sliderYOffset, specialChoices,
                 (val) -> { specialChoices = val; saveConfig(); });
+        yPos -= rowHeight;
+
+        // Boss tier slider
+        addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Boss*", xPos, sliderX, yPos, sliderYOffset, bossChoices,
+                (val) -> { bossChoices = val; saveConfig(); });
         yPos -= rowHeight;
 
         // Footer note
         yPos -= 10.0f;
         addPagedElement(settingsPanel, PAGE_CHOICES, new ModLabel(
-                "Event tier includes unique relics from events and mods",
+                "*Starter, Shop, Event, and Boss settings only apply when these relics appear in combat or chest rewards.",
                 xPos, yPos,
                 Settings.GOLD_COLOR,
                 FontHelper.tipBodyFont,

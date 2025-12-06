@@ -16,6 +16,7 @@ import com.megacrit.cardcrawl.helpers.RelicLibrary;
 import com.megacrit.cardcrawl.relics.AbstractRelic;
 import pickyrelics.ui.PagedElement;
 import pickyrelics.ui.PageNavigator;
+import pickyrelics.ui.RelicChoicePreview;
 import pickyrelics.util.Log;
 
 import java.io.IOException;
@@ -64,12 +65,29 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
     private static final int PAGE_ALGORITHMS = 1;
     private static int currentPage = PAGE_CHOICES;
 
+    // Preview state tracking
+    private static AbstractRelic.RelicTier previewTier = AbstractRelic.RelicTier.COMMON;
+    private static int previewChoiceCount = 2;
+
     public static int getCurrentPage() {
         return currentPage;
     }
 
     public static void setCurrentPage(int page) {
         currentPage = page;
+    }
+
+    public static AbstractRelic.RelicTier getPreviewTier() {
+        return previewTier;
+    }
+
+    public static int getPreviewChoiceCount() {
+        return previewChoiceCount;
+    }
+
+    private static void updatePreview(AbstractRelic.RelicTier tier, int count) {
+        previewTier = tier;
+        previewChoiceCount = count;
     }
 
     /**
@@ -187,21 +205,9 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
         // ===== PAGE 0: Choices Per Tier =====
         float yPos = contentY;
 
-        // Title
+        // Explanation
         addPagedElement(settingsPanel, PAGE_CHOICES, new ModLabel(
-                "Select the number of options for relics that appear in combat and chest rewards",
-                xPos, yPos,
-                Settings.CREAM_COLOR,
-                FontHelper.charDescFont,
-                settingsPanel,
-                (label) -> {}
-        ));
-
-        yPos -= 40.0f;
-
-        // Hint text
-        addPagedElement(settingsPanel, PAGE_CHOICES, new ModLabel(
-                "Set a value of 1 for the original game behavior.",
+                "How many choices appear for relics in combat and chest rewards",
                 xPos, yPos,
                 Settings.GOLD_COLOR,
                 FontHelper.tipBodyFont,
@@ -209,52 +215,72 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
                 (label) -> {}
         ));
 
-        yPos -= 50.0f;
+        yPos -= 40.0f;
 
         // Starter tier slider
         addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Starter (" + RelicLibrary.starterList.size() + ")",
                 xPos, sliderX, yPos, sliderYOffset, starterChoices,
-                (val) -> { starterChoices = val; saveConfig(); });
+                (val) -> { starterChoices = val; saveConfig(); updatePreview(AbstractRelic.RelicTier.STARTER, val); });
         yPos -= rowHeight;
 
         // Common tier slider
         addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Common (" + RelicLibrary.commonList.size() + ")",
                 xPos, sliderX, yPos, sliderYOffset, commonChoices,
-                (val) -> { commonChoices = val; saveConfig(); });
+                (val) -> { commonChoices = val; saveConfig(); updatePreview(AbstractRelic.RelicTier.COMMON, val); });
         yPos -= rowHeight;
 
         // Uncommon tier slider
         addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Uncommon (" + RelicLibrary.uncommonList.size() + ")",
                 xPos, sliderX, yPos, sliderYOffset, uncommonChoices,
-                (val) -> { uncommonChoices = val; saveConfig(); });
+                (val) -> { uncommonChoices = val; saveConfig(); updatePreview(AbstractRelic.RelicTier.UNCOMMON, val); });
         yPos -= rowHeight;
 
         // Rare tier slider
         addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Rare (" + RelicLibrary.rareList.size() + ")",
                 xPos, sliderX, yPos, sliderYOffset, rareChoices,
-                (val) -> { rareChoices = val; saveConfig(); });
+                (val) -> { rareChoices = val; saveConfig(); updatePreview(AbstractRelic.RelicTier.RARE, val); });
         yPos -= rowHeight;
 
         // Shop tier slider
         addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Shop (" + RelicLibrary.shopList.size() + ")",
                 xPos, sliderX, yPos, sliderYOffset, shopChoices,
-                (val) -> { shopChoices = val; saveConfig(); });
+                (val) -> { shopChoices = val; saveConfig(); updatePreview(AbstractRelic.RelicTier.SHOP, val); });
         yPos -= rowHeight;
 
         // Event tier slider (Special tier in game code)
         addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Event (" + RelicLibrary.specialList.size() + ")",
                 xPos, sliderX, yPos, sliderYOffset, specialChoices,
-                (val) -> { specialChoices = val; saveConfig(); });
+                (val) -> { specialChoices = val; saveConfig(); updatePreview(AbstractRelic.RelicTier.SPECIAL, val); });
         yPos -= rowHeight;
 
         // Boss tier slider
         addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Boss (" + RelicLibrary.bossList.size() + ")",
                 xPos, sliderX, yPos, sliderYOffset, bossChoices,
-                (val) -> { bossChoices = val; saveConfig(); });
+                (val) -> { bossChoices = val; saveConfig(); updatePreview(AbstractRelic.RelicTier.BOSS, val); });
         yPos -= rowHeight;
 
+        // Visual preview on right side
+        float previewX = 920.0f;
+        float previewY = contentY - 30.0f;
+        addPagedElement(settingsPanel, PAGE_CHOICES, new RelicChoicePreview(
+                previewX, previewY,
+                PickyRelicsMod::getPreviewTier,
+                PickyRelicsMod::getPreviewChoiceCount
+        ));
+
+        // Hint text
+        yPos -= 10.0f;
+        addPagedElement(settingsPanel, PAGE_CHOICES, new ModLabel(
+                "A value of 1 has the same behavior as the base game.",
+                xPos, yPos,
+                Settings.GOLD_COLOR,
+                FontHelper.tipBodyFont,
+                settingsPanel,
+                (label) -> {}
+        ));
+
         // Show tier labels checkbox
-        yPos -= 20.0f;
+        yPos -= 30.0f;
         addPagedElement(settingsPanel, PAGE_CHOICES, new ModLabeledToggleButton(
                 "Show relic tier labels on reward screen",
                 xPos, yPos,

@@ -10,7 +10,8 @@
       "Bash(./scripts/extract-api-reference.sh:*)",
       "Bash(find:*)",
       "Bash(javap:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(magick:*)"
     ],
     "deny": [],
     "ask": []

@@ -260,7 +260,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
         yPos -= rowHeight;
 
         // Visual preview on right side
-        float previewX = 920.0f;
+        float previewX = 1020.0f;
         float previewY = contentY - 30.0f;
         addPagedElement(settingsPanel, PAGE_CHOICES, new RelicChoicePreview(
                 previewX, previewY,

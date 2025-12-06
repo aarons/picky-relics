@@ -20,7 +20,11 @@ import pickyrelics.ui.RelicChoicePreview;
 import pickyrelics.util.Log;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
+import java.util.Random;
 
 @SpireInitializer
 public class PickyRelicsMod implements PostInitializeSubscriber {
@@ -68,6 +72,9 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
     // Preview state tracking
     private static AbstractRelic.RelicTier previewTier = AbstractRelic.RelicTier.COMMON;
     private static int previewChoiceCount = 2;
+    private static List<AbstractRelic> previewRelics = new ArrayList<>();
+    private static final Random previewRandom = new Random();
+    private static final int MAX_PREVIEW_NAME_LENGTH = 12;
 
     public static int getCurrentPage() {
         return currentPage;
@@ -85,9 +92,62 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
         return previewChoiceCount;
     }
 
+    public static List<AbstractRelic> getPreviewRelics() {
+        return previewRelics;
+    }
+
     private static void updatePreview(AbstractRelic.RelicTier tier, int count) {
+        boolean tierChanged = !tier.equals(previewTier);
+        boolean countChanged = count != previewChoiceCount;
+
         previewTier = tier;
         previewChoiceCount = count;
+
+        // Only regenerate relics when tier or count actually changes
+        if (tierChanged || countChanged) {
+            previewRelics = selectRandomRelics(tier, count);
+        }
+    }
+
+    private static ArrayList<AbstractRelic> getRelicListForTier(AbstractRelic.RelicTier tier) {
+        switch (tier) {
+            case STARTER:  return RelicLibrary.starterList;
+            case COMMON:   return RelicLibrary.commonList;
+            case UNCOMMON: return RelicLibrary.uncommonList;
+            case RARE:     return RelicLibrary.rareList;
+            case SHOP:     return RelicLibrary.shopList;
+            case SPECIAL:  return RelicLibrary.specialList;
+            case BOSS:     return RelicLibrary.bossList;
+            default:       return new ArrayList<>();
+        }
+    }
+
+    private static List<AbstractRelic> selectRandomRelics(AbstractRelic.RelicTier tier, int count) {
+        ArrayList<AbstractRelic> pool = getRelicListForTier(tier);
+        if (pool.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // Filter to relics with short names for preview display
+        List<AbstractRelic> filtered = new ArrayList<>();
+        for (AbstractRelic relic : pool) {
+            if (relic.name.length() <= MAX_PREVIEW_NAME_LENGTH) {
+                filtered.add(relic);
+            }
+        }
+
+        // Fall back to unfiltered if no short names available
+        if (filtered.isEmpty()) {
+            filtered = new ArrayList<>(pool);
+        }
+
+        Collections.shuffle(filtered, previewRandom);
+
+        List<AbstractRelic> result = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            result.add(filtered.get(i % filtered.size()));
+        }
+        return result;
     }
 
     /**
@@ -265,7 +325,8 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
         addPagedElement(settingsPanel, PAGE_CHOICES, new RelicChoicePreview(
                 previewX, previewY,
                 PickyRelicsMod::getPreviewTier,
-                PickyRelicsMod::getPreviewChoiceCount
+                PickyRelicsMod::getPreviewChoiceCount,
+                PickyRelicsMod::getPreviewRelics
         ));
 
         // Show tier labels checkbox

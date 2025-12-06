@@ -8,9 +8,9 @@ import com.megacrit.cardcrawl.core.Settings;
 import com.megacrit.cardcrawl.helpers.FontHelper;
 import com.megacrit.cardcrawl.helpers.ImageMaster;
 import com.megacrit.cardcrawl.relics.AbstractRelic;
-import com.megacrit.cardcrawl.relics.Circlet;
 import pickyrelics.PickyRelicsMod;
 
+import java.util.List;
 import java.util.function.Supplier;
 
 /**
@@ -22,6 +22,7 @@ public class RelicChoicePreview implements IUIElement {
     private final float y;
     private final Supplier<AbstractRelic.RelicTier> tierSupplier;
     private final Supplier<Integer> countSupplier;
+    private final Supplier<List<AbstractRelic>> relicsSupplier;
 
     private static final float ROW_HEIGHT = 50.0f;
     private static final float CHAIN_ICON_SIZE = 64.0f;
@@ -34,17 +35,18 @@ public class RelicChoicePreview implements IUIElement {
     private static final Color BACKGROUND_TINT = new Color(0.55f, 0.55f, 0.65f, 1.0f);  // Lighter tint
     private static final Color SILHOUETTE_COLOR = new Color(0.3f, 0.3f, 0.35f, 1.0f);  // Dark gray for relic silhouette
 
-    private static Texture circletTexture;
     private static Texture chainTexture;
     private static Texture bannerTexture;
 
     public RelicChoicePreview(float x, float y,
                               Supplier<AbstractRelic.RelicTier> tierSupplier,
-                              Supplier<Integer> countSupplier) {
+                              Supplier<Integer> countSupplier,
+                              Supplier<List<AbstractRelic>> relicsSupplier) {
         this.x = x;
         this.y = y;
         this.tierSupplier = tierSupplier;
         this.countSupplier = countSupplier;
+        this.relicsSupplier = relicsSupplier;
     }
 
     @Override
@@ -103,6 +105,9 @@ public class RelicChoicePreview implements IUIElement {
         // Calculate center X for chain icons (centered with panel)
         float panelCenterX = scaledX + panelW / 2.0f;
 
+        // Get preview relics
+        List<AbstractRelic> relics = relicsSupplier.get();
+
         // Render each choice
         for (int i = 0; i < count; i++) {
             // Draw panel background
@@ -118,19 +123,25 @@ public class RelicChoicePreview implements IUIElement {
                 renderChain(sb, panelCenterX, chainY);
             }
 
-            // Relic silhouette
-            float silhouetteX = scaledX + 40.0f * Settings.scale;
-            float silhouetteY = currentY;
-
-            renderSilhouette(sb, silhouetteX, silhouetteY);
-
-            // Relic name (displayed as "Circlet" placeholder)
+            // Relic icon and name
+            float iconX = scaledX + 40.0f * Settings.scale;
+            float iconY = currentY;
             float labelX = scaledX + 65.0f * Settings.scale;
             float labelY = currentY + 8.0f * Settings.scale;
 
-            FontHelper.renderFontLeftTopAligned(sb, FontHelper.tipBodyFont,
-                    "Circlet",
-                    labelX, labelY, Settings.CREAM_COLOR);
+            if (i < relics.size()) {
+                AbstractRelic relic = relics.get(i);
+                renderRelicIcon(sb, relic, iconX, iconY);
+                FontHelper.renderFontLeftTopAligned(sb, FontHelper.tipBodyFont,
+                        relic.name,
+                        labelX, labelY, Settings.CREAM_COLOR);
+            } else {
+                // Fallback: render silhouette if no relic available
+                renderSilhouette(sb, iconX, iconY);
+                FontHelper.renderFontLeftTopAligned(sb, FontHelper.tipBodyFont,
+                        "???",
+                        labelX, labelY, Settings.CREAM_COLOR);
+            }
 
             // Tier label in bottom-right (when enabled)
             if (PickyRelicsMod.showTierLabels) {
@@ -167,16 +178,26 @@ public class RelicChoicePreview implements IUIElement {
                 size, size);
     }
 
-    private void renderSilhouette(SpriteBatch sb, float x, float y) {
-        // Lazy-load Circlet texture (meta-joke: Circlet is the game's "no relics left" placeholder)
-        if (circletTexture == null) {
-            circletTexture = new Circlet().img;
-        }
+    /**
+     * Render the actual relic icon at full color.
+     */
+    private void renderRelicIcon(SpriteBatch sb, AbstractRelic relic, float x, float y) {
+        float size = ICON_SIZE * Settings.scale;
+        sb.setColor(Color.WHITE);
+        sb.draw(relic.img,
+                x - size / 2,
+                y - size / 2,
+                size, size);
+    }
 
-        // Draw Circlet icon with dark gray tint
+    /**
+     * Render a placeholder silhouette when no relic is available.
+     */
+    private void renderSilhouette(SpriteBatch sb, float x, float y) {
+        // Draw a simple gray circle as placeholder
         float size = ICON_SIZE * Settings.scale;
         sb.setColor(SILHOUETTE_COLOR);
-        sb.draw(circletTexture,
+        sb.draw(ImageMaster.WHITE_RING,
                 x - size / 2,
                 y - size / 2,
                 size, size);

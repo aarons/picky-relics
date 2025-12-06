@@ -12,6 +12,7 @@ import com.evacipated.cardcrawl.modthespire.lib.SpireConfig;
 import com.evacipated.cardcrawl.modthespire.lib.SpireInitializer;
 import com.megacrit.cardcrawl.core.Settings;
 import com.megacrit.cardcrawl.helpers.FontHelper;
+import com.megacrit.cardcrawl.helpers.RelicLibrary;
 import com.megacrit.cardcrawl.relics.AbstractRelic;
 import pickyrelics.ui.PagedElement;
 import pickyrelics.ui.PageNavigator;
@@ -171,7 +172,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
         ModPanel settingsPanel = new ModPanel();
 
         float xPos = 380.0f;
-        float sliderX = xPos + 180.0f;
+        float sliderX = xPos + 220.0f;
         float sliderYOffset = 6.0f;
         float rowHeight = 42.0f;
 
@@ -188,7 +189,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
 
         // Title
         addPagedElement(settingsPanel, PAGE_CHOICES, new ModLabel(
-                "Select the number of options to have for each type of relic",
+                "Select the number of options for relics that appear in combat and chest rewards",
                 xPos, yPos,
                 Settings.CREAM_COLOR,
                 FontHelper.charDescFont,
@@ -211,53 +212,49 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
         yPos -= 50.0f;
 
         // Starter tier slider
-        addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Starter*", xPos, sliderX, yPos, sliderYOffset, starterChoices,
+        addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Starter (" + RelicLibrary.starterList.size() + ")",
+                xPos, sliderX, yPos, sliderYOffset, starterChoices,
                 (val) -> { starterChoices = val; saveConfig(); });
         yPos -= rowHeight;
 
         // Common tier slider
-        addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Common", xPos, sliderX, yPos, sliderYOffset, commonChoices,
+        addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Common (" + RelicLibrary.commonList.size() + ")",
+                xPos, sliderX, yPos, sliderYOffset, commonChoices,
                 (val) -> { commonChoices = val; saveConfig(); });
         yPos -= rowHeight;
 
         // Uncommon tier slider
-        addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Uncommon", xPos, sliderX, yPos, sliderYOffset, uncommonChoices,
+        addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Uncommon (" + RelicLibrary.uncommonList.size() + ")",
+                xPos, sliderX, yPos, sliderYOffset, uncommonChoices,
                 (val) -> { uncommonChoices = val; saveConfig(); });
         yPos -= rowHeight;
 
         // Rare tier slider
-        addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Rare", xPos, sliderX, yPos, sliderYOffset, rareChoices,
+        addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Rare (" + RelicLibrary.rareList.size() + ")",
+                xPos, sliderX, yPos, sliderYOffset, rareChoices,
                 (val) -> { rareChoices = val; saveConfig(); });
         yPos -= rowHeight;
 
         // Shop tier slider
-        addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Shop*", xPos, sliderX, yPos, sliderYOffset, shopChoices,
+        addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Shop (" + RelicLibrary.shopList.size() + ")",
+                xPos, sliderX, yPos, sliderYOffset, shopChoices,
                 (val) -> { shopChoices = val; saveConfig(); });
         yPos -= rowHeight;
 
         // Event tier slider (Special tier in game code)
-        addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Event*", xPos, sliderX, yPos, sliderYOffset, specialChoices,
+        addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Event (" + RelicLibrary.specialList.size() + ")",
+                xPos, sliderX, yPos, sliderYOffset, specialChoices,
                 (val) -> { specialChoices = val; saveConfig(); });
         yPos -= rowHeight;
 
         // Boss tier slider
-        addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Boss*", xPos, sliderX, yPos, sliderYOffset, bossChoices,
+        addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Boss (" + RelicLibrary.bossList.size() + ")",
+                xPos, sliderX, yPos, sliderYOffset, bossChoices,
                 (val) -> { bossChoices = val; saveConfig(); });
         yPos -= rowHeight;
 
-        // Footer note
-        yPos -= 10.0f;
-        addPagedElement(settingsPanel, PAGE_CHOICES, new ModLabel(
-                "*Starter, Shop, Event, and Boss settings only apply when these relics appear in combat or chest rewards.",
-                xPos, yPos,
-                Settings.GOLD_COLOR,
-                FontHelper.tipBodyFont,
-                settingsPanel,
-                (label) -> {}
-        ));
-
         // Show tier labels checkbox
-        yPos -= 50.0f;
+        yPos -= 20.0f;
         addPagedElement(settingsPanel, PAGE_CHOICES, new ModLabeledToggleButton(
                 "Show relic tier labels on reward screen",
                 xPos, yPos,

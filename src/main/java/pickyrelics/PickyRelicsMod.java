@@ -207,7 +207,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
 
         // Explanation
         addPagedElement(settingsPanel, PAGE_CHOICES, new ModLabel(
-                "How many choices appear for relics in combat and chest rewards",
+                "How many choices appear in combat and chest rewards",
                 xPos, yPos,
                 Settings.GOLD_COLOR,
                 FontHelper.tipBodyFont,
@@ -266,17 +266,6 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
                 previewX, previewY,
                 PickyRelicsMod::getPreviewTier,
                 PickyRelicsMod::getPreviewChoiceCount
-        ));
-
-        // Hint text
-        yPos -= 10.0f;
-        addPagedElement(settingsPanel, PAGE_CHOICES, new ModLabel(
-                "A value of 1 has the same behavior as the base game.",
-                xPos, yPos,
-                Settings.GOLD_COLOR,
-                FontHelper.tipBodyFont,
-                settingsPanel,
-                (label) -> {}
         ));
 
         // Show tier labels checkbox

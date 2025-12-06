@@ -14,7 +14,7 @@ import com.megacrit.cardcrawl.core.Settings;
 import com.megacrit.cardcrawl.helpers.FontHelper;
 import com.megacrit.cardcrawl.relics.AbstractRelic;
 import pickyrelics.ui.PagedElement;
-import pickyrelics.ui.TabButton;
+import pickyrelics.ui.PageNavigator;
 import pickyrelics.util.Log;
 
 import java.io.IOException;
@@ -175,14 +175,13 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
         float sliderYOffset = 6.0f;
         float rowHeight = 42.0f;
 
-        // Tab buttons at the top
-        float tabY = 780.0f;
-        settingsPanel.addUIElement(new TabButton("Choices", PAGE_CHOICES, xPos, tabY,
-                PickyRelicsMod::getCurrentPage, PickyRelicsMod::setCurrentPage));
-        settingsPanel.addUIElement(new TabButton("Algorithms", PAGE_ALGORITHMS, xPos + 180.0f, tabY,
+        // Page navigator at the top (centered)
+        float navY = 820.0f;
+        float navCenterX = 640.0f;
+        settingsPanel.addUIElement(new PageNavigator(2, navCenterX, navY,
                 PickyRelicsMod::getCurrentPage, PickyRelicsMod::setCurrentPage));
 
-        float contentY = tabY - 60.0f;
+        float contentY = navY - 60.0f;
 
         // ===== PAGE 0: Choices Per Tier =====
         float yPos = contentY;

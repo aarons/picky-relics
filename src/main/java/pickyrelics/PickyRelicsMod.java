@@ -188,7 +188,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
 
         // Title
         addPagedElement(settingsPanel, PAGE_CHOICES, new ModLabel(
-                "Choices Per Tier",
+                "Select the number of options to have for each type of relic",
                 xPos, yPos,
                 Settings.CREAM_COLOR,
                 FontHelper.charDescFont,
@@ -200,7 +200,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
 
         // Hint text
         addPagedElement(settingsPanel, PAGE_CHOICES, new ModLabel(
-                "1 = original game behavior (no extra choices)",
+                "Set a value of 1 for the original game behavior.",
                 xPos, yPos,
                 Settings.GOLD_COLOR,
                 FontHelper.tipBodyFont,

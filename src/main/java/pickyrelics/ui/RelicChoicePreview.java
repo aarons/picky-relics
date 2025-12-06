@@ -9,6 +9,7 @@ import com.megacrit.cardcrawl.helpers.FontHelper;
 import com.megacrit.cardcrawl.helpers.ImageMaster;
 import com.megacrit.cardcrawl.relics.AbstractRelic;
 import com.megacrit.cardcrawl.relics.Circlet;
+import pickyrelics.PickyRelicsMod;
 
 import java.util.function.Supplier;
 
@@ -97,7 +98,7 @@ public class RelicChoicePreview implements IUIElement {
 
         // Get tier info for labels
         String tierName = getTierDisplayText(tier);
-        Color tierColor = getDimmedTierColor(tier);
+        Color tierColor = getTierColor(tier);
 
         // Calculate center X for chain icons (centered with panel)
         float panelCenterX = scaledX + panelW / 2.0f;
@@ -123,13 +124,18 @@ public class RelicChoicePreview implements IUIElement {
 
             renderSilhouette(sb, silhouetteX, silhouetteY);
 
-            // Tier label
+            // Relic name (displayed as "Circlet" placeholder)
             float labelX = scaledX + 65.0f * Settings.scale;
             float labelY = currentY + 8.0f * Settings.scale;
 
             FontHelper.renderFontLeftTopAligned(sb, FontHelper.tipBodyFont,
-                    tierName + " Relic",
-                    labelX, labelY, tierColor);
+                    "Circlet",
+                    labelX, labelY, Settings.CREAM_COLOR);
+
+            // Tier label in bottom-right (when enabled)
+            if (PickyRelicsMod.showTierLabels) {
+                renderTierLabel(sb, scaledX, currentY, panelW, tierName, tierColor);
+            }
 
             currentY -= ROW_HEIGHT * Settings.scale;
         }
@@ -177,6 +183,39 @@ public class RelicChoicePreview implements IUIElement {
         sb.setColor(Color.WHITE);
     }
 
+    /**
+     * Render tier label in bottom-right corner of panel.
+     * Matches the in-game styling from RelicLinkPatch.
+     */
+    private void renderTierLabel(SpriteBatch sb, float panelX, float centerY,
+                                 float panelW, String tierText, Color tierColor) {
+        // Reduce brightness by 10% for subtler appearance
+        Color dimmed = tierColor.cpy();
+        dimmed.r *= 0.9f;
+        dimmed.g *= 0.9f;
+        dimmed.b *= 0.9f;
+
+        // Scale font to 80%
+        float originalScaleX = FontHelper.tipBodyFont.getData().scaleX;
+        float originalScaleY = FontHelper.tipBodyFont.getData().scaleY;
+        FontHelper.tipBodyFont.getData().setScale(originalScaleX * 0.8f, originalScaleY * 0.8f);
+
+        // Position at right edge with margin, raised by 40% of line height
+        float x = panelX + panelW - 15.0f * Settings.scale;
+        float lineHeight = FontHelper.tipBodyFont.getLineHeight();
+        float y = centerY - 12.0f * Settings.scale + lineHeight * 0.4f;
+
+        // Right-align text (measure with scaled font)
+        FontHelper.layout.setText(FontHelper.tipBodyFont, tierText);
+        float textX = x - FontHelper.layout.width;
+
+        FontHelper.tipBodyFont.setColor(dimmed);
+        FontHelper.tipBodyFont.draw(sb, tierText, textX, y);
+
+        // Restore original scale
+        FontHelper.tipBodyFont.getData().setScale(originalScaleX, originalScaleY);
+    }
+
     @Override
     public void update() {
         // No update logic needed
@@ -222,17 +261,5 @@ public class RelicChoicePreview implements IUIElement {
             case SPECIAL:  return Settings.PURPLE_COLOR;
             default:       return Settings.CREAM_COLOR;
         }
-    }
-
-    /**
-     * Get dimmed color for a relic tier (90% brightness, matching reward screen labels).
-     */
-    private static Color getDimmedTierColor(AbstractRelic.RelicTier tier) {
-        Color baseColor = getTierColor(tier);
-        Color dimmed = baseColor.cpy();
-        dimmed.r *= 0.9f;
-        dimmed.g *= 0.9f;
-        dimmed.b *= 0.9f;
-        return dimmed;
     }
 }

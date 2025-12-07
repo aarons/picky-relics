@@ -93,6 +93,10 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
     }
 
     public static List<AbstractRelic> getPreviewRelics() {
+        // Lazy init: if empty but relics are now available, populate
+        if (previewRelics.isEmpty() && !RelicLibrary.commonList.isEmpty()) {
+            previewRelics = selectRandomRelics(previewTier, previewChoiceCount);
+        }
         return previewRelics;
     }
 

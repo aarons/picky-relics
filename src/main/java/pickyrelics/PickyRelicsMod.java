@@ -595,11 +595,11 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
         yPos = contentY;
 
         // Tier change chance slider (0-100%)
-        addPagedSliderRow(settingsPanel, PAGE_ALGORITHMS, "Chance for options to be a different tier", xPos, sliderX + 60.0f, yPos, sliderYOffset,
+        addPagedSliderRow(settingsPanel, PAGE_ALGORITHMS, "Chance for options to be a different tier", xPos, sliderX + 180.0f, yPos, sliderYOffset,
                 tierChangeChance, 0.0f, 100.0f, "%.0f%%",
                 (val) -> { tierChangeChance = val; saveConfig(); });
 
-        yPos -= rowHeight;
+        yPos -= rowHeight + 35.0f;
 
         float checkboxX = xPos + 20.0f;
 

@@ -167,17 +167,48 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
             return selectRandomRelicsForEvent(count);
         }
 
-        ArrayList<AbstractRelic> pool = getRelicListForTier(tier);
-        if (pool.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        List<AbstractRelic> filtered = filterByNameLength(pool);
-        Collections.shuffle(filtered, previewRandom);
-
         List<AbstractRelic> result = new ArrayList<>();
-        for (int i = 0; i < count; i++) {
-            result.add(filtered.get(i % filtered.size()));
+
+        // First relic always from original tier
+        ArrayList<AbstractRelic> originalPool = getRelicListForTier(tier);
+        if (originalPool.isEmpty()) {
+            return result;
+        }
+        List<AbstractRelic> filteredOriginal = filterByNameLength(originalPool);
+        Collections.shuffle(filteredOriginal, previewRandom);
+        result.add(filteredOriginal.get(0));
+
+        // Additional relics: apply tier modification algorithm
+        for (int i = 1; i < count; i++) {
+            AbstractRelic.RelicTier modifiedTier = calculateModifiedTier(tier, previewRandom);
+            if (modifiedTier == null) {
+                modifiedTier = tier;  // Fallback to original if no valid tier
+            }
+
+            ArrayList<AbstractRelic> pool = getRelicListForTier(modifiedTier);
+            if (pool.isEmpty()) {
+                pool = originalPool;  // Fallback to original pool
+            }
+
+            List<AbstractRelic> filtered = filterByNameLength(pool);
+            Collections.shuffle(filtered, previewRandom);
+
+            // Avoid picking same relic as previous ones if possible
+            AbstractRelic candidate = filtered.get(0);
+            for (int j = 0; j < filtered.size(); j++) {
+                boolean duplicate = false;
+                for (AbstractRelic existing : result) {
+                    if (existing.relicId.equals(filtered.get(j).relicId)) {
+                        duplicate = true;
+                        break;
+                    }
+                }
+                if (!duplicate) {
+                    candidate = filtered.get(j);
+                    break;
+                }
+            }
+            result.add(candidate);
         }
         return result;
     }
@@ -232,6 +263,144 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
             filtered = new ArrayList<>(pool);
         }
         return filtered;
+    }
+
+    // ===== Tier Calculation Utilities (shared with RelicLinkPatch) =====
+
+    /**
+     * Get hierarchy position for a tier.
+     * Common=0, Uncommon=1, Rare=Shop=2, Boss=3
+     */
+    public static int getTierPosition(AbstractRelic.RelicTier tier) {
+        switch (tier) {
+            case COMMON: return 0;
+            case UNCOMMON: return 1;
+            case RARE: return 2;
+            case SHOP: return 2;  // Shop equivalent to Rare
+            case BOSS: return 3;
+            default: return 1;
+        }
+    }
+
+    /**
+     * Get all tiers at a given hierarchy position.
+     */
+    private static List<AbstractRelic.RelicTier> getTiersAtPosition(int position) {
+        List<AbstractRelic.RelicTier> tiers = new ArrayList<>();
+        switch (position) {
+            case 0: tiers.add(AbstractRelic.RelicTier.COMMON); break;
+            case 1: tiers.add(AbstractRelic.RelicTier.UNCOMMON); break;
+            case 2:
+                tiers.add(AbstractRelic.RelicTier.RARE);
+                tiers.add(AbstractRelic.RelicTier.SHOP);
+                break;
+            case 3: tiers.add(AbstractRelic.RelicTier.BOSS); break;
+        }
+        return tiers;
+    }
+
+    /**
+     * Check if a tier is enabled in settings.
+     */
+    public static boolean isTierEnabled(AbstractRelic.RelicTier tier) {
+        switch (tier) {
+            case COMMON: return tierCommonEnabled;
+            case UNCOMMON: return tierUncommonEnabled;
+            case RARE: return tierRareEnabled;
+            case SHOP: return tierShopEnabled;
+            case BOSS: return tierBossEnabled;
+            default: return false;
+        }
+    }
+
+    /**
+     * Pick a random enabled tier from the given position range (inclusive).
+     * Returns null if no enabled tiers in range.
+     */
+    private static AbstractRelic.RelicTier pickRandomEnabledTierInRange(int minPos, int maxPos, Random rng) {
+        List<AbstractRelic.RelicTier> candidates = new ArrayList<>();
+
+        for (int pos = minPos; pos <= maxPos; pos++) {
+            for (AbstractRelic.RelicTier tier : getTiersAtPosition(pos)) {
+                if (isTierEnabled(tier)) {
+                    candidates.add(tier);
+                }
+            }
+        }
+
+        if (candidates.isEmpty()) {
+            return null;
+        }
+
+        return candidates.get(rng.nextInt(candidates.size()));
+    }
+
+    /**
+     * Calculate new tier based on direction setting.
+     * Returns null if no valid tier in the allowed range.
+     */
+    private static AbstractRelic.RelicTier calculateNewTier(AbstractRelic.RelicTier original, TierDirection direction, Random rng) {
+        int currentPos = getTierPosition(original);
+
+        switch (direction) {
+            case SAME_OR_BETTER:
+                // Can stay same or go up - pick from current position or higher
+                return pickRandomEnabledTierInRange(currentPos, 3, rng);
+
+            case SAME_OR_WORSE:
+                // Can stay same or go down - pick from current position or lower
+                return pickRandomEnabledTierInRange(0, currentPos, rng);
+
+            case ALWAYS_BETTER:
+                // Must go up - pick from positions above current
+                if (currentPos >= 3) return null;  // Already at top
+                return pickRandomEnabledTierInRange(currentPos + 1, 3, rng);
+
+            case ALWAYS_WORSE:
+                // Must go down - pick from positions below current
+                if (currentPos <= 0) return null;  // Already at bottom
+                return pickRandomEnabledTierInRange(0, currentPos - 1, rng);
+
+            case CHAOS:
+                // Any enabled tier - pick from all positions
+                return pickRandomEnabledTierInRange(0, 3, rng);
+
+            default:
+                return isTierEnabled(original) ? original : null;
+        }
+    }
+
+    /**
+     * Calculate a potentially modified tier for additional relic choices.
+     *
+     * Algorithm:
+     * 1. Roll tierChangeChance% to determine if tier changes at all
+     * 2. If not changing, return original tier (if enabled)
+     * 3. If changing, apply direction rules to select new tier
+     * 4. Filter by enabled tiers
+     *
+     * @param originalTier The original tier of the relic reward
+     * @param rng Random number generator to use
+     * @return The tier to use, or null if no valid tier available
+     */
+    public static AbstractRelic.RelicTier calculateModifiedTier(AbstractRelic.RelicTier originalTier, Random rng) {
+        int chance = tierChangeChance;
+        TierDirection direction = tierDirection;
+
+        // Roll to see if tier changes at all
+        boolean shouldChange = chance > 0 && rng.nextInt(100) < chance;
+
+        if (!shouldChange) {
+            // No change - return original tier if enabled
+            if (isTierEnabled(originalTier)) {
+                return originalTier;
+            }
+            // Original tier not enabled - try to find alternative based on direction
+            return calculateNewTier(originalTier, direction, rng);
+        }
+
+        // Tier is changing - determine new tier based on direction
+        return calculateNewTier(originalTier, direction, rng);
     }
 
     /**

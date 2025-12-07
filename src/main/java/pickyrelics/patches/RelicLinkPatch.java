@@ -71,21 +71,6 @@ public class RelicLinkPatch {
     }
 
     /**
-     * Get hierarchy position for a tier.
-     * Common=0, Uncommon=1, Rare=Shop=2, Boss=3
-     */
-    private static int getTierPosition(AbstractRelic.RelicTier tier) {
-        switch (tier) {
-            case COMMON: return 0;
-            case UNCOMMON: return 1;
-            case RARE: return 2;
-            case SHOP: return 2;  // Shop equivalent to Rare
-            case BOSS: return 3;
-            default: return 1;
-        }
-    }
-
-    /**
      * Get all tiers at a given hierarchy position.
      */
     private static List<AbstractRelic.RelicTier> getTiersAtPosition(int position) {
@@ -103,29 +88,16 @@ public class RelicLinkPatch {
     }
 
     /**
-     * Check if a tier is enabled in settings.
-     */
-    private static boolean isTierEnabled(AbstractRelic.RelicTier tier) {
-        switch (tier) {
-            case COMMON: return PickyRelicsMod.tierCommonEnabled;
-            case UNCOMMON: return PickyRelicsMod.tierUncommonEnabled;
-            case RARE: return PickyRelicsMod.tierRareEnabled;
-            case SHOP: return PickyRelicsMod.tierShopEnabled;
-            case BOSS: return PickyRelicsMod.tierBossEnabled;
-            default: return false;
-        }
-    }
-
-    /**
      * Pick a random enabled tier from the given position range (inclusive).
      * Returns null if no enabled tiers in range.
+     * Uses game's relicRng for seeded randomness during gameplay.
      */
     private static AbstractRelic.RelicTier pickRandomEnabledTierInRange(int minPos, int maxPos) {
         List<AbstractRelic.RelicTier> candidates = new ArrayList<>();
 
         for (int pos = minPos; pos <= maxPos; pos++) {
             for (AbstractRelic.RelicTier tier : getTiersAtPosition(pos)) {
-                if (isTierEnabled(tier)) {
+                if (PickyRelicsMod.isTierEnabled(tier)) {
                     candidates.add(tier);
                 }
             }
@@ -141,9 +113,10 @@ public class RelicLinkPatch {
     /**
      * Calculate new tier based on direction setting.
      * Returns null if no valid tier in the allowed range.
+     * Uses game's relicRng for seeded randomness during gameplay.
      */
     private static AbstractRelic.RelicTier calculateNewTier(AbstractRelic.RelicTier original, TierDirection direction) {
-        int currentPos = getTierPosition(original);
+        int currentPos = PickyRelicsMod.getTierPosition(original);
 
         switch (direction) {
             case SAME_OR_BETTER:
@@ -169,12 +142,13 @@ public class RelicLinkPatch {
                 return pickRandomEnabledTierInRange(0, 3);
 
             default:
-                return isTierEnabled(original) ? original : null;
+                return PickyRelicsMod.isTierEnabled(original) ? original : null;
         }
     }
 
     /**
      * Calculate a potentially modified tier for additional relic choices.
+     * Uses game's relicRng for seeded randomness during gameplay.
      *
      * Algorithm:
      * 1. Roll tierChangeChance% to determine if tier changes at all
@@ -194,7 +168,7 @@ public class RelicLinkPatch {
 
         if (!shouldChange) {
             // No change - return original tier if enabled
-            if (isTierEnabled(originalTier)) {
+            if (PickyRelicsMod.isTierEnabled(originalTier)) {
                 return originalTier;
             }
             // Original tier not enabled - try to find alternative based on direction
@@ -284,9 +258,9 @@ public class RelicLinkPatch {
     private static AbstractRelic getRandomNonEventRelic() {
         // Build list of enabled tiers
         List<AbstractRelic.RelicTier> enabledTiers = new ArrayList<>();
-        if (PickyRelicsMod.tierCommonEnabled) enabledTiers.add(AbstractRelic.RelicTier.COMMON);
-        if (PickyRelicsMod.tierUncommonEnabled) enabledTiers.add(AbstractRelic.RelicTier.UNCOMMON);
-        if (PickyRelicsMod.tierRareEnabled) enabledTiers.add(AbstractRelic.RelicTier.RARE);
+        if (PickyRelicsMod.isTierEnabled(AbstractRelic.RelicTier.COMMON)) enabledTiers.add(AbstractRelic.RelicTier.COMMON);
+        if (PickyRelicsMod.isTierEnabled(AbstractRelic.RelicTier.UNCOMMON)) enabledTiers.add(AbstractRelic.RelicTier.UNCOMMON);
+        if (PickyRelicsMod.isTierEnabled(AbstractRelic.RelicTier.RARE)) enabledTiers.add(AbstractRelic.RelicTier.RARE);
 
         if (enabledTiers.isEmpty()) {
             Log.info("Picky Relics: No tiers enabled for event relic selection");

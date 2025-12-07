@@ -594,36 +594,12 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
         // ===== PAGE 1: Algorithms =====
         yPos = contentY;
 
-        // Title
-        addPagedElement(settingsPanel, PAGE_ALGORITHMS, new ModLabel(
-                "Algorithms",
-                xPos, yPos,
-                Settings.CREAM_COLOR,
-                FontHelper.charDescFont,
-                settingsPanel,
-                (label) -> {}
-        ));
-
-        yPos -= 50.0f;
-
         // Tier change chance slider (0-100%)
-        addPagedSliderRow(settingsPanel, PAGE_ALGORITHMS, "Chance to change tier", xPos, sliderX + 60.0f, yPos, sliderYOffset,
+        addPagedSliderRow(settingsPanel, PAGE_ALGORITHMS, "Chance for options to be a different tier", xPos, sliderX + 60.0f, yPos, sliderYOffset,
                 tierChangeChance, 0.0f, 100.0f, "%.0f%%",
                 (val) -> { tierChangeChance = val; saveConfig(); });
 
         yPos -= rowHeight;
-
-        // Explanation text
-        addPagedElement(settingsPanel, PAGE_ALGORITHMS, new ModLabel(
-                "The chance for options to be a different tier",
-                xPos, yPos,
-                Settings.GOLD_COLOR,
-                FontHelper.tipBodyFont,
-                settingsPanel,
-                (label) -> {}
-        ));
-
-        yPos -= 50.0f;
 
         float checkboxX = xPos + 20.0f;
 

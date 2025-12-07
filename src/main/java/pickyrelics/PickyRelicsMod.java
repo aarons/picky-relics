@@ -14,6 +14,7 @@ import com.megacrit.cardcrawl.core.Settings;
 import com.megacrit.cardcrawl.helpers.FontHelper;
 import com.megacrit.cardcrawl.helpers.RelicLibrary;
 import com.megacrit.cardcrawl.relics.AbstractRelic;
+import pickyrelics.ui.DropdownMenu;
 import pickyrelics.ui.PagedElement;
 import pickyrelics.ui.PageNavigator;
 import pickyrelics.ui.RelicChoicePreview;
@@ -45,6 +46,12 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
     private static final String CONFIG_SHOP_CHOICES = "shopChoices";
     private static final String CONFIG_SPECIAL_CHOICES = "specialChoices";
     private static final String CONFIG_TIER_CHANGE_CHANCE = "tierChangeChance";
+    private static final String CONFIG_TIER_DIRECTION = "tierDirection";
+    private static final String CONFIG_TIER_COMMON_ENABLED = "tierCommonEnabled";
+    private static final String CONFIG_TIER_UNCOMMON_ENABLED = "tierUncommonEnabled";
+    private static final String CONFIG_TIER_RARE_ENABLED = "tierRareEnabled";
+    private static final String CONFIG_TIER_SHOP_ENABLED = "tierShopEnabled";
+    private static final String CONFIG_TIER_BOSS_ENABLED = "tierBossEnabled";
 
     // Display settings
     public static boolean showTierLabels = true;
@@ -60,9 +67,25 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
     public static int shopChoices = 2;
     public static int specialChoices = 2;
 
-    // Tier change chance: -100 to +100
-    // Negative = trend toward Common, Positive = trend toward Rare
+    // Tier change chance: 0 to 100 (probability that tier will change)
     public static int tierChangeChance = 0;
+
+    // Direction of tier change when it occurs
+    public enum TierDirection {
+        SAME_OR_BETTER,   // Can stay same or go up
+        SAME_OR_WORSE,    // Can stay same or go down
+        ALWAYS_BETTER,    // Must go up
+        ALWAYS_WORSE,     // Must go down
+        CHAOS             // Any enabled tier randomly
+    }
+    public static TierDirection tierDirection = TierDirection.SAME_OR_BETTER;
+
+    // Which tiers are available for additional choices (C/U/R enabled by default)
+    public static boolean tierCommonEnabled = true;
+    public static boolean tierUncommonEnabled = true;
+    public static boolean tierRareEnabled = true;
+    public static boolean tierShopEnabled = false;
+    public static boolean tierBossEnabled = false;
 
     // UI page tracking
     private static final int PAGE_CHOICES = 0;
@@ -75,6 +98,18 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
     private static List<AbstractRelic> previewRelics = new ArrayList<>();
     private static final Random previewRandom = new Random();
     private static final int MAX_PREVIEW_NAME_LENGTH = 12;
+
+    // Dropdown for tier direction selection
+    private DropdownMenu tierDirectionDropdown;
+
+    // Display names for tier direction options
+    private static final String[] TIER_DIRECTION_NAMES = {
+        "Same tier or better",
+        "Same tier or worse",
+        "Always a better tier",
+        "Always a worse tier",
+        "Chaos - Any tier"
+    };
 
     public static int getCurrentPage() {
         return currentPage;
@@ -247,6 +282,12 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
             defaults.setProperty(CONFIG_SHOP_CHOICES, "2");
             defaults.setProperty(CONFIG_SPECIAL_CHOICES, "2");
             defaults.setProperty(CONFIG_TIER_CHANGE_CHANCE, "0");
+            defaults.setProperty(CONFIG_TIER_DIRECTION, "0");
+            defaults.setProperty(CONFIG_TIER_COMMON_ENABLED, "true");
+            defaults.setProperty(CONFIG_TIER_UNCOMMON_ENABLED, "true");
+            defaults.setProperty(CONFIG_TIER_RARE_ENABLED, "true");
+            defaults.setProperty(CONFIG_TIER_SHOP_ENABLED, "false");
+            defaults.setProperty(CONFIG_TIER_BOSS_ENABLED, "false");
 
             config = new SpireConfig(MOD_ID, "config", defaults);
 
@@ -258,13 +299,37 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
             bossChoices = clamp(config.getInt(CONFIG_BOSS_CHOICES), 1, 5);
             shopChoices = clamp(config.getInt(CONFIG_SHOP_CHOICES), 1, 5);
             specialChoices = clamp(config.getInt(CONFIG_SPECIAL_CHOICES), 1, 5);
-            tierChangeChance = clamp(config.getInt(CONFIG_TIER_CHANGE_CHANCE), -100, 100);
+
+            // Load tier change settings with migration from old format
+            int rawChance = config.getInt(CONFIG_TIER_CHANGE_CHANCE);
+            int rawDirection = config.getInt(CONFIG_TIER_DIRECTION);
+
+            // Migration: old negative values meant "trend toward Common"
+            if (rawChance < 0 && rawDirection == 0) {
+                tierChangeChance = Math.abs(rawChance);
+                tierDirection = TierDirection.ALWAYS_WORSE;
+                Log.info("Migrating old negative tierChangeChance to new format");
+            } else if (rawChance > 0 && rawDirection == 0 && !config.has(CONFIG_TIER_DIRECTION)) {
+                // Old positive value meant "trend toward Rare"
+                tierChangeChance = rawChance;
+                tierDirection = TierDirection.ALWAYS_BETTER;
+                Log.info("Migrating old positive tierChangeChance to new format");
+            } else {
+                tierChangeChance = clamp(rawChance, 0, 100);
+                tierDirection = TierDirection.values()[clamp(rawDirection, 0, 4)];
+            }
+
+            tierCommonEnabled = config.getBool(CONFIG_TIER_COMMON_ENABLED);
+            tierUncommonEnabled = config.getBool(CONFIG_TIER_UNCOMMON_ENABLED);
+            tierRareEnabled = config.getBool(CONFIG_TIER_RARE_ENABLED);
+            tierShopEnabled = config.getBool(CONFIG_TIER_SHOP_ENABLED);
+            tierBossEnabled = config.getBool(CONFIG_TIER_BOSS_ENABLED);
 
             Log.info("Config loaded: showTierLabels=" + showTierLabels +
                     ", starter=" + starterChoices + ", common=" + commonChoices +
                     ", uncommon=" + uncommonChoices + ", rare=" + rareChoices +
                     ", boss=" + bossChoices + ", shop=" + shopChoices + ", special=" + specialChoices +
-                    ", tierChangeChance=" + tierChangeChance);
+                    ", tierChangeChance=" + tierChangeChance + ", tierDirection=" + tierDirection);
         } catch (IOException e) {
             Log.error("Failed to load config", e);
         }
@@ -285,9 +350,25 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
             config.setInt(CONFIG_SHOP_CHOICES, shopChoices);
             config.setInt(CONFIG_SPECIAL_CHOICES, specialChoices);
             config.setInt(CONFIG_TIER_CHANGE_CHANCE, tierChangeChance);
+            config.setInt(CONFIG_TIER_DIRECTION, tierDirection.ordinal());
+            config.setBool(CONFIG_TIER_COMMON_ENABLED, tierCommonEnabled);
+            config.setBool(CONFIG_TIER_UNCOMMON_ENABLED, tierUncommonEnabled);
+            config.setBool(CONFIG_TIER_RARE_ENABLED, tierRareEnabled);
+            config.setBool(CONFIG_TIER_SHOP_ENABLED, tierShopEnabled);
+            config.setBool(CONFIG_TIER_BOSS_ENABLED, tierBossEnabled);
             config.save();
         } catch (IOException e) {
             Log.error("Failed to save config", e);
+        }
+    }
+
+    private void setTierDirection(TierDirection direction) {
+        tierDirection = direction;
+        saveConfig();
+
+        // Update the dropdown selection
+        if (tierDirectionDropdown != null) {
+            tierDirectionDropdown.setSelectedIndex(direction.ordinal());
         }
     }
 
@@ -391,6 +472,39 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
                 (toggle) -> { showTierLabels = toggle.enabled; saveConfig(); }
         ));
 
+        // Event tier explanation text (shown when Event slider is active with count > 1)
+        float eventTextX = xPos;
+        float eventTextY = yPos - 50.0f;
+        addPagedElement(settingsPanel, PAGE_CHOICES, new IUIElement() {
+            @Override
+            public void render(com.badlogic.gdx.graphics.g2d.SpriteBatch sb) {
+                if (previewTier == AbstractRelic.RelicTier.SPECIAL && previewChoiceCount > 1) {
+                    float scaledX = eventTextX * Settings.scale;
+                    float scaledY = eventTextY * Settings.scale;
+                    float lineSpacing = 20.0f * Settings.scale;
+
+                    FontHelper.renderFontLeftTopAligned(sb, FontHelper.tipBodyFont,
+                            "Event relics have special requirements.",
+                            scaledX, scaledY, Settings.GOLD_COLOR);
+                    FontHelper.renderFontLeftTopAligned(sb, FontHelper.tipBodyFont,
+                            "Additional options are from Common,",
+                            scaledX, scaledY - lineSpacing, Settings.GOLD_COLOR);
+                    FontHelper.renderFontLeftTopAligned(sb, FontHelper.tipBodyFont,
+                            "Uncommon, and Rare pools.",
+                            scaledX, scaledY - lineSpacing * 2, Settings.GOLD_COLOR);
+                }
+            }
+
+            @Override
+            public void update() {}
+
+            @Override
+            public int renderLayer() { return 1; }
+
+            @Override
+            public int updateOrder() { return 1; }
+        });
+
         // ===== PAGE 1: Algorithms =====
         yPos = contentY;
 
@@ -404,11 +518,18 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
                 (label) -> {}
         ));
 
-        yPos -= 40.0f;
+        yPos -= 50.0f;
 
-        // Hint text
+        // Tier change chance slider (0-100%)
+        addPagedSliderRow(settingsPanel, PAGE_ALGORITHMS, "Chance to change tier", xPos, sliderX + 60.0f, yPos, sliderYOffset,
+                tierChangeChance, 0.0f, 100.0f, "%.0f%%",
+                (val) -> { tierChangeChance = val; saveConfig(); });
+
+        yPos -= rowHeight;
+
+        // Explanation text
         addPagedElement(settingsPanel, PAGE_ALGORITHMS, new ModLabel(
-                "Modifies additional choices only (not the original)",
+                "The chance for options to be a different tier",
                 xPos, yPos,
                 Settings.GOLD_COLOR,
                 FontHelper.tipBodyFont,
@@ -418,43 +539,105 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
 
         yPos -= 50.0f;
 
-        // Tier change chance slider
-        addPagedSliderRow(settingsPanel, PAGE_ALGORITHMS, "Tier change chance", xPos, sliderX + 60.0f, yPos, sliderYOffset,
-                tierChangeChance, -100.0f, 100.0f, "%+.0f%%",
-                (val) -> { tierChangeChance = val; saveConfig(); });
-
-        yPos -= rowHeight;
-
-        // Explanation text
+        // Tier direction section
         addPagedElement(settingsPanel, PAGE_ALGORITHMS, new ModLabel(
-                "-100% = always lowest tier (Common)",
+                "Tier selection behavior",
                 xPos, yPos,
-                Settings.GOLD_COLOR,
-                FontHelper.tipBodyFont,
+                Settings.CREAM_COLOR,
+                FontHelper.tipHeaderFont,
                 settingsPanel,
                 (label) -> {}
         ));
 
-        yPos -= 25.0f;
+        yPos -= 35.0f;
 
+        // Dropdown menu for tier direction selection
+        float dropdownX = xPos + 20.0f;
+        tierDirectionDropdown = new DropdownMenu(
+                TIER_DIRECTION_NAMES,
+                tierDirection.ordinal(),
+                dropdownX, yPos,
+                (index) -> setTierDirection(TierDirection.values()[index])
+        );
+        addPagedElement(settingsPanel, PAGE_ALGORITHMS, tierDirectionDropdown);
+
+        yPos -= 50.0f;
+
+        // Tiers available section
         addPagedElement(settingsPanel, PAGE_ALGORITHMS, new ModLabel(
-                "+100% = always highest tier (Rare)",
+                "Tiers that options may be selected from",
                 xPos, yPos,
-                Settings.GOLD_COLOR,
-                FontHelper.tipBodyFont,
+                Settings.CREAM_COLOR,
+                FontHelper.tipHeaderFont,
                 settingsPanel,
                 (label) -> {}
         ));
 
-        yPos -= 25.0f;
+        yPos -= 35.0f;
 
-        addPagedElement(settingsPanel, PAGE_ALGORITHMS, new ModLabel(
-                "Affects Common/Uncommon/Rare tiers only",
-                xPos, yPos,
-                Settings.GOLD_COLOR,
+        float checkboxX = xPos + 20.0f;
+
+        addPagedElement(settingsPanel, PAGE_ALGORITHMS, new ModLabeledToggleButton(
+                "Common",
+                checkboxX, yPos,
+                Settings.CREAM_COLOR,
                 FontHelper.tipBodyFont,
+                tierCommonEnabled,
                 settingsPanel,
-                (label) -> {}
+                (label) -> {},
+                (toggle) -> { tierCommonEnabled = toggle.enabled; saveConfig(); }
+        ));
+
+        yPos -= 30.0f;
+
+        addPagedElement(settingsPanel, PAGE_ALGORITHMS, new ModLabeledToggleButton(
+                "Uncommon",
+                checkboxX, yPos,
+                Settings.CREAM_COLOR,
+                FontHelper.tipBodyFont,
+                tierUncommonEnabled,
+                settingsPanel,
+                (label) -> {},
+                (toggle) -> { tierUncommonEnabled = toggle.enabled; saveConfig(); }
+        ));
+
+        yPos -= 30.0f;
+
+        addPagedElement(settingsPanel, PAGE_ALGORITHMS, new ModLabeledToggleButton(
+                "Rare",
+                checkboxX, yPos,
+                Settings.CREAM_COLOR,
+                FontHelper.tipBodyFont,
+                tierRareEnabled,
+                settingsPanel,
+                (label) -> {},
+                (toggle) -> { tierRareEnabled = toggle.enabled; saveConfig(); }
+        ));
+
+        yPos -= 30.0f;
+
+        addPagedElement(settingsPanel, PAGE_ALGORITHMS, new ModLabeledToggleButton(
+                "Shop",
+                checkboxX, yPos,
+                Settings.CREAM_COLOR,
+                FontHelper.tipBodyFont,
+                tierShopEnabled,
+                settingsPanel,
+                (label) -> {},
+                (toggle) -> { tierShopEnabled = toggle.enabled; saveConfig(); }
+        ));
+
+        yPos -= 30.0f;
+
+        addPagedElement(settingsPanel, PAGE_ALGORITHMS, new ModLabeledToggleButton(
+                "Boss",
+                checkboxX, yPos,
+                Settings.CREAM_COLOR,
+                FontHelper.tipBodyFont,
+                tierBossEnabled,
+                settingsPanel,
+                (label) -> {},
+                (toggle) -> { tierBossEnabled = toggle.enabled; saveConfig(); }
         ));
 
         BaseMod.registerModBadge(

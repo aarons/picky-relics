@@ -69,12 +69,6 @@ public class RelicChoicePreview implements IUIElement {
         float bgWidth = panelW + padding * 2;
         float bgHeight = contentHeight + bannerH + padding;
 
-        // Add extra space for event tier explanation text
-        boolean showEventExplanation = tier == AbstractRelic.RelicTier.SPECIAL && count > 1;
-        if (showEventExplanation) {
-            bgHeight += 70.0f * Settings.scale;
-        }
-
         // Draw the reward screen background (lightened)
         sb.setColor(BACKGROUND_TINT);
         float bgX = scaledX - padding;
@@ -164,30 +158,6 @@ public class RelicChoicePreview implements IUIElement {
 
             currentY -= ROW_HEIGHT * Settings.scale;
         }
-
-        // Render explanatory text for Event tier
-        if (showEventExplanation) {
-            renderEventExplanation(sb, scaledX, currentY, panelW);
-        }
-    }
-
-    /**
-     * Render explanatory text for Event tier selections.
-     */
-    private void renderEventExplanation(SpriteBatch sb, float panelX, float belowLastRowY, float panelW) {
-        float textY = belowLastRowY - 15.0f * Settings.scale;
-        float centerX = panelX + panelW / 2.0f;
-        float lineSpacing = 18.0f * Settings.scale;
-
-        FontHelper.renderFontCentered(sb, FontHelper.tipBodyFont,
-                "Event relics have special requirements.",
-                centerX, textY, Settings.GOLD_COLOR);
-        FontHelper.renderFontCentered(sb, FontHelper.tipBodyFont,
-                "Additional options are from Common,",
-                centerX, textY - lineSpacing, Settings.GOLD_COLOR);
-        FontHelper.renderFontCentered(sb, FontHelper.tipBodyFont,
-                "Uncommon, and Rare pools.",
-                centerX, textY - lineSpacing * 2, Settings.GOLD_COLOR);
     }
 
     /**

@@ -121,6 +121,104 @@ public class RelicLinkPatch {
     }
 
     /**
+     * Get the ordered list of fallback tiers for a given tier when the pool is exhausted.
+     * Uses a cascade approach: try adjacent tiers first, then expand.
+     *
+     * @param tier The original tier that was exhausted
+     * @return Array of tiers to try in order
+     */
+    private static AbstractRelic.RelicTier[] getFallbackTiers(AbstractRelic.RelicTier tier) {
+        switch (tier) {
+            case COMMON:
+                return new AbstractRelic.RelicTier[] {
+                    AbstractRelic.RelicTier.UNCOMMON,
+                    AbstractRelic.RelicTier.RARE
+                };
+            case UNCOMMON:
+                return new AbstractRelic.RelicTier[] {
+                    AbstractRelic.RelicTier.COMMON,
+                    AbstractRelic.RelicTier.RARE
+                };
+            case RARE:
+                return new AbstractRelic.RelicTier[] {
+                    AbstractRelic.RelicTier.UNCOMMON,
+                    AbstractRelic.RelicTier.COMMON
+                };
+            case BOSS:
+            case SHOP:
+            case STARTER:
+            default:
+                // For non-standard tiers, try Common -> Uncommon -> Rare
+                return new AbstractRelic.RelicTier[] {
+                    AbstractRelic.RelicTier.COMMON,
+                    AbstractRelic.RelicTier.UNCOMMON,
+                    AbstractRelic.RelicTier.RARE
+                };
+        }
+    }
+
+    /**
+     * Get a random relic from the specified tier, with fallback to other tiers
+     * if the pool is exhausted (returns Circlet).
+     *
+     * @param tier The preferred tier
+     * @return A relic from the preferred tier or a fallback tier, or Circlet if all exhausted
+     */
+    private static AbstractRelic getRelicWithFallback(AbstractRelic.RelicTier tier) {
+        // Try the requested tier first
+        AbstractRelic relic = AbstractDungeon.returnRandomRelic(tier);
+        if (!"Circlet".equals(relic.relicId)) {
+            return relic;
+        }
+
+        Log.info("Picky Relics: " + tier + " pool exhausted, trying fallback tiers");
+
+        // Get fallback order based on tier
+        AbstractRelic.RelicTier[] fallbacks = getFallbackTiers(tier);
+
+        for (AbstractRelic.RelicTier fallbackTier : fallbacks) {
+            relic = AbstractDungeon.returnRandomRelic(fallbackTier);
+            if (!"Circlet".equals(relic.relicId)) {
+                Log.info("Picky Relics: Using fallback tier " + fallbackTier);
+                return relic;
+            }
+        }
+
+        // All pools exhausted
+        Log.info("Picky Relics: All fallback tiers exhausted");
+        return relic; // Will be Circlet
+    }
+
+    /**
+     * Select a random relic from Common, Uncommon, or Rare pools.
+     * Used for additional event relic choices since event relics have special requirements.
+     *
+     * @return A relic from C/U/R pools, or Circlet if all exhausted
+     */
+    private static AbstractRelic getRandomNonEventRelic() {
+        AbstractRelic.RelicTier[] tiers = {
+            AbstractRelic.RelicTier.COMMON,
+            AbstractRelic.RelicTier.UNCOMMON,
+            AbstractRelic.RelicTier.RARE
+        };
+
+        // Randomly pick starting tier for fairness
+        int startIndex = AbstractDungeon.relicRng.random(2);
+
+        // Try each tier in random order
+        for (int i = 0; i < 3; i++) {
+            AbstractRelic.RelicTier tierToTry = tiers[(startIndex + i) % 3];
+            AbstractRelic relic = AbstractDungeon.returnRandomRelic(tierToTry);
+            if (!"Circlet".equals(relic.relicId)) {
+                return relic;
+            }
+        }
+
+        // All pools exhausted - return Circlet to signal failure
+        return AbstractDungeon.returnRandomRelic(AbstractRelic.RelicTier.COMMON);
+    }
+
+    /**
      * Render tier label in bottom-right corner of reward item.
      */
     private static void renderTierLabel(RewardItem reward, SpriteBatch sb) {
@@ -174,15 +272,23 @@ public class RelicLinkPatch {
         AbstractRelic.RelicTier tier = original.relic.tier;
 
         for (int i = 1; i < numChoices; i++) {
-            AbstractRelic.RelicTier tierToUse = calculateModifiedTier(tier);
-            if (tierToUse != tier) {
-                Log.info("Picky Relics: Tier changed from " + tier + " to " + tierToUse);
-            }
-            AbstractRelic additionalRelic = AbstractDungeon.returnRandomRelic(tierToUse);
+            AbstractRelic additionalRelic;
 
-            // Skip Circlet - it's a placeholder relic when no relics of the tier are available
+            if (tier == AbstractRelic.RelicTier.SPECIAL) {
+                // Event tier: additional choices come from C/U/R pools
+                additionalRelic = getRandomNonEventRelic();
+            } else {
+                // Normal tier: use tier modification + fallback
+                AbstractRelic.RelicTier tierToUse = calculateModifiedTier(tier);
+                if (tierToUse != tier) {
+                    Log.info("Picky Relics: Tier changed from " + tier + " to " + tierToUse);
+                }
+                additionalRelic = getRelicWithFallback(tierToUse);
+            }
+
+            // Skip Circlet - all pools exhausted
             if ("Circlet".equals(additionalRelic.relicId)) {
-                Log.info("Picky Relics: Skipping Circlet placeholder relic");
+                Log.info("Picky Relics: All relic pools exhausted, skipping");
                 continue;
             }
 

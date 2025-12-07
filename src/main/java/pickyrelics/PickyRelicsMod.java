@@ -127,12 +127,64 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
     }
 
     private static List<AbstractRelic> selectRandomRelics(AbstractRelic.RelicTier tier, int count) {
+        // Special handling for Event tier: first relic from event pool, rest from C/U/R
+        if (tier == AbstractRelic.RelicTier.SPECIAL) {
+            return selectRandomRelicsForEvent(count);
+        }
+
         ArrayList<AbstractRelic> pool = getRelicListForTier(tier);
         if (pool.isEmpty()) {
             return new ArrayList<>();
         }
 
-        // Filter to relics with short names for preview display
+        List<AbstractRelic> filtered = filterByNameLength(pool);
+        Collections.shuffle(filtered, previewRandom);
+
+        List<AbstractRelic> result = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            result.add(filtered.get(i % filtered.size()));
+        }
+        return result;
+    }
+
+    /**
+     * Select relics for Event tier preview:
+     * - First relic: random from specialList (event relics)
+     * - Additional relics: random from combined Common/Uncommon/Rare pools
+     */
+    private static List<AbstractRelic> selectRandomRelicsForEvent(int count) {
+        List<AbstractRelic> result = new ArrayList<>();
+
+        // First relic from event pool
+        ArrayList<AbstractRelic> eventPool = RelicLibrary.specialList;
+        if (!eventPool.isEmpty()) {
+            List<AbstractRelic> filtered = filterByNameLength(eventPool);
+            Collections.shuffle(filtered, previewRandom);
+            result.add(filtered.get(0));
+        }
+
+        // Additional relics from C/U/R pools
+        if (count > 1) {
+            List<AbstractRelic> combinedPool = new ArrayList<>();
+            combinedPool.addAll(filterByNameLength(RelicLibrary.commonList));
+            combinedPool.addAll(filterByNameLength(RelicLibrary.uncommonList));
+            combinedPool.addAll(filterByNameLength(RelicLibrary.rareList));
+
+            Collections.shuffle(combinedPool, previewRandom);
+
+            for (int i = 1; i < count && (i - 1) < combinedPool.size(); i++) {
+                result.add(combinedPool.get(i - 1));
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Filter relics to those with short names for preview display.
+     * Falls back to unfiltered list if no short names available.
+     */
+    private static List<AbstractRelic> filterByNameLength(ArrayList<AbstractRelic> pool) {
         List<AbstractRelic> filtered = new ArrayList<>();
         for (AbstractRelic relic : pool) {
             if (relic.name.length() <= MAX_PREVIEW_NAME_LENGTH) {
@@ -144,14 +196,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
         if (filtered.isEmpty()) {
             filtered = new ArrayList<>(pool);
         }
-
-        Collections.shuffle(filtered, previewRandom);
-
-        List<AbstractRelic> result = new ArrayList<>();
-        for (int i = 0; i < count; i++) {
-            result.add(filtered.get(i % filtered.size()));
-        }
-        return result;
+        return filtered;
     }
 
     /**

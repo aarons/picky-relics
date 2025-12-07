@@ -69,6 +69,12 @@ public class RelicChoicePreview implements IUIElement {
         float bgWidth = panelW + padding * 2;
         float bgHeight = contentHeight + bannerH + padding;
 
+        // Add extra space for event tier explanation text
+        boolean showEventExplanation = tier == AbstractRelic.RelicTier.SPECIAL && count > 1;
+        if (showEventExplanation) {
+            bgHeight += 70.0f * Settings.scale;
+        }
+
         // Draw the reward screen background (lightened)
         sb.setColor(BACKGROUND_TINT);
         float bgX = scaledX - padding;
@@ -135,21 +141,53 @@ public class RelicChoicePreview implements IUIElement {
                 FontHelper.renderFontLeftTopAligned(sb, FontHelper.tipBodyFont,
                         relic.name,
                         labelX, labelY, Settings.CREAM_COLOR);
+
+                // Tier label uses the actual relic's tier (important for Event tier
+                // where additional relics come from C/U/R pools)
+                if (PickyRelicsMod.showTierLabels) {
+                    String relicTierName = getTierDisplayText(relic.tier);
+                    Color relicTierColor = getTierColor(relic.tier);
+                    renderTierLabel(sb, scaledX, currentY, panelW, relicTierName, relicTierColor);
+                }
             } else {
                 // Fallback: render silhouette if no relic available
                 renderSilhouette(sb, iconX, iconY);
                 FontHelper.renderFontLeftTopAligned(sb, FontHelper.tipBodyFont,
                         "???",
                         labelX, labelY, Settings.CREAM_COLOR);
-            }
 
-            // Tier label in bottom-right (when enabled)
-            if (PickyRelicsMod.showTierLabels) {
-                renderTierLabel(sb, scaledX, currentY, panelW, tierName, tierColor);
+                // Use the selected tier for placeholder labels
+                if (PickyRelicsMod.showTierLabels) {
+                    renderTierLabel(sb, scaledX, currentY, panelW, tierName, tierColor);
+                }
             }
 
             currentY -= ROW_HEIGHT * Settings.scale;
         }
+
+        // Render explanatory text for Event tier
+        if (showEventExplanation) {
+            renderEventExplanation(sb, scaledX, currentY, panelW);
+        }
+    }
+
+    /**
+     * Render explanatory text for Event tier selections.
+     */
+    private void renderEventExplanation(SpriteBatch sb, float panelX, float belowLastRowY, float panelW) {
+        float textY = belowLastRowY - 15.0f * Settings.scale;
+        float centerX = panelX + panelW / 2.0f;
+        float lineSpacing = 18.0f * Settings.scale;
+
+        FontHelper.renderFontCentered(sb, FontHelper.tipBodyFont,
+                "Event relics have special requirements.",
+                centerX, textY, Settings.GOLD_COLOR);
+        FontHelper.renderFontCentered(sb, FontHelper.tipBodyFont,
+                "Additional options are from Common,",
+                centerX, textY - lineSpacing, Settings.GOLD_COLOR);
+        FontHelper.renderFontCentered(sb, FontHelper.tipBodyFont,
+                "Uncommon, and Rare pools.",
+                centerX, textY - lineSpacing * 2, Settings.GOLD_COLOR);
     }
 
     /**

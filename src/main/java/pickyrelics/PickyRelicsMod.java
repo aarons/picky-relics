@@ -14,7 +14,6 @@ import com.megacrit.cardcrawl.core.Settings;
 import com.megacrit.cardcrawl.helpers.FontHelper;
 import com.megacrit.cardcrawl.helpers.RelicLibrary;
 import com.megacrit.cardcrawl.relics.AbstractRelic;
-import pickyrelics.ui.DropdownMenu;
 import pickyrelics.ui.PagedElement;
 import pickyrelics.ui.PageNavigator;
 import pickyrelics.ui.RelicChoicePreview;
@@ -46,10 +45,12 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
     private static final String CONFIG_SHOP_CHOICES = "shopChoices";
     private static final String CONFIG_SPECIAL_CHOICES = "specialChoices";
     private static final String CONFIG_TIER_CHANGE_CHANCE = "tierChangeChance";
+    private static final String CONFIG_ALLOW_HIGHER_TIERS = "allowHigherTiers";
+    private static final String CONFIG_ALLOW_LOWER_TIERS = "allowLowerTiers";
+    private static final String CONFIG_ALLOW_SHOP_RELICS = "allowShopRelics";
+    private static final String CONFIG_ALLOW_BOSS_RELICS = "allowBossRelics";
+    // Legacy config keys for migration
     private static final String CONFIG_TIER_DIRECTION = "tierDirection";
-    private static final String CONFIG_TIER_COMMON_ENABLED = "tierCommonEnabled";
-    private static final String CONFIG_TIER_UNCOMMON_ENABLED = "tierUncommonEnabled";
-    private static final String CONFIG_TIER_RARE_ENABLED = "tierRareEnabled";
     private static final String CONFIG_TIER_SHOP_ENABLED = "tierShopEnabled";
     private static final String CONFIG_TIER_BOSS_ENABLED = "tierBossEnabled";
 
@@ -70,22 +71,11 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
     // Tier change chance: 0 to 100 (probability that tier will change)
     public static int tierChangeChance = 0;
 
-    // Direction of tier change when it occurs
-    public enum TierDirection {
-        SAME_OR_BETTER,   // Can stay same or go up
-        SAME_OR_WORSE,    // Can stay same or go down
-        ALWAYS_BETTER,    // Must go up
-        ALWAYS_WORSE,     // Must go down
-        CHAOS             // Any enabled tier randomly
-    }
-    public static TierDirection tierDirection = TierDirection.SAME_OR_BETTER;
-
-    // Which tiers are available for additional choices (C/U/R enabled by default)
-    public static boolean tierCommonEnabled = true;
-    public static boolean tierUncommonEnabled = true;
-    public static boolean tierRareEnabled = true;
-    public static boolean tierShopEnabled = false;
-    public static boolean tierBossEnabled = false;
+    // Tier direction options (which tiers can be selected when tier changes)
+    public static boolean allowHigherTiers = false;  // Can tier go up (toward Rare/Boss)
+    public static boolean allowLowerTiers = false;   // Can tier go down (toward Common)
+    public static boolean allowShopRelics = false;   // Include Shop tier in pool
+    public static boolean allowBossRelics = false;   // Include Boss tier in pool
 
     // UI page tracking
     private static final int PAGE_CHOICES = 0;
@@ -98,18 +88,6 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
     private static List<AbstractRelic> previewRelics = new ArrayList<>();
     private static final Random previewRandom = new Random();
     private static final int MAX_PREVIEW_NAME_LENGTH = 12;
-
-    // Dropdown for tier direction selection
-    private DropdownMenu tierDirectionDropdown;
-
-    // Display names for tier direction options
-    private static final String[] TIER_DIRECTION_NAMES = {
-        "Same tier or better",
-        "Same tier or worse",
-        "Always a better tier",
-        "Always a worse tier",
-        "Chaos - Any tier"
-    };
 
     public static int getCurrentPage() {
         return currentPage;
@@ -283,124 +261,64 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
     }
 
     /**
-     * Get all tiers at a given hierarchy position.
+     * Build list of allowed tiers based on settings.
+     * Original tier is ALWAYS included. Other tiers depend on settings.
      */
-    private static List<AbstractRelic.RelicTier> getTiersAtPosition(int position) {
-        List<AbstractRelic.RelicTier> tiers = new ArrayList<>();
-        switch (position) {
-            case 0: tiers.add(AbstractRelic.RelicTier.COMMON); break;
-            case 1: tiers.add(AbstractRelic.RelicTier.UNCOMMON); break;
-            case 2:
-                tiers.add(AbstractRelic.RelicTier.RARE);
-                tiers.add(AbstractRelic.RelicTier.SHOP);
-                break;
-            case 3: tiers.add(AbstractRelic.RelicTier.BOSS); break;
-        }
-        return tiers;
-    }
-
-    /**
-     * Check if a tier is enabled in settings.
-     */
-    public static boolean isTierEnabled(AbstractRelic.RelicTier tier) {
-        switch (tier) {
-            case COMMON: return tierCommonEnabled;
-            case UNCOMMON: return tierUncommonEnabled;
-            case RARE: return tierRareEnabled;
-            case SHOP: return tierShopEnabled;
-            case BOSS: return tierBossEnabled;
-            default: return false;
-        }
-    }
-
-    /**
-     * Pick a random enabled tier from the given position range (inclusive).
-     * Returns null if no enabled tiers in range.
-     */
-    private static AbstractRelic.RelicTier pickRandomEnabledTierInRange(int minPos, int maxPos, Random rng) {
+    private static List<AbstractRelic.RelicTier> getAllowedTiers(AbstractRelic.RelicTier original, Random rng) {
         List<AbstractRelic.RelicTier> candidates = new ArrayList<>();
+        int originalPos = getTierPosition(original);
 
-        for (int pos = minPos; pos <= maxPos; pos++) {
-            for (AbstractRelic.RelicTier tier : getTiersAtPosition(pos)) {
-                if (isTierEnabled(tier)) {
-                    candidates.add(tier);
-                }
+        // Original tier is always allowed
+        candidates.add(original);
+
+        // Add lower tiers if allowed
+        if (allowLowerTiers) {
+            if (originalPos > 0) candidates.add(AbstractRelic.RelicTier.COMMON);
+            if (originalPos > 1) candidates.add(AbstractRelic.RelicTier.UNCOMMON);
+        }
+
+        // Add higher tiers if allowed
+        if (allowHigherTiers) {
+            if (originalPos < 1) candidates.add(AbstractRelic.RelicTier.UNCOMMON);
+            if (originalPos < 2) candidates.add(AbstractRelic.RelicTier.RARE);
+            if (allowBossRelics && originalPos < 3) candidates.add(AbstractRelic.RelicTier.BOSS);
+        }
+
+        // Add Shop if allowed (same hierarchy position as Rare)
+        if (allowShopRelics && original != AbstractRelic.RelicTier.SHOP) {
+            // Shop can be added if we allow higher and we're below it, or lower and above it
+            if ((allowHigherTiers && originalPos < 2) || (allowLowerTiers && originalPos > 2) ||
+                (originalPos == 2)) {  // Same position but different tier
+                candidates.add(AbstractRelic.RelicTier.SHOP);
             }
         }
 
-        if (candidates.isEmpty()) {
-            return null;
-        }
-
-        return candidates.get(rng.nextInt(candidates.size()));
-    }
-
-    /**
-     * Calculate new tier based on direction setting.
-     * Returns null if no valid tier in the allowed range.
-     */
-    private static AbstractRelic.RelicTier calculateNewTier(AbstractRelic.RelicTier original, TierDirection direction, Random rng) {
-        int currentPos = getTierPosition(original);
-
-        switch (direction) {
-            case SAME_OR_BETTER:
-                // Can stay same or go up - pick from current position or higher
-                return pickRandomEnabledTierInRange(currentPos, 3, rng);
-
-            case SAME_OR_WORSE:
-                // Can stay same or go down - pick from current position or lower
-                return pickRandomEnabledTierInRange(0, currentPos, rng);
-
-            case ALWAYS_BETTER:
-                // Must go up - pick from positions above current
-                if (currentPos >= 3) return null;  // Already at top
-                return pickRandomEnabledTierInRange(currentPos + 1, 3, rng);
-
-            case ALWAYS_WORSE:
-                // Must go down - pick from positions below current
-                if (currentPos <= 0) return null;  // Already at bottom
-                return pickRandomEnabledTierInRange(0, currentPos - 1, rng);
-
-            case CHAOS:
-                // Any enabled tier - pick from all positions
-                return pickRandomEnabledTierInRange(0, 3, rng);
-
-            default:
-                return isTierEnabled(original) ? original : null;
-        }
+        return candidates;
     }
 
     /**
      * Calculate a potentially modified tier for additional relic choices.
      *
-     * Algorithm:
-     * 1. Roll tierChangeChance% to determine if tier changes at all
-     * 2. If not changing, return original tier (if enabled)
-     * 3. If changing, apply direction rules to select new tier
-     * 4. Filter by enabled tiers
+     * Simplified algorithm:
+     * 1. Roll tierChangeChance% to determine if tier can change
+     * 2. If not changing, return original tier
+     * 3. If changing, pick randomly from allowed tiers based on settings
      *
      * @param originalTier The original tier of the relic reward
      * @param rng Random number generator to use
-     * @return The tier to use, or null if no valid tier available
+     * @return The tier to use (never null - original tier is always valid)
      */
     public static AbstractRelic.RelicTier calculateModifiedTier(AbstractRelic.RelicTier originalTier, Random rng) {
-        int chance = tierChangeChance;
-        TierDirection direction = tierDirection;
-
         // Roll to see if tier changes at all
-        boolean shouldChange = chance > 0 && rng.nextInt(100) < chance;
+        boolean shouldChange = tierChangeChance > 0 && rng.nextInt(100) < tierChangeChance;
 
         if (!shouldChange) {
-            // No change - return original tier if enabled
-            if (isTierEnabled(originalTier)) {
-                return originalTier;
-            }
-            // Original tier not enabled - try to find alternative based on direction
-            return calculateNewTier(originalTier, direction, rng);
+            return originalTier;  // Original tier is always valid
         }
 
-        // Tier is changing - determine new tier based on direction
-        return calculateNewTier(originalTier, direction, rng);
+        // Tier can change - pick from allowed tiers
+        List<AbstractRelic.RelicTier> candidates = getAllowedTiers(originalTier, rng);
+        return candidates.get(rng.nextInt(candidates.size()));
     }
 
     /**
@@ -451,12 +369,10 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
             defaults.setProperty(CONFIG_SHOP_CHOICES, "2");
             defaults.setProperty(CONFIG_SPECIAL_CHOICES, "2");
             defaults.setProperty(CONFIG_TIER_CHANGE_CHANCE, "0");
-            defaults.setProperty(CONFIG_TIER_DIRECTION, "0");
-            defaults.setProperty(CONFIG_TIER_COMMON_ENABLED, "true");
-            defaults.setProperty(CONFIG_TIER_UNCOMMON_ENABLED, "true");
-            defaults.setProperty(CONFIG_TIER_RARE_ENABLED, "true");
-            defaults.setProperty(CONFIG_TIER_SHOP_ENABLED, "false");
-            defaults.setProperty(CONFIG_TIER_BOSS_ENABLED, "false");
+            defaults.setProperty(CONFIG_ALLOW_HIGHER_TIERS, "false");
+            defaults.setProperty(CONFIG_ALLOW_LOWER_TIERS, "false");
+            defaults.setProperty(CONFIG_ALLOW_SHOP_RELICS, "false");
+            defaults.setProperty(CONFIG_ALLOW_BOSS_RELICS, "false");
 
             config = new SpireConfig(MOD_ID, "config", defaults);
 
@@ -468,37 +384,50 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
             bossChoices = clamp(config.getInt(CONFIG_BOSS_CHOICES), 1, 5);
             shopChoices = clamp(config.getInt(CONFIG_SHOP_CHOICES), 1, 5);
             specialChoices = clamp(config.getInt(CONFIG_SPECIAL_CHOICES), 1, 5);
+            tierChangeChance = clamp(config.getInt(CONFIG_TIER_CHANGE_CHANCE), 0, 100);
 
-            // Load tier change settings with migration from old format
-            int rawChance = config.getInt(CONFIG_TIER_CHANGE_CHANCE);
-            int rawDirection = config.getInt(CONFIG_TIER_DIRECTION);
-
-            // Migration: old negative values meant "trend toward Common"
-            if (rawChance < 0 && rawDirection == 0) {
-                tierChangeChance = Math.abs(rawChance);
-                tierDirection = TierDirection.ALWAYS_WORSE;
-                Log.info("Migrating old negative tierChangeChance to new format");
-            } else if (rawChance > 0 && rawDirection == 0 && !config.has(CONFIG_TIER_DIRECTION)) {
-                // Old positive value meant "trend toward Rare"
-                tierChangeChance = rawChance;
-                tierDirection = TierDirection.ALWAYS_BETTER;
-                Log.info("Migrating old positive tierChangeChance to new format");
+            // Check for migration from old format
+            if (config.has(CONFIG_TIER_DIRECTION) && !config.has(CONFIG_ALLOW_HIGHER_TIERS)) {
+                // Migrate from old TierDirection enum
+                int oldDirection = config.getInt(CONFIG_TIER_DIRECTION);
+                switch (oldDirection) {
+                    case 0: // SAME_OR_BETTER
+                    case 2: // ALWAYS_BETTER
+                        allowHigherTiers = true;
+                        allowLowerTiers = false;
+                        break;
+                    case 1: // SAME_OR_WORSE
+                    case 3: // ALWAYS_WORSE
+                        allowHigherTiers = false;
+                        allowLowerTiers = true;
+                        break;
+                    case 4: // CHAOS
+                        allowHigherTiers = true;
+                        allowLowerTiers = true;
+                        break;
+                    default:
+                        allowHigherTiers = false;
+                        allowLowerTiers = false;
+                }
+                // Migrate shop/boss from old keys
+                allowShopRelics = config.getBool(CONFIG_TIER_SHOP_ENABLED);
+                allowBossRelics = config.getBool(CONFIG_TIER_BOSS_ENABLED);
+                Log.info("Migrated old tier direction config to new format");
             } else {
-                tierChangeChance = clamp(rawChance, 0, 100);
-                tierDirection = TierDirection.values()[clamp(rawDirection, 0, 4)];
+                // Load new format
+                allowHigherTiers = config.getBool(CONFIG_ALLOW_HIGHER_TIERS);
+                allowLowerTiers = config.getBool(CONFIG_ALLOW_LOWER_TIERS);
+                allowShopRelics = config.getBool(CONFIG_ALLOW_SHOP_RELICS);
+                allowBossRelics = config.getBool(CONFIG_ALLOW_BOSS_RELICS);
             }
-
-            tierCommonEnabled = config.getBool(CONFIG_TIER_COMMON_ENABLED);
-            tierUncommonEnabled = config.getBool(CONFIG_TIER_UNCOMMON_ENABLED);
-            tierRareEnabled = config.getBool(CONFIG_TIER_RARE_ENABLED);
-            tierShopEnabled = config.getBool(CONFIG_TIER_SHOP_ENABLED);
-            tierBossEnabled = config.getBool(CONFIG_TIER_BOSS_ENABLED);
 
             Log.info("Config loaded: showTierLabels=" + showTierLabels +
                     ", starter=" + starterChoices + ", common=" + commonChoices +
                     ", uncommon=" + uncommonChoices + ", rare=" + rareChoices +
                     ", boss=" + bossChoices + ", shop=" + shopChoices + ", special=" + specialChoices +
-                    ", tierChangeChance=" + tierChangeChance + ", tierDirection=" + tierDirection);
+                    ", tierChangeChance=" + tierChangeChance +
+                    ", allowHigher=" + allowHigherTiers + ", allowLower=" + allowLowerTiers +
+                    ", allowShop=" + allowShopRelics + ", allowBoss=" + allowBossRelics);
         } catch (IOException e) {
             Log.error("Failed to load config", e);
         }
@@ -519,25 +448,13 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
             config.setInt(CONFIG_SHOP_CHOICES, shopChoices);
             config.setInt(CONFIG_SPECIAL_CHOICES, specialChoices);
             config.setInt(CONFIG_TIER_CHANGE_CHANCE, tierChangeChance);
-            config.setInt(CONFIG_TIER_DIRECTION, tierDirection.ordinal());
-            config.setBool(CONFIG_TIER_COMMON_ENABLED, tierCommonEnabled);
-            config.setBool(CONFIG_TIER_UNCOMMON_ENABLED, tierUncommonEnabled);
-            config.setBool(CONFIG_TIER_RARE_ENABLED, tierRareEnabled);
-            config.setBool(CONFIG_TIER_SHOP_ENABLED, tierShopEnabled);
-            config.setBool(CONFIG_TIER_BOSS_ENABLED, tierBossEnabled);
+            config.setBool(CONFIG_ALLOW_HIGHER_TIERS, allowHigherTiers);
+            config.setBool(CONFIG_ALLOW_LOWER_TIERS, allowLowerTiers);
+            config.setBool(CONFIG_ALLOW_SHOP_RELICS, allowShopRelics);
+            config.setBool(CONFIG_ALLOW_BOSS_RELICS, allowBossRelics);
             config.save();
         } catch (IOException e) {
             Log.error("Failed to save config", e);
-        }
-    }
-
-    private void setTierDirection(TierDirection direction) {
-        tierDirection = direction;
-        saveConfig();
-
-        // Update the dropdown selection
-        if (tierDirectionDropdown != null) {
-            tierDirectionDropdown.setSelectedIndex(direction.ordinal());
         }
     }
 
@@ -708,105 +625,69 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
 
         yPos -= 50.0f;
 
-        // Tier direction section
-        addPagedElement(settingsPanel, PAGE_ALGORITHMS, new ModLabel(
-                "Tier selection behavior",
-                xPos, yPos,
+        float checkboxX = xPos + 20.0f;
+
+        // Tier direction checkboxes
+        addPagedElement(settingsPanel, PAGE_ALGORITHMS, new ModLabeledToggleButton(
+                "Allow options from higher tiers",
+                checkboxX, yPos,
                 Settings.CREAM_COLOR,
-                FontHelper.tipHeaderFont,
+                FontHelper.tipBodyFont,
+                allowHigherTiers,
                 settingsPanel,
-                (label) -> {}
+                (label) -> {},
+                (toggle) -> { allowHigherTiers = toggle.enabled; saveConfig(); }
         ));
 
         yPos -= 35.0f;
 
-        // Dropdown menu for tier direction selection
-        float dropdownX = xPos + 20.0f;
-        tierDirectionDropdown = new DropdownMenu(
-                TIER_DIRECTION_NAMES,
-                tierDirection.ordinal(),
-                dropdownX, yPos,
-                (index) -> setTierDirection(TierDirection.values()[index])
-        );
-        addPagedElement(settingsPanel, PAGE_ALGORITHMS, tierDirectionDropdown);
+        addPagedElement(settingsPanel, PAGE_ALGORITHMS, new ModLabeledToggleButton(
+                "Allow options from lower tiers",
+                checkboxX, yPos,
+                Settings.CREAM_COLOR,
+                FontHelper.tipBodyFont,
+                allowLowerTiers,
+                settingsPanel,
+                (label) -> {},
+                (toggle) -> { allowLowerTiers = toggle.enabled; saveConfig(); }
+        ));
 
         yPos -= 50.0f;
 
-        // Tiers available section
+        // Shop/Boss relic section
         addPagedElement(settingsPanel, PAGE_ALGORITHMS, new ModLabel(
-                "Tiers that options may be selected from",
+                "Should Shop and Boss Relics be available for randomized rewards?",
                 xPos, yPos,
-                Settings.CREAM_COLOR,
-                FontHelper.tipHeaderFont,
+                Settings.GOLD_COLOR,
+                FontHelper.tipBodyFont,
                 settingsPanel,
                 (label) -> {}
         ));
 
+        yPos -= 40.0f;
+
+        addPagedElement(settingsPanel, PAGE_ALGORITHMS, new ModLabeledToggleButton(
+                "Allow shop relics",
+                checkboxX, yPos,
+                Settings.CREAM_COLOR,
+                FontHelper.tipBodyFont,
+                allowShopRelics,
+                settingsPanel,
+                (label) -> {},
+                (toggle) -> { allowShopRelics = toggle.enabled; saveConfig(); }
+        ));
+
         yPos -= 35.0f;
 
-        float checkboxX = xPos + 20.0f;
-
         addPagedElement(settingsPanel, PAGE_ALGORITHMS, new ModLabeledToggleButton(
-                "Common",
+                "Allow boss relics",
                 checkboxX, yPos,
                 Settings.CREAM_COLOR,
                 FontHelper.tipBodyFont,
-                tierCommonEnabled,
+                allowBossRelics,
                 settingsPanel,
                 (label) -> {},
-                (toggle) -> { tierCommonEnabled = toggle.enabled; saveConfig(); }
-        ));
-
-        yPos -= 30.0f;
-
-        addPagedElement(settingsPanel, PAGE_ALGORITHMS, new ModLabeledToggleButton(
-                "Uncommon",
-                checkboxX, yPos,
-                Settings.CREAM_COLOR,
-                FontHelper.tipBodyFont,
-                tierUncommonEnabled,
-                settingsPanel,
-                (label) -> {},
-                (toggle) -> { tierUncommonEnabled = toggle.enabled; saveConfig(); }
-        ));
-
-        yPos -= 30.0f;
-
-        addPagedElement(settingsPanel, PAGE_ALGORITHMS, new ModLabeledToggleButton(
-                "Rare",
-                checkboxX, yPos,
-                Settings.CREAM_COLOR,
-                FontHelper.tipBodyFont,
-                tierRareEnabled,
-                settingsPanel,
-                (label) -> {},
-                (toggle) -> { tierRareEnabled = toggle.enabled; saveConfig(); }
-        ));
-
-        yPos -= 30.0f;
-
-        addPagedElement(settingsPanel, PAGE_ALGORITHMS, new ModLabeledToggleButton(
-                "Shop",
-                checkboxX, yPos,
-                Settings.CREAM_COLOR,
-                FontHelper.tipBodyFont,
-                tierShopEnabled,
-                settingsPanel,
-                (label) -> {},
-                (toggle) -> { tierShopEnabled = toggle.enabled; saveConfig(); }
-        ));
-
-        yPos -= 30.0f;
-
-        addPagedElement(settingsPanel, PAGE_ALGORITHMS, new ModLabeledToggleButton(
-                "Boss",
-                checkboxX, yPos,
-                Settings.CREAM_COLOR,
-                FontHelper.tipBodyFont,
-                tierBossEnabled,
-                settingsPanel,
-                (label) -> {},
-                (toggle) -> { tierBossEnabled = toggle.enabled; saveConfig(); }
+                (toggle) -> { allowBossRelics = toggle.enabled; saveConfig(); }
         ));
 
         BaseMod.registerModBadge(

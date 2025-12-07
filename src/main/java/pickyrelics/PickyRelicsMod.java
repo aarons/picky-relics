@@ -595,11 +595,11 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
         yPos = contentY;
 
         // Tier change chance slider (0-100%)
-        addPagedSliderRow(settingsPanel, PAGE_ALGORITHMS, "Chance for options to be a different tier", xPos, sliderX + 180.0f, yPos, sliderYOffset,
+        addPagedSliderRow(settingsPanel, PAGE_ALGORITHMS, "Chance for options to be a different tier", xPos, sliderX + 210.0f, yPos, sliderYOffset,
                 tierChangeChance, 0.0f, 100.0f, "%.0f%%",
                 (val) -> { tierChangeChance = val; saveConfig(); });
 
-        yPos -= rowHeight + 35.0f;
+        yPos -= rowHeight + 30.0f;
 
         float checkboxX = xPos + 20.0f;
 
@@ -640,7 +640,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
                 (label) -> {}
         ));
 
-        yPos -= 40.0f;
+        yPos -= 35.0f;
 
         addPagedElement(settingsPanel, PAGE_ALGORITHMS, new ModLabeledToggleButton(
                 "Allow shop relics",
@@ -653,7 +653,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
                 (toggle) -> { allowShopRelics = toggle.enabled; saveConfig(); }
         ));
 
-        yPos -= 35.0f;
+        yPos -= 30.0f;
 
         addPagedElement(settingsPanel, PAGE_ALGORITHMS, new ModLabeledToggleButton(
                 "Allow boss relics",

@@ -9,6 +9,7 @@ import com.megacrit.cardcrawl.helpers.FontHelper;
 import com.megacrit.cardcrawl.helpers.ImageMaster;
 import com.megacrit.cardcrawl.relics.AbstractRelic;
 import pickyrelics.PickyRelicsMod;
+import pickyrelics.util.TierUtils;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -99,8 +100,8 @@ public class RelicChoicePreview implements IUIElement {
         float currentY = startY - 55.0f * Settings.scale;  // More separation from header
 
         // Get tier info for labels
-        String tierName = getTierDisplayText(tier);
-        Color tierColor = getTierColor(tier);
+        String tierName = TierUtils.getTierDisplayText(tier);
+        Color tierColor = TierUtils.getTierColor(tier);
 
         // Calculate center X for chain icons (centered with panel)
         float panelCenterX = scaledX + panelW / 2.0f;
@@ -139,8 +140,8 @@ public class RelicChoicePreview implements IUIElement {
                 // Tier label uses the actual relic's tier (important for Event tier
                 // where additional relics come from C/U/R pools)
                 if (PickyRelicsMod.showTierLabels) {
-                    String relicTierName = getTierDisplayText(relic.tier);
-                    Color relicTierColor = getTierColor(relic.tier);
+                    String relicTierName = TierUtils.getTierDisplayText(relic.tier);
+                    Color relicTierColor = TierUtils.getTierColor(relic.tier);
                     renderTierLabel(sb, scaledX, currentY, panelW, relicTierName, relicTierColor);
                 }
             } else {
@@ -224,25 +225,27 @@ public class RelicChoicePreview implements IUIElement {
         dimmed.g *= 0.35f;
         dimmed.b *= 0.35f;
 
-        // Scale font to 80%
+        // Scale font to 80% (with try-finally to ensure restoration)
         float originalScaleX = FontHelper.cardDescFont_N.getData().scaleX;
         float originalScaleY = FontHelper.cardDescFont_N.getData().scaleY;
         FontHelper.cardDescFont_N.getData().setScale(originalScaleX * 0.8f, originalScaleY * 0.8f);
 
-        // Position at right edge with margin, raised by 40% of line height
-        float x = panelX + panelW - 15.0f * Settings.scale;
-        float lineHeight = FontHelper.cardDescFont_N.getLineHeight();
-        float y = centerY - 12.0f * Settings.scale + lineHeight * 0.4f;
+        try {
+            // Position at right edge with margin, raised by 40% of line height
+            float x = panelX + panelW - 15.0f * Settings.scale;
+            float lineHeight = FontHelper.cardDescFont_N.getLineHeight();
+            float y = centerY - 12.0f * Settings.scale + lineHeight * 0.4f;
 
-        // Right-align text (measure with scaled font)
-        FontHelper.layout.setText(FontHelper.cardDescFont_N, tierText);
-        float textX = x - FontHelper.layout.width;
+            // Right-align text (measure with scaled font)
+            FontHelper.layout.setText(FontHelper.cardDescFont_N, tierText);
+            float textX = x - FontHelper.layout.width;
 
-        FontHelper.cardDescFont_N.setColor(dimmed);
-        FontHelper.cardDescFont_N.draw(sb, tierText, textX, y);
-
-        // Restore original scale
-        FontHelper.cardDescFont_N.getData().setScale(originalScaleX, originalScaleY);
+            FontHelper.cardDescFont_N.setColor(dimmed);
+            FontHelper.cardDescFont_N.draw(sb, tierText, textX, y);
+        } finally {
+            // Restore original scale even if exception occurs
+            FontHelper.cardDescFont_N.getData().setScale(originalScaleX, originalScaleY);
+        }
     }
 
     @Override
@@ -258,37 +261,5 @@ public class RelicChoicePreview implements IUIElement {
     @Override
     public int updateOrder() {
         return 1;
-    }
-
-    /**
-     * Get display text for a relic tier.
-     */
-    private static String getTierDisplayText(AbstractRelic.RelicTier tier) {
-        switch (tier) {
-            case STARTER:  return "Starter";
-            case COMMON:   return "Common";
-            case UNCOMMON: return "Uncommon";
-            case RARE:     return "Rare";
-            case BOSS:     return "Boss";
-            case SHOP:     return "Shop";
-            case SPECIAL:  return "Event";
-            default:       return "";
-        }
-    }
-
-    /**
-     * Get color for a relic tier.
-     */
-    private static Color getTierColor(AbstractRelic.RelicTier tier) {
-        switch (tier) {
-            case STARTER:  return Settings.PURPLE_COLOR;
-            case COMMON:   return Settings.GREEN_TEXT_COLOR;
-            case UNCOMMON: return Settings.BLUE_TEXT_COLOR;
-            case RARE:     return Settings.GOLD_COLOR;
-            case BOSS:     return Settings.RED_TEXT_COLOR;
-            case SHOP:     return Settings.GOLD_COLOR;
-            case SPECIAL:  return Settings.PURPLE_COLOR;
-            default:       return Settings.CREAM_COLOR;
-        }
     }
 }

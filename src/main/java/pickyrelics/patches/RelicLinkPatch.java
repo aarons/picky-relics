@@ -14,6 +14,7 @@ import com.megacrit.cardcrawl.rewards.RewardItem;
 import com.megacrit.cardcrawl.screens.CombatRewardScreen;
 import pickyrelics.PickyRelicsMod;
 import pickyrelics.util.Log;
+import pickyrelics.util.TierUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,99 +39,15 @@ public class RelicLinkPatch {
     }
 
     /**
-     * Get display text for a relic tier.
-     */
-    private static String getTierDisplayText(AbstractRelic.RelicTier tier) {
-        switch (tier) {
-            case STARTER:  return "Starter";
-            case COMMON:   return "Common";
-            case UNCOMMON: return "Uncommon";
-            case RARE:     return "Rare";
-            case BOSS:     return "Boss";
-            case SHOP:     return "Shop";
-            case SPECIAL:  return "Event";
-            default:       return "";
-        }
-    }
-
-    /**
-     * Get color for a relic tier.
-     */
-    private static Color getTierColor(AbstractRelic.RelicTier tier) {
-        switch (tier) {
-            case STARTER:  return Settings.PURPLE_COLOR;
-            case COMMON:   return Settings.GREEN_TEXT_COLOR;
-            case UNCOMMON: return Settings.BLUE_TEXT_COLOR;
-            case RARE:     return Settings.GOLD_COLOR;
-            case BOSS:     return Settings.RED_TEXT_COLOR;
-            case SHOP:     return Settings.GOLD_COLOR;
-            case SPECIAL:  return Settings.PURPLE_COLOR;
-            default:       return Settings.CREAM_COLOR;
-        }
-    }
-
-    /**
-     * Build list of allowed tiers based on settings.
-     * Original tier is ALWAYS included. Other tiers depend on settings.
-     * Uses game's relicRng for seeded randomness during gameplay.
-     */
-    private static List<AbstractRelic.RelicTier> getAllowedTiers(AbstractRelic.RelicTier original) {
-        List<AbstractRelic.RelicTier> candidates = new ArrayList<>();
-        int originalPos = PickyRelicsMod.getTierPosition(original);
-
-        // Original tier is always allowed
-        candidates.add(original);
-
-        // Add lower tiers if allowed
-        if (PickyRelicsMod.allowLowerTiers) {
-            if (originalPos > 0) candidates.add(AbstractRelic.RelicTier.COMMON);
-            if (originalPos > 1) candidates.add(AbstractRelic.RelicTier.UNCOMMON);
-        }
-
-        // Add higher tiers if allowed
-        if (PickyRelicsMod.allowHigherTiers) {
-            if (originalPos < 1) candidates.add(AbstractRelic.RelicTier.UNCOMMON);
-            if (originalPos < 2) candidates.add(AbstractRelic.RelicTier.RARE);
-            if (PickyRelicsMod.allowBossRelics && originalPos < 3) candidates.add(AbstractRelic.RelicTier.BOSS);
-        }
-
-        // Add Shop if allowed (same hierarchy position as Rare)
-        if (PickyRelicsMod.allowShopRelics && original != AbstractRelic.RelicTier.SHOP) {
-            if ((PickyRelicsMod.allowHigherTiers && originalPos < 2) ||
-                (PickyRelicsMod.allowLowerTiers && originalPos > 2) ||
-                (originalPos == 2)) {
-                candidates.add(AbstractRelic.RelicTier.SHOP);
-            }
-        }
-
-        return candidates;
-    }
-
-    /**
-     * Calculate a potentially modified tier for additional relic choices.
-     * Uses game's relicRng for seeded randomness during gameplay.
-     *
-     * Simplified algorithm:
-     * 1. Roll tierChangeChance% to determine if tier can change
-     * 2. If not changing, return original tier
-     * 3. If changing, pick randomly from allowed tiers based on settings
-     *
-     * @param originalTier The original tier of the relic reward
-     * @return The tier to use (never null - original tier is always valid)
+     * Calculate a potentially modified tier using game's seeded RNG.
+     * Wrapper around TierUtils.calculateModifiedTier with game-specific RNG.
      */
     private static AbstractRelic.RelicTier calculateModifiedTier(AbstractRelic.RelicTier originalTier) {
-        int chance = PickyRelicsMod.tierChangeChance;
-
-        // Roll to see if tier changes at all
-        boolean shouldChange = chance > 0 && AbstractDungeon.relicRng.randomBoolean(chance / 100.0f);
-
-        if (!shouldChange) {
-            return originalTier;  // Original tier is always valid
-        }
-
-        // Tier can change - pick from allowed tiers
-        List<AbstractRelic.RelicTier> candidates = getAllowedTiers(originalTier);
-        return candidates.get(AbstractDungeon.relicRng.random(candidates.size() - 1));
+        return TierUtils.calculateModifiedTier(
+                originalTier,
+                chance -> AbstractDungeon.relicRng.randomBoolean(chance / 100.0f) ? 1 : 0,
+                size -> AbstractDungeon.relicRng.random(size - 1)
+        );
     }
 
     /**
@@ -238,10 +155,10 @@ public class RelicLinkPatch {
     private static void renderTierLabel(RewardItem reward, SpriteBatch sb) {
         if (!PickyRelicsMod.showTierLabels) return;
 
-        String tierText = getTierDisplayText(reward.relic.tier);
+        String tierText = TierUtils.getTierDisplayText(reward.relic.tier);
         if (tierText.isEmpty()) return;
 
-        Color tierColor = getTierColor(reward.relic.tier);
+        Color tierColor = TierUtils.getTierColor(reward.relic.tier);
         // Reduce brightness by 10% for subtler appearance
         Color dimmedColor = tierColor.cpy();
         dimmedColor.r *= 0.9F;

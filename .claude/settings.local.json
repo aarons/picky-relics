@@ -11,7 +11,8 @@
       "Bash(find:*)",
       "Bash(javap:*)",
       "Bash(grep:*)",
-      "Bash(magick:*)"
+      "Bash(magick:*)",
+      "Bash(mvn compile:*)"
     ],
     "deny": [],
     "ask": []

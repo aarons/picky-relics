@@ -18,13 +18,16 @@ import pickyrelics.ui.PagedElement;
 import pickyrelics.ui.PageNavigator;
 import pickyrelics.ui.RelicChoicePreview;
 import pickyrelics.util.Log;
+import pickyrelics.util.TierUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Random;
+import java.util.Set;
 
 @SpireInitializer
 public class PickyRelicsMod implements PostInitializeSubscriber {
@@ -146,6 +149,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
         }
 
         List<AbstractRelic> result = new ArrayList<>();
+        Set<String> usedIds = new HashSet<>();  // O(1) duplicate detection
 
         // First relic always from original tier
         ArrayList<AbstractRelic> originalPool = getRelicListForTier(tier);
@@ -154,7 +158,9 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
         }
         List<AbstractRelic> filteredOriginal = filterByNameLength(originalPool);
         Collections.shuffle(filteredOriginal, previewRandom);
-        result.add(filteredOriginal.get(0));
+        AbstractRelic firstRelic = filteredOriginal.get(0);
+        result.add(firstRelic);
+        usedIds.add(firstRelic.relicId);
 
         // Additional relics: apply tier modification algorithm
         for (int i = 1; i < count; i++) {
@@ -173,20 +179,14 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
 
             // Avoid picking same relic as previous ones if possible
             AbstractRelic candidate = filtered.get(0);
-            for (int j = 0; j < filtered.size(); j++) {
-                boolean duplicate = false;
-                for (AbstractRelic existing : result) {
-                    if (existing.relicId.equals(filtered.get(j).relicId)) {
-                        duplicate = true;
-                        break;
-                    }
-                }
-                if (!duplicate) {
-                    candidate = filtered.get(j);
+            for (AbstractRelic relic : filtered) {
+                if (!usedIds.contains(relic.relicId)) {
+                    candidate = relic;
                     break;
                 }
             }
             result.add(candidate);
+            usedIds.add(candidate.relicId);
         }
         return result;
     }
@@ -243,82 +243,30 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
         return filtered;
     }
 
-    // ===== Tier Calculation Utilities (shared with RelicLinkPatch) =====
+    // ===== Tier Calculation Utilities (delegating to TierUtils) =====
 
     /**
      * Get hierarchy position for a tier.
-     * Common=0, Uncommon=1, Rare=Shop=2, Boss=3
+     * Delegates to TierUtils for shared implementation.
      */
     public static int getTierPosition(AbstractRelic.RelicTier tier) {
-        switch (tier) {
-            case COMMON: return 0;
-            case UNCOMMON: return 1;
-            case RARE: return 2;
-            case SHOP: return 2;  // Shop equivalent to Rare
-            case BOSS: return 3;
-            default: return 1;
-        }
-    }
-
-    /**
-     * Build list of allowed tiers based on settings.
-     * Original tier is ALWAYS included. Other tiers depend on settings.
-     */
-    private static List<AbstractRelic.RelicTier> getAllowedTiers(AbstractRelic.RelicTier original, Random rng) {
-        List<AbstractRelic.RelicTier> candidates = new ArrayList<>();
-        int originalPos = getTierPosition(original);
-
-        // Original tier is always allowed
-        candidates.add(original);
-
-        // Add lower tiers if allowed
-        if (allowLowerTiers) {
-            if (originalPos > 0) candidates.add(AbstractRelic.RelicTier.COMMON);
-            if (originalPos > 1) candidates.add(AbstractRelic.RelicTier.UNCOMMON);
-        }
-
-        // Add higher tiers if allowed
-        if (allowHigherTiers) {
-            if (originalPos < 1) candidates.add(AbstractRelic.RelicTier.UNCOMMON);
-            if (originalPos < 2) candidates.add(AbstractRelic.RelicTier.RARE);
-            if (allowBossRelics && originalPos < 3) candidates.add(AbstractRelic.RelicTier.BOSS);
-        }
-
-        // Add Shop if allowed (same hierarchy position as Rare)
-        if (allowShopRelics && original != AbstractRelic.RelicTier.SHOP) {
-            // Shop can be added if we allow higher and we're below it, or lower and above it
-            if ((allowHigherTiers && originalPos < 2) || (allowLowerTiers && originalPos > 2) ||
-                (originalPos == 2)) {  // Same position but different tier
-                candidates.add(AbstractRelic.RelicTier.SHOP);
-            }
-        }
-
-        return candidates;
+        return TierUtils.getTierPosition(tier);
     }
 
     /**
      * Calculate a potentially modified tier for additional relic choices.
-     *
-     * Simplified algorithm:
-     * 1. Roll tierChangeChance% to determine if tier can change
-     * 2. If not changing, return original tier
-     * 3. If changing, pick randomly from allowed tiers based on settings
+     * Wrapper around TierUtils.calculateModifiedTier using Java's Random.
      *
      * @param originalTier The original tier of the relic reward
      * @param rng Random number generator to use
      * @return The tier to use (never null - original tier is always valid)
      */
     public static AbstractRelic.RelicTier calculateModifiedTier(AbstractRelic.RelicTier originalTier, Random rng) {
-        // Roll to see if tier changes at all
-        boolean shouldChange = tierChangeChance > 0 && rng.nextInt(100) < tierChangeChance;
-
-        if (!shouldChange) {
-            return originalTier;  // Original tier is always valid
-        }
-
-        // Tier can change - pick from allowed tiers
-        List<AbstractRelic.RelicTier> candidates = getAllowedTiers(originalTier, rng);
-        return candidates.get(rng.nextInt(candidates.size()));
+        return TierUtils.calculateModifiedTier(
+                originalTier,
+                chance -> rng.nextInt(100) < chance ? 1 : 0,
+                rng::nextInt
+        );
     }
 
     /**

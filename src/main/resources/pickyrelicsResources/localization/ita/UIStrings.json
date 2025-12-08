@@ -1,0 +1,34 @@
+{
+  "pickyrelics:ModInfo": {
+    "TEXT": ["Picky Relics", "Aaron", "Scegli tra più opzioni di reliquie per livello. Configurabile (predefinito: 2)."]
+  },
+  "pickyrelics:TierNames": {
+    "TEXT": ["Iniziale", "Comune", "Non comune", "Rara", "Boss", "Negozio", "Evento"]
+  },
+  "pickyrelics:Settings": {
+    "TEXT": [
+      "Quante scelte appaiono nelle ricompense da combattimento e forziere",
+      "Mostra etichette del livello reliquia nella schermata ricompense",
+      "Le reliquie evento hanno requisiti speciali.",
+      "Le opzioni aggiuntive provengono dai gruppi",
+      "Comuni, Non comuni e Rari.",
+      "Probabilità che le opzioni siano di un livello diverso",
+      "Consenti opzioni da livelli superiori",
+      "Consenti opzioni da livelli inferiori",
+      "Includi reliquie negozio come opzioni",
+      "Includi reliquie boss come opzioni"
+    ]
+  },
+  "pickyrelics:Probability": {
+    "TEXT": ["Probabilità della 2ª Reliquia", "Iniziale", "Reliquia"]
+  },
+  "pickyrelics:Preview": {
+    "TEXT": ["Anteprima Bottino", "???"]
+  },
+  "pickyrelics:PageNav": {
+    "TEXT": ["pagina %d di %d"]
+  },
+  "pickyrelics:Tooltip": {
+    "TEXT": ["Collegate", "Ottenere questa reliquia rimuoverà le altre #y%d scelte di reliquie collegate."]
+  }
+}

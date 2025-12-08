@@ -1,0 +1,34 @@
+{
+  "pickyrelics:ModInfo": {
+    "TEXT": ["Picky Relics", "Aaron", "Her seviye için birden fazla kalıntı seçeneği sunar. Yapılandırılabilir (varsayılan: 2)."]
+  },
+  "pickyrelics:TierNames": {
+    "TEXT": ["Başlangıç", "Yaygın", "Nadir", "Çok Nadir", "Patron", "Dükkan", "Olay"]
+  },
+  "pickyrelics:Settings": {
+    "TEXT": [
+      "Savaş ve sandık ödüllerinde kaç seçenek görüneceği",
+      "Ödül ekranında kalıntı seviyesi etiketlerini göster",
+      "Olay kalıntılarının özel gereksinimleri vardır.",
+      "Ek seçenekler Yaygın,",
+      "Nadir ve Çok Nadir havuzlarından gelir.",
+      "Seçeneklerin farklı bir seviye olma olasılığı",
+      "Üst seviyelerden seçeneklere izin ver",
+      "Alt seviyelerden seçeneklere izin ver",
+      "Seçenekler olarak dükkan kalıntılarını dahil et",
+      "Seçenekler olarak patron kalıntılarını dahil et"
+    ]
+  },
+  "pickyrelics:Probability": {
+    "TEXT": ["2. Kalıntının Olasılığı", "Başlangıç", "Kalıntı"]
+  },
+  "pickyrelics:Preview": {
+    "TEXT": ["Ganimet Önizlemesi", "???"]
+  },
+  "pickyrelics:PageNav": {
+    "TEXT": ["%d/%d sayfa"]
+  },
+  "pickyrelics:Tooltip": {
+    "TEXT": ["Bağlantılı", "Bu kalıntıyı almak, diğer #y%d bağlantılı kalıntı seçeneğini kaldıracaktır."]
+  }
+}

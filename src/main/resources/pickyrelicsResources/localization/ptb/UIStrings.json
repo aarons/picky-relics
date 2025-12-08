@@ -1,0 +1,34 @@
+{
+  "pickyrelics:ModInfo": {
+    "TEXT": ["Picky Relics", "Aaron", "Escolha entre múltiplas opções de relíquia por nível. Configurável (padrão: 2)."]
+  },
+  "pickyrelics:TierNames": {
+    "TEXT": ["Inicial", "Comum", "Incomum", "Rara", "Chefe", "Loja", "Evento"]
+  },
+  "pickyrelics:Settings": {
+    "TEXT": [
+      "Quantas opções aparecem em recompensas de combate e baús",
+      "Mostrar rótulos de nível de relíquia na tela de recompensas",
+      "Relíquias de evento têm requisitos especiais.",
+      "Opções adicionais são dos conjuntos Comum,",
+      "Incomum e Raro.",
+      "Chance das opções serem de um nível diferente",
+      "Permitir opções de níveis superiores",
+      "Permitir opções de níveis inferiores",
+      "Incluir relíquias de loja como opções",
+      "Incluir relíquias de chefe como opções"
+    ]
+  },
+  "pickyrelics:Probability": {
+    "TEXT": ["Probabilidade da 2ª Relíquia", "Inicial", "Relíquia"]
+  },
+  "pickyrelics:Preview": {
+    "TEXT": ["Prévia de Saque", "???"]
+  },
+  "pickyrelics:PageNav": {
+    "TEXT": ["página %d de %d"]
+  },
+  "pickyrelics:Tooltip": {
+    "TEXT": ["Vinculada", "Obter esta relíquia removerá as outras #y%d opções de relíquia vinculadas."]
+  }
+}

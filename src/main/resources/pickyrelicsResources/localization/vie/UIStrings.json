@@ -1,0 +1,34 @@
+{
+  "pickyrelics:ModInfo": {
+    "TEXT": ["Picky Relics", "Aaron", "Chọn từ nhiều tùy chọn di vật theo từng cấp. Có thể cấu hình (mặc định: 2)."]
+  },
+  "pickyrelics:TierNames": {
+    "TEXT": ["Ban đầu", "Thường", "Không phổ biến", "Hiếm", "Trùm", "Cửa hàng", "Sự kiện"]
+  },
+  "pickyrelics:Settings": {
+    "TEXT": [
+      "Số lượng lựa chọn xuất hiện trong phần thưởng chiến đấu và rương",
+      "Hiển thị nhãn cấp độ di vật trên màn hình phần thưởng",
+      "Di vật sự kiện có yêu cầu đặc biệt.",
+      "Các tùy chọn bổ sung đến từ các nhóm Thường,",
+      "Không phổ biến và Hiếm.",
+      "Khả năng các tùy chọn có cấp độ khác",
+      "Cho phép tùy chọn từ các cấp độ cao hơn",
+      "Cho phép tùy chọn từ các cấp độ thấp hơn",
+      "Bao gồm di vật cửa hàng làm tùy chọn",
+      "Bao gồm di vật trùm làm tùy chọn"
+    ]
+  },
+  "pickyrelics:Probability": {
+    "TEXT": ["Xác suất Di vật thứ 2", "Bắt đầu", "Di vật"]
+  },
+  "pickyrelics:Preview": {
+    "TEXT": ["Xem trước phần thưởng", "???"]
+  },
+  "pickyrelics:PageNav": {
+    "TEXT": ["trang %d / %d"]
+  },
+  "pickyrelics:Tooltip": {
+    "TEXT": ["Liên kết", "Nhận di vật này sẽ loại bỏ #y%d lựa chọn di vật liên kết khác."]
+  }
+}

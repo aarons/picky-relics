@@ -1,0 +1,34 @@
+{
+  "pickyrelics:ModInfo": {
+    "TEXT": ["Picky Relics", "Aaron", "Wybieraj spośród wielu opcji reliktów w każdej kategorii. Konfigurowalne (domyślnie: 2)."]
+  },
+  "pickyrelics:TierNames": {
+    "TEXT": ["Startowy", "Pospolity", "Niepospolity", "Rzadki", "Boss", "Sklep", "Wydarzenie"]
+  },
+  "pickyrelics:Settings": {
+    "TEXT": [
+      "Ile opcji pojawia się w nagrodach z walki i skrzyń",
+      "Pokaż etykiety kategorii reliktów na ekranie nagród",
+      "Relікty z wydarzeń mają specjalne wymagania.",
+      "Dodatkowe opcje pochodzą z pul Pospolitych,",
+      "Niepospolitych i Rzadkich.",
+      "Szansa na opcje z innej kategorii",
+      "Zezwól na opcje z wyższych kategorii",
+      "Zezwól na opcje z niższych kategorii",
+      "Uwzględnij relікty sklepowe jako opcje",
+      "Uwzględnij relікty bossów jako opcje"
+    ]
+  },
+  "pickyrelics:Probability": {
+    "TEXT": ["Prawdopodobieństwo 2. Reliktu", "Początkowy", "Relikt"]
+  },
+  "pickyrelics:Preview": {
+    "TEXT": ["Podgląd Łupu", "???"]
+  },
+  "pickyrelics:PageNav": {
+    "TEXT": ["strona %d z %d"]
+  },
+  "pickyrelics:Tooltip": {
+    "TEXT": ["Powiązany", "Zdobycie tego reliktu usunie pozostałe #y%d powiązane opcje reliktów."]
+  }
+}

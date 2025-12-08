@@ -1,0 +1,34 @@
+{
+  "pickyrelics:ModInfo": {
+    "TEXT": ["Reliques Difficiles", "Aaron", "Choisissez parmi plusieurs options de reliques par niveau. Configurable (par défaut : 2)."]
+  },
+  "pickyrelics:TierNames": {
+    "TEXT": ["Départ", "Commune", "Peu commune", "Rare", "Boss", "Boutique", "Événement"]
+  },
+  "pickyrelics:Settings": {
+    "TEXT": [
+      "Nombre de choix qui apparaissent dans les récompenses de combat et de coffre",
+      "Afficher les étiquettes de niveau de relique sur l'écran de récompense",
+      "Les reliques d'événement ont des exigences spéciales.",
+      "Les options supplémentaires proviennent des réserves",
+      "Commune, Peu commune et Rare.",
+      "Chance que les options soient d'un niveau différent",
+      "Autoriser les options de niveaux supérieurs",
+      "Autoriser les options de niveaux inférieurs",
+      "Inclure les reliques de boutique comme options",
+      "Inclure les reliques de boss comme options"
+    ]
+  },
+  "pickyrelics:Probability": {
+    "TEXT": ["Probabilité de la 2e Relique", "Départ", "Relique"]
+  },
+  "pickyrelics:Preview": {
+    "TEXT": ["Aperçu du Butin", "???"]
+  },
+  "pickyrelics:PageNav": {
+    "TEXT": ["page %d sur %d"]
+  },
+  "pickyrelics:Tooltip": {
+    "TEXT": ["Liée", "Obtenir cette relique supprimera les #y%d autres choix de reliques liées."]
+  }
+}

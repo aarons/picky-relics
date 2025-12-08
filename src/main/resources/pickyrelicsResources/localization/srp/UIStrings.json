@@ -1,0 +1,34 @@
+{
+  "pickyrelics:ModInfo": {
+    "TEXT": ["Picky Relics", "Aaron", "Biranje između više opcija relikvija po nivou. Podesivo (podrazumevano: 2)."]
+  },
+  "pickyrelics:TierNames": {
+    "TEXT": ["Početna", "Uobičajena", "Neuobičajena", "Retka", "Šef", "Prodavnica", "Događaj"]
+  },
+  "pickyrelics:Settings": {
+    "TEXT": [
+      "Koliko izbora se pojavljuje u borbenim i sanducima nagrada",
+      "Prikaži oznake nivoa relikvija na ekranu nagrada",
+      "Relikvije događaja imaju posebne uslove.",
+      "Dodatne opcije su iz uobičajenih,",
+      "neuobičajenih i retkih fondova.",
+      "Šansa da opcije budu drugačijeg nivoa",
+      "Dozvoli opcije iz viših nivoa",
+      "Dozvoli opcije iz nižih nivoa",
+      "Uključi relikvije prodavnice kao opcije",
+      "Uključi relikvije šefa kao opcije"
+    ]
+  },
+  "pickyrelics:Probability": {
+    "TEXT": ["Verovatnoća 2. relikvije", "Početna", "Relikvija"]
+  },
+  "pickyrelics:Preview": {
+    "TEXT": ["Pregled plena", "???"]
+  },
+  "pickyrelics:PageNav": {
+    "TEXT": ["strana %d od %d"]
+  },
+  "pickyrelics:Tooltip": {
+    "TEXT": ["Povezano", "Dobijanje ove relikvije će ukloniti drugih #y%d povezanih izbora relikvija."]
+  }
+}

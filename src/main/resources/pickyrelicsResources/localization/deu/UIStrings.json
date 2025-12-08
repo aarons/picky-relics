@@ -1,0 +1,34 @@
+{
+  "pickyrelics:ModInfo": {
+    "TEXT": ["Picky Relics", "Aaron", "Wähle aus mehreren Relikt-Optionen pro Stufe. Konfigurierbar (Standard: 2)."]
+  },
+  "pickyrelics:TierNames": {
+    "TEXT": ["Starter", "Gewöhnlich", "Ungewöhnlich", "Selten", "Boss", "Laden", "Ereignis"]
+  },
+  "pickyrelics:Settings": {
+    "TEXT": [
+      "Wie viele Auswahlmöglichkeiten in Kampf- und Truhenbelohnungen erscheinen",
+      "Relikt-Stufenbezeichnungen auf dem Belohnungsbildschirm anzeigen",
+      "Ereignis-Relikte haben besondere Anforderungen.",
+      "Zusätzliche Optionen stammen aus Gewöhnlichen,",
+      "Ungewöhnlichen und Seltenen Pools.",
+      "Chance, dass Optionen eine andere Stufe haben",
+      "Optionen aus höheren Stufen erlauben",
+      "Optionen aus niedrigeren Stufen erlauben",
+      "Laden-Relikte als Optionen einbeziehen",
+      "Boss-Relikte als Optionen einbeziehen"
+    ]
+  },
+  "pickyrelics:Probability": {
+    "TEXT": ["Wahrscheinlichkeit des 2. Relikts", "Ausgangs", "Relikt"]
+  },
+  "pickyrelics:Preview": {
+    "TEXT": ["Beute-Vorschau", "???"]
+  },
+  "pickyrelics:PageNav": {
+    "TEXT": ["Seite %d von %d"]
+  },
+  "pickyrelics:Tooltip": {
+    "TEXT": ["Verknüpft", "Das Erhalten dieses Relikts wird die anderen #y%d verknüpften Relikt-Auswahlmöglichkeiten entfernen."]
+  }
+}

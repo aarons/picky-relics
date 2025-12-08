@@ -1,34 +1,34 @@
 {
   "pickyrelics:ModInfo": {
-    "TEXT": ["Picky Relics", "Aaron", "Choose from multiple relic options per tier. Configurable (default: 2)."]
+    "TEXT": ["挑剔遗物", "Aaron", "每层级可从多个遗物选项中选择。可配置（默认：2）。"]
   },
   "pickyrelics:TierNames": {
-    "TEXT": ["Starter", "Common", "Uncommon", "Rare", "Boss", "Shop", "Event"]
+    "TEXT": ["初始", "普通", "罕见", "稀有", "Boss", "商店", "事件"]
   },
   "pickyrelics:Settings": {
     "TEXT": [
-      "How many choices appear in combat and chest rewards",
-      "Show relic tier labels on reward screen",
-      "Event relics have special requirements.",
-      "Additional options are from Common,",
-      "Uncommon, and Rare pools.",
-      "Chance for options to be a different tier",
-      "Allow options from higher tiers",
-      "Allow options from lower tiers",
-      "Include shop relics as options",
-      "Include boss relics as options"
+      "战斗和宝箱奖励中出现的选项数量",
+      "在奖励界面显示遗物稀有度标签",
+      "事件遗物有特殊要求。",
+      "额外选项来自普通、",
+      "罕见和稀有池。",
+      "选项出现不同稀有度的概率",
+      "允许出现更高稀有度的选项",
+      "允许出现更低稀有度的选项",
+      "包含商店遗物作为选项",
+      "包含Boss遗物作为选项"
     ]
   },
   "pickyrelics:Probability": {
-    "TEXT": ["2nd Relic's Probability", "Starting", "Relic"]
+    "TEXT": ["第二个遗物的概率", "起始", "遗物"]
   },
   "pickyrelics:Preview": {
-    "TEXT": ["Loot Preview", "???"]
+    "TEXT": ["战利品预览", "???"]
   },
   "pickyrelics:PageNav": {
-    "TEXT": ["page %d of %d"]
+    "TEXT": ["第 %d 页，共 %d 页"]
   },
   "pickyrelics:Tooltip": {
-    "TEXT": ["Linked", "Obtaining this relic will remove the other #y%d linked relic choices."]
+    "TEXT": ["已关联", "获得此遗物将移除其他 #y%d 个关联的遗物选项。"]
   }
 }

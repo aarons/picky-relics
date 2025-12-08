@@ -1,0 +1,34 @@
+{
+  "pickyrelics:ModInfo": {
+    "TEXT": ["Picky Relics", "Aaron", "Pilih dari beberapa pilihan relik per tingkat. Dapat dikonfigurasi (bawaan: 2)."]
+  },
+  "pickyrelics:TierNames": {
+    "TEXT": ["Pemula", "Umum", "Tidak Umum", "Langka", "Bos", "Toko", "Acara"]
+  },
+  "pickyrelics:Settings": {
+    "TEXT": [
+      "Berapa banyak pilihan yang muncul di hadiah pertempuran dan peti",
+      "Tampilkan label tingkat relik di layar hadiah",
+      "Relik acara memiliki persyaratan khusus.",
+      "Pilihan tambahan berasal dari kumpulan",
+      "Umum, Tidak Umum, dan Langka.",
+      "Peluang untuk pilihan menjadi tingkat yang berbeda",
+      "Izinkan pilihan dari tingkat yang lebih tinggi",
+      "Izinkan pilihan dari tingkat yang lebih rendah",
+      "Sertakan relik toko sebagai pilihan",
+      "Sertakan relik bos sebagai pilihan"
+    ]
+  },
+  "pickyrelics:Probability": {
+    "TEXT": ["Probabilitas Relik ke-2", "Memulai", "Relik"]
+  },
+  "pickyrelics:Preview": {
+    "TEXT": ["Pratinjau Jarahan", "???"]
+  },
+  "pickyrelics:PageNav": {
+    "TEXT": ["halaman %d dari %d"]
+  },
+  "pickyrelics:Tooltip": {
+    "TEXT": ["Terhubung", "Mendapatkan relik ini akan menghapus #y%d pilihan relik terhubung lainnya."]
+  }
+}

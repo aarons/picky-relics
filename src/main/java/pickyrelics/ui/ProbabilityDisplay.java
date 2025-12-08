@@ -1,9 +1,11 @@
 package pickyrelics.ui;
 
 import basemod.IUIElement;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.megacrit.cardcrawl.core.Settings;
 import com.megacrit.cardcrawl.helpers.FontHelper;
+import com.megacrit.cardcrawl.helpers.ImageMaster;
 import pickyrelics.util.TierUtils;
 
 import java.util.Map;
@@ -16,9 +18,38 @@ public class ProbabilityDisplay implements IUIElement {
     private final float x;
     private final float y;
 
+    // Layout constants
     private static final float LINE_HEIGHT = 28.0f;
-    private static final float COLUMN_WIDTH = 90.0f;
-    private static final float ROW_LABEL_WIDTH = 100.0f;
+    private static final float ROW_LABEL_WIDTH = 115.0f;  // Extra space for "Uncommon"
+    private static final float LEFT_MARGIN_WIDTH = 70.0f;  // Shifted left
+    private static final float BRACKET_GAP = 15.0f;
+
+    // Variable column widths: Common, Uncommon, Rare, Shop, Boss
+    private static final float[] COLUMN_WIDTHS = {95.0f, 115.0f, 75.0f, 75.0f, 70.0f};
+
+    // Line rendering constants
+    private static final float LINE_THICKNESS = 1.5f;
+    private static final float BRACKET_CAP_LENGTH = 6.0f;
+
+    // Colors for visual hierarchy
+    private static final Color LABEL_COLOR = new Color(
+            Settings.CREAM_COLOR.r,
+            Settings.CREAM_COLOR.g,
+            Settings.CREAM_COLOR.b,
+            0.75f
+    );
+    private static final Color IMPOSSIBLE_COLOR = new Color(
+            Settings.CREAM_COLOR.r,
+            Settings.CREAM_COLOR.g,
+            Settings.CREAM_COLOR.b,
+            0.35f
+    );
+    private static final Color LINE_COLOR = new Color(
+            Settings.CREAM_COLOR.r,
+            Settings.CREAM_COLOR.g,
+            Settings.CREAM_COLOR.b,
+            0.5f
+    );
 
     private static final String[] TIER_NAMES = {"Common", "Uncommon", "Rare", "Shop", "Boss"};
 
@@ -35,69 +66,130 @@ public class ProbabilityDisplay implements IUIElement {
 
     @Override
     public void render(SpriteBatch sb) {
-        float scaledX = x * Settings.scale;
-        float scaledY = y * Settings.scale;
-        float lineHeight = LINE_HEIGHT * Settings.scale;
-        float columnWidth = COLUMN_WIDTH * Settings.scale;
-        float rowLabelWidth = ROW_LABEL_WIDTH * Settings.scale;
+        float scale = Settings.scale;
+        float lineHeight = LINE_HEIGHT * scale;
+        float rowLabelWidth = ROW_LABEL_WIDTH * scale;
+        float leftMargin = LEFT_MARGIN_WIDTH * scale;
+        float bracketGap = BRACKET_GAP * scale;
+        float thickness = LINE_THICKNESS * scale;
+        float capLength = BRACKET_CAP_LENGTH * scale;
 
-        float currentY = scaledY;
+        // Pre-calculate scaled column widths and positions
+        float[] colWidths = new float[COLUMN_WIDTHS.length];
+        float[] colPositions = new float[COLUMN_WIDTHS.length];
+        float totalColWidth = 0;
+        for (int i = 0; i < COLUMN_WIDTHS.length; i++) {
+            colWidths[i] = COLUMN_WIDTHS[i] * scale;
+            colPositions[i] = totalColWidth;
+            totalColWidth += colWidths[i];
+        }
 
-        // Top axis label: "2nd Relic's Probability"
-        float headerX = scaledX + rowLabelWidth;
-        FontHelper.renderFontLeftTopAligned(sb, FontHelper.tipBodyFont,
+        // Zone positions (left to right)
+        float labelZoneX = x * scale;                              // "Starting Relic"
+        float bracketLineX = labelZoneX + leftMargin;              // Vertical bracket line
+        float rowLabelX = bracketLineX + bracketGap;               // Tier name labels
+        float dataX = rowLabelX + rowLabelWidth;                   // Data columns start
+
+        float currentY = y * scale;
+
+        // 1. Column header: "2nd Relic's Probability" - centered over data columns
+        float headerCenterX = dataX + totalColWidth / 2.0f;
+        FontHelper.renderFontCentered(sb, FontHelper.tipBodyFont,
                 "2nd Relic's Probability",
-                headerX, currentY, Settings.CREAM_COLOR);
+                headerCenterX, currentY - lineHeight * 0.4f, Settings.CREAM_COLOR);
 
         currentY -= lineHeight;
 
-        // Column headers (full tier names)
-        for (int colIdx = 0; colIdx < COL_TIERS.length; colIdx++) {
-            int tierPos = COL_TIERS[colIdx];
-            String tierName = TIER_NAMES[tierPos];
+        // 2. Underline - actual horizontal line
+        float underlineY = currentY - lineHeight * 0.3f;
+        float underlineWidth = totalColWidth - 20.0f * scale;
+        drawHorizontalLine(sb, headerCenterX - underlineWidth / 2.0f, underlineY, underlineWidth, thickness);
 
+        currentY -= lineHeight * 0.7f;
+
+        // 3. Column tier headers
+        for (int colIdx = 0; colIdx < COL_TIERS.length; colIdx++) {
+            String tierName = TIER_NAMES[COL_TIERS[colIdx]];
+            float colX = dataX + colPositions[colIdx];
             FontHelper.renderFontLeftTopAligned(sb, FontHelper.tipBodyFont,
-                    tierName, headerX + colIdx * columnWidth, currentY, Settings.CREAM_COLOR);
+                    tierName, colX, currentY, Settings.CREAM_COLOR);
         }
 
         currentY -= lineHeight;
+        float firstDataY = currentY;
 
-        // Left axis label: "Starting Relic:" - positioned at first data row
-        FontHelper.renderFontRightTopAligned(sb, FontHelper.tipBodyFont,
-                "Starting Relic:",
-                scaledX + rowLabelWidth - 15.0f * Settings.scale, currentY, Settings.CREAM_COLOR);
-
-        currentY -= lineHeight;
-
-        // Data rows
-        for (int startTier : ROW_TIERS) {
+        // 4. Data rows with tier labels
+        for (int rowIdx = 0; rowIdx < ROW_TIERS.length; rowIdx++) {
+            int startTier = ROW_TIERS[rowIdx];
             String rowLabel = TIER_NAMES[startTier];
 
-            // Calculate probabilities for this starting tier
+            // Row label (tier name)
+            FontHelper.renderFontLeftTopAligned(sb, FontHelper.tipBodyFont,
+                    rowLabel, rowLabelX, currentY, LABEL_COLOR);
+
+            // Data cells
             Map<Integer, Double> probabilities = TierUtils.calculateTierProbabilities(startTier);
-
-            // Render row label (right-aligned)
-            FontHelper.renderFontRightTopAligned(sb, FontHelper.tipBodyFont,
-                    rowLabel, scaledX + rowLabelWidth - 15.0f * Settings.scale, currentY, Settings.CREAM_COLOR);
-
-            // Render each column value
             for (int colIdx = 0; colIdx < COL_TIERS.length; colIdx++) {
                 int resultTier = COL_TIERS[colIdx];
                 double prob = probabilities.getOrDefault(resultTier, 0.0);
 
                 String cellText;
+                Color cellColor;
                 if (prob >= 0.001) {
-                    cellText = String.format("%.1f%%", prob * 100);
+                    cellText = String.format("%.0f%%", prob * 100);
+                    cellColor = Settings.CREAM_COLOR;
                 } else {
                     cellText = "-";
+                    cellColor = IMPOSSIBLE_COLOR;
                 }
 
+                float colX = dataX + colPositions[colIdx];
                 FontHelper.renderFontLeftTopAligned(sb, FontHelper.tipBodyFont,
-                        cellText, headerX + colIdx * columnWidth, currentY, Settings.CREAM_COLOR);
+                        cellText, colX, currentY, cellColor);
             }
 
             currentY -= lineHeight;
         }
+
+        float lastDataY = currentY + lineHeight;
+
+        // 5. Draw bracket lines connecting rows to axis label
+        // Vertical line spans from first row to last row
+        float bracketTopY = firstDataY - lineHeight * 0.35f;
+        float bracketBottomY = lastDataY - lineHeight * 0.65f;
+        drawVerticalLine(sb, bracketLineX, bracketBottomY, bracketTopY - bracketBottomY, thickness);
+
+        // Top horizontal cap
+        drawHorizontalLine(sb, bracketLineX, bracketTopY, capLength, thickness);
+
+        // Bottom horizontal cap
+        drawHorizontalLine(sb, bracketLineX, bracketBottomY, capLength, thickness);
+
+        // 6. "Starting Relic" label - stacked vertically, centered against data rows
+        float labelCenterY = firstDataY - lineHeight * 2;
+        float labelRightEdge = bracketLineX - 8.0f * scale;
+        FontHelper.renderFontRightTopAligned(sb, FontHelper.tipBodyFont,
+                "Starting", labelRightEdge, labelCenterY, LABEL_COLOR);
+        FontHelper.renderFontRightTopAligned(sb, FontHelper.tipBodyFont,
+                "Relic", labelRightEdge, labelCenterY - lineHeight, LABEL_COLOR);
+    }
+
+    /**
+     * Draw a horizontal line using WHITE_SQUARE_IMG texture.
+     */
+    private void drawHorizontalLine(SpriteBatch sb, float x, float y, float width, float thickness) {
+        sb.setColor(LINE_COLOR);
+        sb.draw(ImageMaster.WHITE_SQUARE_IMG, x, y - thickness / 2.0f, width, thickness);
+        sb.setColor(Color.WHITE);
+    }
+
+    /**
+     * Draw a vertical line using WHITE_SQUARE_IMG texture.
+     */
+    private void drawVerticalLine(SpriteBatch sb, float x, float y, float height, float thickness) {
+        sb.setColor(LINE_COLOR);
+        sb.draw(ImageMaster.WHITE_SQUARE_IMG, x - thickness / 2.0f, y, thickness, height);
+        sb.setColor(Color.WHITE);
     }
 
     @Override

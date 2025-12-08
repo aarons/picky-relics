@@ -4,9 +4,11 @@ import basemod.IUIElement;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.megacrit.cardcrawl.core.CardCrawlGame;
 import com.megacrit.cardcrawl.core.Settings;
 import com.megacrit.cardcrawl.helpers.FontHelper;
 import com.megacrit.cardcrawl.helpers.ImageMaster;
+import com.megacrit.cardcrawl.localization.UIStrings;
 import com.megacrit.cardcrawl.relics.AbstractRelic;
 import pickyrelics.PickyRelicsMod;
 import pickyrelics.util.TierUtils;
@@ -39,6 +41,17 @@ public class RelicChoicePreview implements IUIElement {
     private static Texture chainTexture;
     private static Texture bannerTexture;
 
+    // Lazy-loaded localized strings
+    private static UIStrings previewStrings;
+    private static String[] TEXT;
+
+    private static void ensureStringsLoaded() {
+        if (previewStrings == null) {
+            previewStrings = CardCrawlGame.languagePack.getUIString(PickyRelicsMod.makeID("Preview"));
+            TEXT = previewStrings.TEXT;
+        }
+    }
+
     public RelicChoicePreview(float x, float y,
                               Supplier<AbstractRelic.RelicTier> tierSupplier,
                               Supplier<Integer> countSupplier,
@@ -52,6 +65,7 @@ public class RelicChoicePreview implements IUIElement {
 
     @Override
     public void render(SpriteBatch sb) {
+        ensureStringsLoaded();
         AbstractRelic.RelicTier tier = tierSupplier.get();
         int count = countSupplier.get();
 
@@ -90,10 +104,10 @@ public class RelicChoicePreview implements IUIElement {
                     bannerW, bannerH);
         }
 
-        // Preview title - "Loot Preview" centered on banner (moved up)
+        // Preview title centered on banner (moved up)
         float previewYOffset = 28.0f * Settings.scale; // was 30.0f
         FontHelper.renderFontCentered(sb, FontHelper.tipHeaderFont,
-                "Loot Preview",
+                TEXT[0],
                 scaledX + panelW / 2.0f, startY + previewYOffset,
                 Settings.GOLD_COLOR);
 
@@ -148,7 +162,7 @@ public class RelicChoicePreview implements IUIElement {
                 // Fallback: render silhouette if no relic available
                 renderSilhouette(sb, iconX, iconY);
                 FontHelper.renderFontLeftTopAligned(sb, FontHelper.tipBodyFont,
-                        "???",
+                        TEXT[1],
                         labelX, labelY, Settings.CREAM_COLOR);
 
                 // Use the selected tier for placeholder labels

@@ -4,11 +4,13 @@ import basemod.ReflectionHacks;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.evacipated.cardcrawl.modthespire.lib.*;
+import com.megacrit.cardcrawl.core.CardCrawlGame;
 import com.megacrit.cardcrawl.core.Settings;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
 import com.megacrit.cardcrawl.helpers.FontHelper;
 import com.megacrit.cardcrawl.helpers.TipHelper;
 import com.megacrit.cardcrawl.helpers.input.InputHelper;
+import com.megacrit.cardcrawl.localization.UIStrings;
 import com.megacrit.cardcrawl.relics.AbstractRelic;
 import com.megacrit.cardcrawl.rewards.RewardItem;
 import com.megacrit.cardcrawl.screens.CombatRewardScreen;
@@ -24,6 +26,17 @@ import java.util.List;
  * Follows the pattern used by Orison mod's RewardLinkPatch.
  */
 public class RelicLinkPatch {
+
+    // Lazy-loaded localized strings for tooltips
+    private static UIStrings tooltipStrings;
+    private static String[] TEXT;
+
+    private static void ensureStringsLoaded() {
+        if (tooltipStrings == null) {
+            tooltipStrings = CardCrawlGame.languagePack.getUIString(PickyRelicsMod.makeID("Tooltip"));
+            TEXT = tooltipStrings.TEXT;
+        }
+    }
 
     /**
      * Add SpireFields to RewardItem to track linked relics and ownership.
@@ -372,8 +385,9 @@ public class RelicLinkPatch {
 
             // Render tooltip when hovering
             if (__instance.hb.hovered) {
-                String title = "Linked";
-                String body = "Obtaining this relic will remove the other #y" + (linked.size() - 1) + " linked relic choices.";
+                ensureStringsLoaded();
+                String title = TEXT[0];
+                String body = String.format(TEXT[1], linked.size() - 1);
                 TipHelper.renderGenericTip(
                         360.0F * Settings.scale,
                         InputHelper.mY + 50.0F * Settings.scale,

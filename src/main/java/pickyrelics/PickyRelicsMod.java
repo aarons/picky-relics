@@ -6,12 +6,15 @@ import basemod.ModLabel;
 import basemod.ModLabeledToggleButton;
 import basemod.ModPanel;
 import basemod.ModMinMaxSlider;
+import basemod.interfaces.EditStringsSubscriber;
 import basemod.interfaces.PostInitializeSubscriber;
 import com.badlogic.gdx.graphics.Texture;
 import com.evacipated.cardcrawl.modthespire.lib.SpireConfig;
 import com.evacipated.cardcrawl.modthespire.lib.SpireInitializer;
+import com.megacrit.cardcrawl.core.CardCrawlGame;
 import com.megacrit.cardcrawl.core.Settings;
 import com.megacrit.cardcrawl.helpers.FontHelper;
+import com.megacrit.cardcrawl.localization.UIStrings;
 import com.megacrit.cardcrawl.helpers.RelicLibrary;
 import com.megacrit.cardcrawl.relics.AbstractRelic;
 import pickyrelics.ui.PagedElement;
@@ -31,10 +34,18 @@ import java.util.Random;
 import java.util.Set;
 
 @SpireInitializer
-public class PickyRelicsMod implements PostInitializeSubscriber {
+public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubscriber {
 
     public static final String MOD_ID = "pickyrelics";
     public static final String MOD_NAME = "Picky Relics";
+
+    // Localized strings (loaded in receiveEditStrings)
+    private static UIStrings modInfoStrings;
+    private static UIStrings settingsStrings;
+
+    public static String makeID(String id) {
+        return MOD_ID + ":" + id;
+    }
 
     // Config
     private static SpireConfig config;
@@ -407,9 +418,37 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
         }
     }
 
+    private static final String DEFAULT_LANGUAGE = "eng";
+
+    @Override
+    public void receiveEditStrings() {
+        // Always load English first as fallback
+        loadLocalization(DEFAULT_LANGUAGE);
+
+        // Then try to load current language on top (overwrites English where available)
+        String lang = Settings.language.name().toLowerCase();
+        if (!DEFAULT_LANGUAGE.equals(lang)) {
+            try {
+                loadLocalization(lang);
+                Log.info("Loaded localization for language: " + lang);
+            } catch (Exception e) {
+                Log.info("No localization for " + lang + ", using English");
+            }
+        }
+    }
+
+    private void loadLocalization(String lang) {
+        BaseMod.loadCustomStringsFile(UIStrings.class,
+                MOD_ID + "Resources/localization/" + lang + "/UIStrings.json");
+    }
+
     @Override
     public void receivePostInitialize() {
         Log.info(MOD_NAME + " post-initialize");
+
+        // Load localized strings
+        modInfoStrings = CardCrawlGame.languagePack.getUIString(makeID("ModInfo"));
+        settingsStrings = CardCrawlGame.languagePack.getUIString(makeID("Settings"));
 
         Texture badgeTexture = createBadgeTexture();
         ModPanel settingsPanel = new ModPanel();
@@ -432,7 +471,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
 
         // Explanation
         addPagedElement(settingsPanel, PAGE_CHOICES, new ModLabel(
-                "How many choices appear in combat and chest rewards",
+                settingsStrings.TEXT[0],
                 xPos, yPos,
                 Settings.GOLD_COLOR,
                 FontHelper.tipBodyFont,
@@ -497,7 +536,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
         // Show tier labels checkbox
         yPos -= 30.0f;
         addPagedElement(settingsPanel, PAGE_CHOICES, new ModLabeledToggleButton(
-                "Show relic tier labels on reward screen",
+                settingsStrings.TEXT[1],
                 xPos, yPos,
                 Settings.CREAM_COLOR,
                 FontHelper.tipHeaderFont,
@@ -519,13 +558,13 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
                     float lineSpacing = 20.0f * Settings.scale;
 
                     FontHelper.renderFontLeftTopAligned(sb, FontHelper.tipBodyFont,
-                            "Event relics have special requirements.",
+                            settingsStrings.TEXT[2],
                             scaledX, scaledY, Settings.GOLD_COLOR);
                     FontHelper.renderFontLeftTopAligned(sb, FontHelper.tipBodyFont,
-                            "Additional options are from Common,",
+                            settingsStrings.TEXT[3],
                             scaledX, scaledY - lineSpacing, Settings.GOLD_COLOR);
                     FontHelper.renderFontLeftTopAligned(sb, FontHelper.tipBodyFont,
-                            "Uncommon, and Rare pools.",
+                            settingsStrings.TEXT[4],
                             scaledX, scaledY - lineSpacing * 2, Settings.GOLD_COLOR);
                 }
             }
@@ -544,7 +583,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
         yPos = contentY;
 
         // Tier change chance slider (0-100%)
-        addPagedSliderRow(settingsPanel, PAGE_ALGORITHMS, "Chance for options to be a different tier", xPos, sliderX + 210.0f, yPos, sliderYOffset,
+        addPagedSliderRow(settingsPanel, PAGE_ALGORITHMS, settingsStrings.TEXT[5], xPos, sliderX + 210.0f, yPos, sliderYOffset,
                 tierChangeChance, 0.0f, 100.0f, "%.0f%%",
                 (val) -> { tierChangeChance = val; saveConfig(); });
 
@@ -554,7 +593,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
 
         // Tier direction checkboxes
         addPagedElement(settingsPanel, PAGE_ALGORITHMS, new ModLabeledToggleButton(
-                "Allow options from higher tiers",
+                settingsStrings.TEXT[6],
                 checkboxX, yPos,
                 Settings.CREAM_COLOR,
                 FontHelper.tipBodyFont,
@@ -567,7 +606,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
         yPos -= 35.0f;
 
         addPagedElement(settingsPanel, PAGE_ALGORITHMS, new ModLabeledToggleButton(
-                "Allow options from lower tiers",
+                settingsStrings.TEXT[7],
                 checkboxX, yPos,
                 Settings.CREAM_COLOR,
                 FontHelper.tipBodyFont,
@@ -581,7 +620,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
 
         // Shop/Boss relic section
         addPagedElement(settingsPanel, PAGE_ALGORITHMS, new ModLabeledToggleButton(
-                "Include shop relics as options",
+                settingsStrings.TEXT[8],
                 checkboxX, yPos,
                 Settings.CREAM_COLOR,
                 FontHelper.tipBodyFont,
@@ -594,7 +633,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
         yPos -= 35.0f;
 
         addPagedElement(settingsPanel, PAGE_ALGORITHMS, new ModLabeledToggleButton(
-                "Include boss relics as options",
+                settingsStrings.TEXT[9],
                 checkboxX, yPos,
                 Settings.CREAM_COLOR,
                 FontHelper.tipBodyFont,
@@ -609,9 +648,9 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
 
         BaseMod.registerModBadge(
                 badgeTexture,
-                MOD_NAME,
-                "Aaron",
-                "Choose from multiple relic options per tier. Configurable (default: 2).",
+                modInfoStrings.TEXT[0],
+                modInfoStrings.TEXT[1],
+                modInfoStrings.TEXT[2],
                 settingsPanel
         );
     }

@@ -30,5 +30,5 @@ The mod uses SpirePatch annotations to modify game behavior:
 Reference materials for exploring game APIs are in `references/`:
 
 - **slaythespire/** - Extracted class files from the game JAR. Use `javap -p <class>` to inspect methods/fields. Key classes: `AbstractRoom`, `RewardItem`, `AbstractRelic`, `AbstractDungeon`.
-
 - **basemod/** - Extracted class files from BaseMod. Key classes: `BaseMod`, `SpireConfig`, and various subscriber interfaces.
+- **BasicMod/** - A mod template with localization support

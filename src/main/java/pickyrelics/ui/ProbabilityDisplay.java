@@ -3,9 +3,12 @@ package pickyrelics.ui;
 import basemod.IUIElement;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.megacrit.cardcrawl.core.CardCrawlGame;
 import com.megacrit.cardcrawl.core.Settings;
 import com.megacrit.cardcrawl.helpers.FontHelper;
 import com.megacrit.cardcrawl.helpers.ImageMaster;
+import com.megacrit.cardcrawl.localization.UIStrings;
+import pickyrelics.PickyRelicsMod;
 import pickyrelics.util.TierUtils;
 
 import java.util.Map;
@@ -51,7 +54,27 @@ public class ProbabilityDisplay implements IUIElement {
             0.5f
     );
 
-    private static final String[] TIER_NAMES = {"Common", "Uncommon", "Rare", "Shop", "Boss"};
+    // Lazy-loaded localized strings
+    private static UIStrings probabilityStrings;
+    private static String[] TEXT;
+
+    private static void ensureStringsLoaded() {
+        if (probabilityStrings == null) {
+            probabilityStrings = CardCrawlGame.languagePack.getUIString(PickyRelicsMod.makeID("Probability"));
+            TEXT = probabilityStrings.TEXT;
+        }
+    }
+
+    private static String getTierName(int tierPosition) {
+        switch (tierPosition) {
+            case 0: return TierUtils.getTierDisplayText(com.megacrit.cardcrawl.relics.AbstractRelic.RelicTier.COMMON);
+            case 1: return TierUtils.getTierDisplayText(com.megacrit.cardcrawl.relics.AbstractRelic.RelicTier.UNCOMMON);
+            case 2: return TierUtils.getTierDisplayText(com.megacrit.cardcrawl.relics.AbstractRelic.RelicTier.RARE);
+            case 3: return TierUtils.getTierDisplayText(com.megacrit.cardcrawl.relics.AbstractRelic.RelicTier.SHOP);
+            case 4: return TierUtils.getTierDisplayText(com.megacrit.cardcrawl.relics.AbstractRelic.RelicTier.BOSS);
+            default: return "";
+        }
+    }
 
     // All starting tiers for rows (Common=0, Uncommon=1, Rare=2, Shop=3, Boss=4)
     private static final int[] ROW_TIERS = {0, 1, 2, 3, 4};
@@ -66,6 +89,7 @@ public class ProbabilityDisplay implements IUIElement {
 
     @Override
     public void render(SpriteBatch sb) {
+        ensureStringsLoaded();
         float scale = Settings.scale;
         float lineHeight = LINE_HEIGHT * scale;
         float rowLabelWidth = ROW_LABEL_WIDTH * scale;
@@ -92,10 +116,10 @@ public class ProbabilityDisplay implements IUIElement {
 
         float currentY = y * scale;
 
-        // 1. Column header: "2nd Relic's Probability" - centered over data columns
+        // 1. Column header - centered over data columns
         float headerCenterX = dataX + totalColWidth / 2.0f;
         FontHelper.renderFontCentered(sb, FontHelper.tipBodyFont,
-                "2nd Relic's Probability",
+                TEXT[0],
                 headerCenterX, currentY - lineHeight * 0.4f, Settings.CREAM_COLOR);
 
         currentY -= lineHeight;
@@ -109,7 +133,7 @@ public class ProbabilityDisplay implements IUIElement {
 
         // 3. Column tier headers
         for (int colIdx = 0; colIdx < COL_TIERS.length; colIdx++) {
-            String tierName = TIER_NAMES[COL_TIERS[colIdx]];
+            String tierName = getTierName(COL_TIERS[colIdx]);
             float colX = dataX + colPositions[colIdx];
             FontHelper.renderFontLeftTopAligned(sb, FontHelper.tipBodyFont,
                     tierName, colX, currentY, Settings.CREAM_COLOR);
@@ -121,7 +145,7 @@ public class ProbabilityDisplay implements IUIElement {
         // 4. Data rows with tier labels
         for (int rowIdx = 0; rowIdx < ROW_TIERS.length; rowIdx++) {
             int startTier = ROW_TIERS[rowIdx];
-            String rowLabel = TIER_NAMES[startTier];
+            String rowLabel = getTierName(startTier);
 
             // Row label (tier name)
             FontHelper.renderFontLeftTopAligned(sb, FontHelper.tipBodyFont,
@@ -165,13 +189,13 @@ public class ProbabilityDisplay implements IUIElement {
         // Bottom horizontal cap
         drawHorizontalLine(sb, bracketLineX, bracketBottomY, capLength, thickness);
 
-        // 6. "Starting Relic" label - stacked vertically, centered against data rows
+        // 6. Axis label - stacked vertically, centered against data rows
         float labelCenterY = firstDataY - lineHeight * 2;
         float labelRightEdge = bracketLineX - 8.0f * scale;
         FontHelper.renderFontRightTopAligned(sb, FontHelper.tipBodyFont,
-                "Starting", labelRightEdge, labelCenterY, LABEL_COLOR);
+                TEXT[1], labelRightEdge, labelCenterY, LABEL_COLOR);
         FontHelper.renderFontRightTopAligned(sb, FontHelper.tipBodyFont,
-                "Relic", labelRightEdge, labelCenterY - lineHeight, LABEL_COLOR);
+                TEXT[2], labelRightEdge, labelCenterY - lineHeight, LABEL_COLOR);
     }
 
     /**

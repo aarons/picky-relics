@@ -119,5 +119,15 @@ else
     git clone --quiet git@github.com:JamesTripleQ/RelicFilterPlus.git "$API_DIR/RelicFilterPlus"
 fi
 
+git@github.com:Alchyr/BasicMod.git
+
+if [ -d "$API_DIR/BasicMod" ]; then
+    echo "  Updating BasicMod..."
+    git -C "$API_DIR/BasicMod" pull --quiet
+else
+    echo "  Cloning BasicMod..."
+    git clone --quiet git@github.com:Alchyr/BasicMod.git "$API_DIR/BasicMod"
+fi
+
 echo ""
 echo "Done! API reference extracted to $API_DIR"

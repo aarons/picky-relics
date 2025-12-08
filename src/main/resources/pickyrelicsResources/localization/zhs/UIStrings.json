@@ -1,0 +1,34 @@
+{
+  "pickyrelics:ModInfo": {
+    "TEXT": ["Picky Relics", "Aaron", "Choose from multiple relic options per tier. Configurable (default: 2)."]
+  },
+  "pickyrelics:TierNames": {
+    "TEXT": ["Starter", "Common", "Uncommon", "Rare", "Boss", "Shop", "Event"]
+  },
+  "pickyrelics:Settings": {
+    "TEXT": [
+      "How many choices appear in combat and chest rewards",
+      "Show relic tier labels on reward screen",
+      "Event relics have special requirements.",
+      "Additional options are from Common,",
+      "Uncommon, and Rare pools.",
+      "Chance for options to be a different tier",
+      "Allow options from higher tiers",
+      "Allow options from lower tiers",
+      "Include shop relics as options",
+      "Include boss relics as options"
+    ]
+  },
+  "pickyrelics:Probability": {
+    "TEXT": ["2nd Relic's Probability", "Starting", "Relic"]
+  },
+  "pickyrelics:Preview": {
+    "TEXT": ["Loot Preview", "???"]
+  },
+  "pickyrelics:PageNav": {
+    "TEXT": ["page %d of %d"]
+  },
+  "pickyrelics:Tooltip": {
+    "TEXT": ["Linked", "Obtaining this relic will remove the other #y%d linked relic choices."]
+  }
+}

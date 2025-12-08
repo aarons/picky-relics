@@ -1,7 +1,9 @@
 package pickyrelics.util;
 
 import com.badlogic.gdx.graphics.Color;
+import com.megacrit.cardcrawl.core.CardCrawlGame;
 import com.megacrit.cardcrawl.core.Settings;
+import com.megacrit.cardcrawl.localization.UIStrings;
 import com.megacrit.cardcrawl.relics.AbstractRelic;
 import pickyrelics.PickyRelicsMod;
 
@@ -12,18 +14,30 @@ import java.util.function.IntUnaryOperator;
  */
 public class TierUtils {
 
+    // Lazy-loaded localized tier names
+    private static UIStrings tierNamesStrings;
+    private static String[] TIER_NAMES;
+
+    private static void ensureTierNamesLoaded() {
+        if (tierNamesStrings == null) {
+            tierNamesStrings = CardCrawlGame.languagePack.getUIString(PickyRelicsMod.makeID("TierNames"));
+            TIER_NAMES = tierNamesStrings.TEXT;
+        }
+    }
+
     /**
      * Get display text for a relic tier.
      */
     public static String getTierDisplayText(AbstractRelic.RelicTier tier) {
+        ensureTierNamesLoaded();
         switch (tier) {
-            case STARTER:  return "Starter";
-            case COMMON:   return "Common";
-            case UNCOMMON: return "Uncommon";
-            case RARE:     return "Rare";
-            case BOSS:     return "Boss";
-            case SHOP:     return "Shop";
-            case SPECIAL:  return "Event";
+            case STARTER:  return TIER_NAMES[0];
+            case COMMON:   return TIER_NAMES[1];
+            case UNCOMMON: return TIER_NAMES[2];
+            case RARE:     return TIER_NAMES[3];
+            case BOSS:     return TIER_NAMES[4];
+            case SHOP:     return TIER_NAMES[5];
+            case SPECIAL:  return TIER_NAMES[6];
             default:       return "";
         }
     }

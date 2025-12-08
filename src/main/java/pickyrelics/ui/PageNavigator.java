@@ -3,10 +3,13 @@ package pickyrelics.ui;
 import basemod.IUIElement;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.megacrit.cardcrawl.core.CardCrawlGame;
 import com.megacrit.cardcrawl.core.Settings;
 import com.megacrit.cardcrawl.helpers.FontHelper;
 import com.megacrit.cardcrawl.helpers.Hitbox;
 import com.megacrit.cardcrawl.helpers.input.InputHelper;
+import com.megacrit.cardcrawl.localization.UIStrings;
+import pickyrelics.PickyRelicsMod;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -30,6 +33,17 @@ public class PageNavigator implements IUIElement {
     private static final Color TEXT_COLOR = Settings.CREAM_COLOR;
     private static final Color HOVER_COLOR = Settings.GREEN_TEXT_COLOR;
 
+    // Lazy-loaded localized strings
+    private static UIStrings pageNavStrings;
+    private static String[] TEXT;
+
+    private static void ensureStringsLoaded() {
+        if (pageNavStrings == null) {
+            pageNavStrings = CardCrawlGame.languagePack.getUIString(PickyRelicsMod.makeID("PageNav"));
+            TEXT = pageNavStrings.TEXT;
+        }
+    }
+
     public PageNavigator(int totalPages, float centerX, float y,
                          Supplier<Integer> currentPageSupplier, Consumer<Integer> onPageChange) {
         this.totalPages = totalPages;
@@ -48,6 +62,7 @@ public class PageNavigator implements IUIElement {
 
     @Override
     public void render(SpriteBatch sb) {
+        ensureStringsLoaded();
         int currentPage = currentPageSupplier.get();
 
         // Render left arrow
@@ -56,7 +71,7 @@ public class PageNavigator implements IUIElement {
                 (centerX - ARROW_OFFSET) * Settings.scale, y * Settings.scale, leftColor);
 
         // Render page indicator
-        String pageText = "page " + (currentPage + 1) + " of " + totalPages;
+        String pageText = String.format(TEXT[0], currentPage + 1, totalPages);
         FontHelper.renderFontCentered(sb, FontHelper.charDescFont, pageText,
                 centerX * Settings.scale, y * Settings.scale, TEXT_COLOR);
 

@@ -177,6 +177,17 @@ public class TierUtils {
      * @return Map of tier position (0-4) to probability (0.0-1.0)
      */
     public static java.util.Map<Integer, Double> calculateTierProbabilities() {
+        return calculateTierProbabilities(0);
+    }
+
+    /**
+     * Calculate probability distribution for tier outcomes starting from a given tier.
+     * Uses pure math based on cascading algorithm - no RNG needed.
+     *
+     * @param startPosition Starting tier position (0=Common, 1=Uncommon, 2=Rare)
+     * @return Map of tier position (0-4) to probability (0.0-1.0)
+     */
+    public static java.util.Map<Integer, Double> calculateTierProbabilities(int startPosition) {
         java.util.Map<Integer, Double> probabilities = new java.util.LinkedHashMap<>();
 
         int chance = PickyRelicsMod.tierChangeChance;
@@ -188,37 +199,98 @@ public class TierUtils {
             probabilities.put(i, 0.0);
         }
 
-        // Starting from Common (position 0)
-        int startPosition = 0;
-
-        // If chance is 0 or no higher tiers allowed, 100% stays at Common
-        if (chance <= 0 || !PickyRelicsMod.allowHigherTiers) {
+        // If chance is 0, 100% stays at starting position
+        if (chance <= 0) {
             probabilities.put(startPosition, 1.0);
             return probabilities;
         }
 
-        // Build list of enabled tier positions we can cascade to (from Common upward)
-        java.util.List<Integer> enabledPositions = new java.util.ArrayList<>();
-        enabledPositions.add(0); // Common is always included
-        for (int pos = 1; pos <= 4; pos++) {
+        // Build list of enabled tier positions upward from start
+        java.util.List<Integer> upwardPositions = new java.util.ArrayList<>();
+        upwardPositions.add(startPosition);
+        for (int pos = startPosition + 1; pos <= 4; pos++) {
             if (isTierEnabled(pos)) {
-                enabledPositions.add(pos);
+                upwardPositions.add(pos);
             }
         }
 
-        // Calculate probabilities for each tier
-        // P(stop at tier i) = p^(steps to i) * q, except top tier = p^(steps to top)
-        int numTiers = enabledPositions.size();
-        for (int i = 0; i < numTiers; i++) {
-            int tierPosition = enabledPositions.get(i);
-            int steps = i; // steps from Common (index 0) to this tier (index i)
+        // Build list of enabled tier positions downward from start (not including start)
+        java.util.List<Integer> downwardPositions = new java.util.ArrayList<>();
+        for (int pos = startPosition - 1; pos >= 0; pos--) {
+            if (isTierEnabled(pos)) {
+                downwardPositions.add(pos);
+            }
+        }
 
-            if (i == numTiers - 1) {
-                // Top enabled tier: all rolls succeeded
-                probabilities.put(tierPosition, Math.pow(p, steps));
-            } else {
-                // Intermediate tier: succeeded 'steps' times, then failed
-                probabilities.put(tierPosition, Math.pow(p, steps) * q);
+        boolean canGoUp = PickyRelicsMod.allowHigherTiers && upwardPositions.size() > 1;
+        boolean canGoDown = PickyRelicsMod.allowLowerTiers && !downwardPositions.isEmpty();
+
+        if (!canGoUp && !canGoDown) {
+            // No movement possible
+            probabilities.put(startPosition, 1.0);
+            return probabilities;
+        }
+
+        if (canGoUp) {
+            // Calculate upward probabilities
+            int numUpTiers = upwardPositions.size();
+            for (int i = 0; i < numUpTiers; i++) {
+                int tierPosition = upwardPositions.get(i);
+                int steps = i;
+
+                if (i == numUpTiers - 1) {
+                    // Top enabled tier: all rolls succeeded
+                    probabilities.put(tierPosition, Math.pow(p, steps));
+                } else {
+                    // Intermediate tier: succeeded 'steps' times, then failed
+                    probabilities.put(tierPosition, Math.pow(p, steps) * q);
+                }
+            }
+
+            // If can also go down, downward cascade only happens when no upgrade occurred
+            // P(no upgrade) = q (failed first roll)
+            if (canGoDown) {
+                double noUpgradeProb = q;
+                // Redistribute the start position probability to downward cascade
+                double startProb = probabilities.get(startPosition);
+                probabilities.put(startPosition, 0.0);
+
+                // From the "no upgrade" probability, calculate downward cascade
+                int numDownTiers = downwardPositions.size();
+                for (int i = 0; i < numDownTiers; i++) {
+                    int tierPosition = downwardPositions.get(i);
+                    int steps = i + 1; // +1 because first step is from start to first down position
+
+                    if (i == numDownTiers - 1) {
+                        // Bottom enabled tier: all down rolls succeeded
+                        probabilities.put(tierPosition, noUpgradeProb * Math.pow(p, steps));
+                    } else {
+                        // Intermediate tier going down
+                        probabilities.put(tierPosition, noUpgradeProb * Math.pow(p, steps) * q);
+                    }
+                }
+
+                // Probability of staying at start = failed first up roll, then failed first down roll
+                probabilities.put(startPosition, noUpgradeProb * q);
+            }
+        } else if (canGoDown) {
+            // Only downward movement possible
+            int numDownTiers = downwardPositions.size();
+
+            // Start position: failed first roll
+            probabilities.put(startPosition, q);
+
+            for (int i = 0; i < numDownTiers; i++) {
+                int tierPosition = downwardPositions.get(i);
+                int steps = i + 1;
+
+                if (i == numDownTiers - 1) {
+                    // Bottom enabled tier: all rolls succeeded
+                    probabilities.put(tierPosition, Math.pow(p, steps));
+                } else {
+                    // Intermediate tier
+                    probabilities.put(tierPosition, Math.pow(p, steps) * q);
+                }
             }
         }
 

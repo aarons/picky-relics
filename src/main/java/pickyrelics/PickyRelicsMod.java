@@ -605,7 +605,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
         ));
 
         // Probability simulator display (right side of Algorithms page)
-        addPagedElement(settingsPanel, PAGE_ALGORITHMS, new ProbabilityDisplay(850.0f, contentY - 20.0f));
+        addPagedElement(settingsPanel, PAGE_ALGORITHMS, new ProbabilityDisplay(850.0f, contentY - 72.0f));
 
         BaseMod.registerModBadge(
                 badgeTexture,

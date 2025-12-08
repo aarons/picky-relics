@@ -16,6 +16,7 @@ import com.megacrit.cardcrawl.helpers.RelicLibrary;
 import com.megacrit.cardcrawl.relics.AbstractRelic;
 import pickyrelics.ui.PagedElement;
 import pickyrelics.ui.PageNavigator;
+import pickyrelics.ui.ProbabilityDisplay;
 import pickyrelics.ui.RelicChoicePreview;
 import pickyrelics.util.Log;
 import pickyrelics.util.TierUtils;
@@ -579,19 +580,8 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
         yPos -= 50.0f;
 
         // Shop/Boss relic section
-        addPagedElement(settingsPanel, PAGE_ALGORITHMS, new ModLabel(
-                "Should Shop and Boss Relics be available for randomized rewards?",
-                xPos, yPos,
-                Settings.GOLD_COLOR,
-                FontHelper.tipBodyFont,
-                settingsPanel,
-                (label) -> {}
-        ));
-
-        yPos -= 35.0f;
-
         addPagedElement(settingsPanel, PAGE_ALGORITHMS, new ModLabeledToggleButton(
-                "Allow shop relics",
+                "Include shop relics as options",
                 checkboxX, yPos,
                 Settings.CREAM_COLOR,
                 FontHelper.tipBodyFont,
@@ -601,10 +591,10 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
                 (toggle) -> { allowShopRelics = toggle.enabled; saveConfig(); }
         ));
 
-        yPos -= 30.0f;
+        yPos -= 35.0f;
 
         addPagedElement(settingsPanel, PAGE_ALGORITHMS, new ModLabeledToggleButton(
-                "Allow boss relics",
+                "Include boss relics as options",
                 checkboxX, yPos,
                 Settings.CREAM_COLOR,
                 FontHelper.tipBodyFont,
@@ -613,6 +603,9 @@ public class PickyRelicsMod implements PostInitializeSubscriber {
                 (label) -> {},
                 (toggle) -> { allowBossRelics = toggle.enabled; saveConfig(); }
         ));
+
+        // Probability simulator display (right side of Algorithms page)
+        addPagedElement(settingsPanel, PAGE_ALGORITHMS, new ProbabilityDisplay(850.0f, contentY - 20.0f));
 
         BaseMod.registerModBadge(
                 badgeTexture,

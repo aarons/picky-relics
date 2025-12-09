@@ -379,7 +379,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
                 // Migrate shop/boss from old keys
                 allowShopRelics = config.getBool(CONFIG_TIER_SHOP_ENABLED);
                 allowBossRelics = config.getBool(CONFIG_TIER_BOSS_ENABLED);
-                Log.info("Migrated old tier direction config to new format");
+                Log.debug("Migrated old tier direction config to new format");
             } else {
                 // Load new format
                 allowHigherTiers = config.getBool(CONFIG_ALLOW_HIGHER_TIERS);
@@ -388,7 +388,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
                 allowBossRelics = config.getBool(CONFIG_ALLOW_BOSS_RELICS);
             }
 
-            Log.info("Config loaded: showTierLabels=" + showTierLabels +
+            Log.debug("Config loaded: showTierLabels=" + showTierLabels +
                     ", starter=" + starterChoices + ", common=" + commonChoices +
                     ", uncommon=" + uncommonChoices + ", rare=" + rareChoices +
                     ", boss=" + bossChoices + ", shop=" + shopChoices + ", special=" + specialChoices +

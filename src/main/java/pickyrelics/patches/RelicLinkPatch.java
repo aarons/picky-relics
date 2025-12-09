@@ -114,7 +114,7 @@ public class RelicLinkPatch {
             return relic;
         }
 
-        Log.info("Picky Relics: " + tier + " pool exhausted, trying fallback tiers");
+        Log.debug("Picky Relics: " + tier + " pool exhausted, trying fallback tiers");
 
         // Get fallback order based on tier
         AbstractRelic.RelicTier[] fallbacks = getFallbackTiers(tier);
@@ -122,13 +122,13 @@ public class RelicLinkPatch {
         for (AbstractRelic.RelicTier fallbackTier : fallbacks) {
             relic = AbstractDungeon.returnRandomRelic(fallbackTier);
             if (!"Circlet".equals(relic.relicId)) {
-                Log.info("Picky Relics: Using fallback tier " + fallbackTier);
+                Log.debug("Picky Relics: Using fallback tier " + fallbackTier);
                 return relic;
             }
         }
 
         // All pools exhausted
-        Log.info("Picky Relics: All fallback tiers exhausted");
+        Log.debug("Picky Relics: All fallback tiers exhausted");
         return relic; // Will be Circlet
     }
 
@@ -158,7 +158,7 @@ public class RelicLinkPatch {
         }
 
         // All pools exhausted
-        Log.info("Picky Relics: All pools exhausted for event relic");
+        Log.debug("Picky Relics: All pools exhausted for event relic");
         return null;
     }
 
@@ -222,21 +222,21 @@ public class RelicLinkPatch {
                 // Event tier: additional choices come from enabled C/U/R pools
                 additionalRelic = getRandomNonEventRelic();
                 if (additionalRelic == null) {
-                    Log.info("Picky Relics: No valid tier available for event relic, skipping");
+                    Log.debug("Picky Relics: No valid tier available for event relic, skipping");
                     continue;
                 }
             } else {
                 // Normal tier: use tier modification
                 AbstractRelic.RelicTier tierToUse = calculateModifiedTier(tier);
                 if (tierToUse != tier) {
-                    Log.info("Picky Relics: Tier changed from " + tier + " to " + tierToUse);
+                    Log.debug("Picky Relics: Tier changed from " + tier + " to " + tierToUse);
                 }
                 additionalRelic = getRelicWithFallback(tierToUse);
             }
 
             // Skip Circlet - pool exhausted
             if ("Circlet".equals(additionalRelic.relicId)) {
-                Log.info("Picky Relics: Relic pool exhausted, skipping");
+                Log.debug("Picky Relics: Relic pool exhausted, skipping");
                 continue;
             }
 
@@ -297,7 +297,7 @@ public class RelicLinkPatch {
             ArrayList<RewardItem> linked = RelicLinkFields.linkedRelics.get(__instance);
             if (linked == null) return;
 
-            Log.info("Picky Relics: Relic claimed, marking " + (linked.size() - 1) + " linked relics as done");
+            Log.debug("Picky Relics: Relic claimed, marking " + (linked.size() - 1) + " linked relics as done");
 
             for (RewardItem other : linked) {
                 if (other != __instance) {
@@ -433,13 +433,13 @@ public class RelicLinkPatch {
             }
 
             if (hasUnlinked) {
-                Log.info("[UPDATE] Found unlinked relic(s) added after setup, processing...");
+                Log.debug("[UPDATE] Found unlinked relic(s) added after setup, processing...");
                 int sizeBefore = __instance.rewards.size();
                 int processed = processRelicRewards(__instance.rewards, "UPDATE");
 
                 // If we added relics, reposition everything
                 if (__instance.rewards.size() != sizeBefore) {
-                    Log.info("[UPDATE] Repositioning rewards after adding " +
+                    Log.debug("[UPDATE] Repositioning rewards after adding " +
                             (__instance.rewards.size() - sizeBefore) + " new relic(s)");
                     __instance.positionRewards();
                 }
@@ -464,7 +464,7 @@ public class RelicLinkPatch {
                 totalRelicRewards++;
             }
         }
-        Log.info("[" + source + "] Found " + totalRelicRewards + " relic reward(s) in screen");
+        Log.debug("[" + source + "] Found " + totalRelicRewards + " relic reward(s) in screen");
 
         // Find all relic rewards that don't already have linked groups
         ArrayList<RewardItem> unlinkedRelics = new ArrayList<>();
@@ -475,23 +475,23 @@ public class RelicLinkPatch {
                     // Get tier-specific choice count
                     int tierChoices = PickyRelicsMod.getChoicesForTier(r.relic.tier);
                     if (tierChoices <= 1) {
-                        Log.info("[" + source + "] Skipping " + r.relic.tier + " tier relic: " +
+                        Log.debug("[" + source + "] Skipping " + r.relic.tier + " tier relic: " +
                                 r.relic.relicId + " (choices=1)");
                         continue;
                     }
                     unlinkedRelics.add(r);
                 } else {
-                    Log.info("[" + source + "] Relic " + r.relic.relicId + " already has linked group, skipping");
+                    Log.debug("[" + source + "] Relic " + r.relic.relicId + " already has linked group, skipping");
                 }
             }
         }
 
-        Log.info("[" + source + "] Processing " + unlinkedRelics.size() + " unlinked relic(s)");
+        Log.debug("[" + source + "] Processing " + unlinkedRelics.size() + " unlinked relic(s)");
 
         // Create linked groups for each unlinked relic
         for (RewardItem original : unlinkedRelics) {
             int tierChoices = PickyRelicsMod.getChoicesForTier(original.relic.tier);
-            Log.info("[" + source + "] Creating linked group for " + original.relic.relicId +
+            Log.debug("[" + source + "] Creating linked group for " + original.relic.relicId +
                     " (tier: " + original.relic.tier + ") with " + tierChoices + " choices");
             createLinkedRelicGroup(rewards, original, tierChoices);
         }

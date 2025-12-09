@@ -108,85 +108,195 @@ public class TierUtils {
     }
 
     /**
-     * Find the next enabled tier position in the given direction.
-     * @param currentPosition Starting position
-     * @param direction +1 for up (toward Boss), -1 for down (toward Common)
-     * @return Next enabled position, or -1 if none exists
+     * Calculate weight for a candidate tier based on distance, magnitude, and max distance.
+     *
+     * Uses steep exponential with hard cutoffs at extremes:
+     * - magnitude 0%: only adjacent (d=1) gets weight
+     * - magnitude 50%: uniform (all get equal weight)
+     * - magnitude 100%: only furthest (d=maxDistance) gets weight
+     *
+     * @param distance Distance from original tier (1, 2, 3, or 4)
+     * @param magnitude Magnitude of change (0 to 100)
+     * @param maxDistance Maximum distance in this direction
+     * @return Weight for this candidate
      */
-    public static int findNextEnabledTier(int currentPosition, int direction) {
-        int next = currentPosition + direction;
-        while (next >= 0 && next <= 4) {
-            if (isTierEnabled(next)) {
-                return next;
-            }
-            next += direction;
+    public static double calculateWeight(int distance, int magnitude, int maxDistance) {
+        if (distance <= 0) return 0;
+        if (maxDistance <= 0) return 0;
+
+        // Hard cutoff at magnitude 0: only adjacent tier
+        if (magnitude <= 0) {
+            return distance == 1 ? 1.0 : 0.0;
         }
-        return -1;
+
+        // Hard cutoff at magnitude 100: only furthest tier
+        if (magnitude >= 100) {
+            return distance == maxDistance ? 1.0 : 0.0;
+        }
+
+        // Smooth transition using steep exponential: weight = d^(k * (mag/50 - 1))
+        // k=4 gives good steepness: at mag=25, d=1 gets 4x weight of d=2
+        double k = 4.0;
+        double exponent = k * (magnitude / 50.0 - 1.0);
+        return Math.pow(distance, exponent);
     }
 
     /**
-     * Calculate a potentially modified tier using cascading probability.
+     * Build list of candidate tiers in a given direction.
      *
-     * Cascading algorithm:
-     * 1. Start at original tier
-     * 2. If allowHigherTiers: repeatedly roll chance% to move up one tier
-     * 3. If no upgrade AND allowLowerTiers: repeatedly roll chance% to move down
+     * @param referencePosition Starting tier position
+     * @param direction +1 for up (toward Boss), -1 for down (toward Common)
+     * @return List of [position, distance] pairs
+     */
+    private static java.util.List<int[]> buildCandidatesInDirection(int referencePosition, int direction) {
+        java.util.List<int[]> candidates = new java.util.ArrayList<>();
+
+        int pos = referencePosition + direction;
+        while (pos >= 0 && pos <= 4) {
+            if (isTierEnabled(pos)) {
+                int distance = Math.abs(pos - referencePosition);
+                candidates.add(new int[]{pos, distance});
+            }
+            pos += direction;
+        }
+
+        return candidates;
+    }
+
+    /**
+     * Get maximum distance from a list of candidates.
+     */
+    private static int getMaxDistance(java.util.List<int[]> candidates) {
+        int max = 0;
+        for (int[] c : candidates) {
+            if (c[1] > max) max = c[1];
+        }
+        return max;
+    }
+
+    /**
+     * Select a tier from candidates using weighted random based on magnitude.
+     *
+     * @param candidates List of [position, distance] pairs
+     * @param magnitude Magnitude of change (0-100)
+     * @param randomDouble Random number supplier
+     * @return Selected tier position
+     */
+    private static int selectFromCandidates(java.util.List<int[]> candidates, int magnitude,
+                                            java.util.function.DoubleSupplier randomDouble) {
+        if (candidates.isEmpty()) return -1;
+        if (candidates.size() == 1) return candidates.get(0)[0];
+
+        int maxDistance = getMaxDistance(candidates);
+
+        // Calculate weights
+        double totalWeight = 0;
+        double[] weights = new double[candidates.size()];
+        for (int i = 0; i < candidates.size(); i++) {
+            weights[i] = calculateWeight(candidates.get(i)[1], magnitude, maxDistance);
+            totalWeight += weights[i];
+        }
+
+        // If all weights are 0 (shouldn't happen), fall back to uniform
+        if (totalWeight <= 0) {
+            return candidates.get((int)(randomDouble.getAsDouble() * candidates.size()))[0];
+        }
+
+        // Weighted random selection
+        double roll = randomDouble.getAsDouble() * totalWeight;
+        double cumulative = 0;
+        for (int i = 0; i < candidates.size(); i++) {
+            cumulative += weights[i];
+            if (roll < cumulative) {
+                return candidates.get(i)[0];
+            }
+        }
+
+        return candidates.get(candidates.size() - 1)[0];
+    }
+
+    /**
+     * Calculate a potentially modified tier using direction-first algorithm.
+     *
+     * Stage 1: Roll against varianceChance
+     *   - If fail → return original tier
+     *   - If succeed → proceed to Stage 2
+     *
+     * Stage 2: Direction selection
+     *   - If both directions enabled: randomly pick one (50/50)
+     *   - Otherwise: use the enabled direction
+     *
+     * Stage 3: Magnitude selection within chosen direction
+     *   - magnitude 0%: only adjacent tier
+     *   - magnitude 100%: only furthest tier
+     *   - in between: weighted selection
      *
      * @param originalTier The original tier of the relic reward
      * @param shouldChange Function that takes chance (0-100) and returns 1 if should change, 0 otherwise
-     * @param randomIndex Function that takes list size and returns random index [0, size) - unused in cascading
+     * @param randomDouble Function that returns a random double in [0, 1)
      * @return The tier to use (never null - original tier is always valid)
      */
     public static AbstractRelic.RelicTier calculateModifiedTier(
             AbstractRelic.RelicTier originalTier,
             IntUnaryOperator shouldChange,
-            IntUnaryOperator randomIndex) {
+            java.util.function.DoubleSupplier randomDouble) {
 
         int chance = PickyRelicsMod.tierChangeChance;
-        if (chance <= 0) {
+        int magnitude = PickyRelicsMod.tierChangeMagnitude;
+
+        // Special handling for Event tier: force 100% variance, use Uncommon as reference
+        boolean isEventTier = (originalTier == AbstractRelic.RelicTier.SPECIAL);
+        int referencePosition = isEventTier ? 1 : getTierPosition(originalTier);
+
+        // Stage 1: Check if variance occurs (Event tier always forces variance)
+        if (!isEventTier) {
+            // If both direction toggles are off, no variance possible
+            if (!PickyRelicsMod.allowHigherTiers && !PickyRelicsMod.allowLowerTiers) {
+                return originalTier;
+            }
+
+            // Roll for variance
+            if (chance <= 0 || shouldChange.applyAsInt(chance) == 0) {
+                return originalTier;
+            }
+        }
+
+        // Stage 2: Build candidates for each direction
+        java.util.List<int[]> upCandidates = PickyRelicsMod.allowHigherTiers ?
+                buildCandidatesInDirection(referencePosition, +1) : new java.util.ArrayList<>();
+        java.util.List<int[]> downCandidates = PickyRelicsMod.allowLowerTiers ?
+                buildCandidatesInDirection(referencePosition, -1) : new java.util.ArrayList<>();
+
+        boolean hasUp = !upCandidates.isEmpty();
+        boolean hasDown = !downCandidates.isEmpty();
+
+        // Edge case: no valid candidates in either direction
+        if (!hasUp && !hasDown) {
             return originalTier;
         }
 
-        int currentPosition = getTierPosition(originalTier);
-        boolean upgraded = false;
-
-        // Try cascading UP if allowHigherTiers
-        if (PickyRelicsMod.allowHigherTiers) {
-            while (true) {
-                // Roll to see if we move up
-                if (shouldChange.applyAsInt(chance) == 0) {
-                    break;
-                }
-                int nextUp = findNextEnabledTier(currentPosition, +1);
-                if (nextUp == -1) {
-                    break;
-                }
-                currentPosition = nextUp;
-                upgraded = true;
-            }
+        // Select direction: if both available, random 50/50
+        java.util.List<int[]> candidates;
+        if (hasUp && hasDown) {
+            candidates = randomDouble.getAsDouble() < 0.5 ? downCandidates : upCandidates;
+        } else if (hasUp) {
+            candidates = upCandidates;
+        } else {
+            candidates = downCandidates;
         }
 
-        // Try cascading DOWN if allowLowerTiers AND no upgrade happened
-        if (!upgraded && PickyRelicsMod.allowLowerTiers) {
-            while (true) {
-                // Roll to see if we move down
-                if (shouldChange.applyAsInt(chance) == 0) {
-                    break;
-                }
-                int nextDown = findNextEnabledTier(currentPosition, -1);
-                if (nextDown == -1) {
-                    break;
-                }
-                currentPosition = nextDown;
-            }
+        // Stage 3: Select tier within chosen direction based on magnitude
+        int selectedPosition = selectFromCandidates(candidates, magnitude, randomDouble);
+        if (selectedPosition < 0) {
+            return originalTier;
         }
 
-        return getTierFromPosition(currentPosition);
+        return getTierFromPosition(selectedPosition);
     }
 
     /**
      * Calculate probability distribution for tier outcomes starting from Common.
-     * Uses pure math based on cascading algorithm - no RNG needed.
+     * Uses pure math based on direction-first weighted algorithm - no RNG needed.
      *
      * @return Map of tier position (0-4) to probability (0.0-1.0)
      */
@@ -195,117 +305,118 @@ public class TierUtils {
     }
 
     /**
-     * Calculate probability distribution for tier outcomes starting from a given tier.
-     * Uses pure math based on cascading algorithm - no RNG needed.
+     * Calculate probability distribution for a list of candidates in one direction.
      *
-     * @param startPosition Starting tier position (0=Common, 1=Uncommon, 2=Rare)
+     * @param candidates List of [position, distance] pairs
+     * @param magnitude Magnitude of change (0-100)
+     * @return Map of position to probability within this direction (sums to 1.0)
+     */
+    private static java.util.Map<Integer, Double> calculateDirectionProbabilities(
+            java.util.List<int[]> candidates, int magnitude) {
+        java.util.Map<Integer, Double> probs = new java.util.LinkedHashMap<>();
+
+        if (candidates.isEmpty()) return probs;
+
+        int maxDistance = getMaxDistance(candidates);
+
+        // Calculate weights
+        double totalWeight = 0;
+        for (int[] c : candidates) {
+            double w = calculateWeight(c[1], magnitude, maxDistance);
+            totalWeight += w;
+        }
+
+        // Convert to probabilities
+        for (int[] c : candidates) {
+            double w = calculateWeight(c[1], magnitude, maxDistance);
+            probs.put(c[0], totalWeight > 0 ? w / totalWeight : 1.0 / candidates.size());
+        }
+
+        return probs;
+    }
+
+    /**
+     * Calculate probability distribution for tier outcomes starting from a given tier.
+     * Uses pure math based on direction-first weighted algorithm - no RNG needed.
+     *
+     * Algorithm:
+     * 1. If variance doesn't occur: stay at original
+     * 2. If both directions enabled: 50% chance each direction
+     * 3. Within each direction: weighted by magnitude
+     *
+     * @param startPosition Starting tier position (0=Common, 1=Uncommon, 2=Rare, 3=Shop, 4=Boss)
      * @return Map of tier position (0-4) to probability (0.0-1.0)
      */
     public static java.util.Map<Integer, Double> calculateTierProbabilities(int startPosition) {
         java.util.Map<Integer, Double> probabilities = new java.util.LinkedHashMap<>();
 
         int chance = PickyRelicsMod.tierChangeChance;
-        double p = chance / 100.0;
-        double q = 1.0 - p;
+        int magnitude = PickyRelicsMod.tierChangeMagnitude;
+        double varianceProb = chance / 100.0;
+        double noVarianceProb = 1.0 - varianceProb;
 
         // Initialize all to 0
         for (int i = 0; i <= 4; i++) {
             probabilities.put(i, 0.0);
         }
 
-        // If chance is 0, 100% stays at starting position
-        if (chance <= 0) {
-            probabilities.put(startPosition, 1.0);
-            return probabilities;
-        }
-
-        // Build list of enabled tier positions upward from start
-        java.util.List<Integer> upwardPositions = new java.util.ArrayList<>();
-        upwardPositions.add(startPosition);
-        for (int pos = startPosition + 1; pos <= 4; pos++) {
-            if (isTierEnabled(pos)) {
-                upwardPositions.add(pos);
-            }
-        }
-
-        // Build list of enabled tier positions downward from start (not including start)
-        java.util.List<Integer> downwardPositions = new java.util.ArrayList<>();
-        for (int pos = startPosition - 1; pos >= 0; pos--) {
-            if (isTierEnabled(pos)) {
-                downwardPositions.add(pos);
-            }
-        }
-
-        boolean canGoUp = PickyRelicsMod.allowHigherTiers && upwardPositions.size() > 1;
-        boolean canGoDown = PickyRelicsMod.allowLowerTiers && !downwardPositions.isEmpty();
+        // Check if variance is possible
+        boolean canGoUp = PickyRelicsMod.allowHigherTiers;
+        boolean canGoDown = PickyRelicsMod.allowLowerTiers;
 
         if (!canGoUp && !canGoDown) {
-            // No movement possible
+            // No variance possible - 100% stays at original
             probabilities.put(startPosition, 1.0);
             return probabilities;
         }
 
-        if (canGoUp) {
-            // Calculate upward probabilities
-            int numUpTiers = upwardPositions.size();
-            for (int i = 0; i < numUpTiers; i++) {
-                int tierPosition = upwardPositions.get(i);
-                int steps = i;
+        // Build candidates for each direction
+        java.util.List<int[]> upCandidates = canGoUp ?
+                buildCandidatesInDirection(startPosition, +1) : new java.util.ArrayList<>();
+        java.util.List<int[]> downCandidates = canGoDown ?
+                buildCandidatesInDirection(startPosition, -1) : new java.util.ArrayList<>();
 
-                if (i == numUpTiers - 1) {
-                    // Top enabled tier: all rolls succeeded
-                    probabilities.put(tierPosition, Math.pow(p, steps));
-                } else {
-                    // Intermediate tier: succeeded 'steps' times, then failed
-                    probabilities.put(tierPosition, Math.pow(p, steps) * q);
-                }
-            }
+        boolean hasUp = !upCandidates.isEmpty();
+        boolean hasDown = !downCandidates.isEmpty();
 
-            // If can also go down, downward cascade only happens when no upgrade occurred
-            // P(no upgrade) = q (failed first roll)
-            if (canGoDown) {
-                double noUpgradeProb = q;
-                // Redistribute the start position probability to downward cascade
-                double startProb = probabilities.get(startPosition);
-                probabilities.put(startPosition, 0.0);
+        // Edge case: no valid candidates in either direction
+        if (!hasUp && !hasDown) {
+            probabilities.put(startPosition, 1.0);
+            return probabilities;
+        }
 
-                // From the "no upgrade" probability, calculate downward cascade
-                int numDownTiers = downwardPositions.size();
-                for (int i = 0; i < numDownTiers; i++) {
-                    int tierPosition = downwardPositions.get(i);
-                    int steps = i + 1; // +1 because first step is from start to first down position
+        // Probability of staying at original (variance didn't occur)
+        probabilities.put(startPosition, noVarianceProb);
 
-                    if (i == numDownTiers - 1) {
-                        // Bottom enabled tier: all down rolls succeeded
-                        probabilities.put(tierPosition, noUpgradeProb * Math.pow(p, steps));
-                    } else {
-                        // Intermediate tier going down
-                        probabilities.put(tierPosition, noUpgradeProb * Math.pow(p, steps) * q);
-                    }
-                }
+        // Calculate direction probabilities
+        double upDirProb, downDirProb;
+        if (hasUp && hasDown) {
+            // Both directions: 50/50 split
+            upDirProb = 0.5;
+            downDirProb = 0.5;
+        } else if (hasUp) {
+            upDirProb = 1.0;
+            downDirProb = 0.0;
+        } else {
+            upDirProb = 0.0;
+            downDirProb = 1.0;
+        }
 
-                // Probability of staying at start = failed first up roll, then failed first down roll
-                probabilities.put(startPosition, noUpgradeProb * q);
-            }
-        } else if (canGoDown) {
-            // Only downward movement possible
-            int numDownTiers = downwardPositions.size();
+        // Calculate probabilities within each direction
+        java.util.Map<Integer, Double> upProbs = calculateDirectionProbabilities(upCandidates, magnitude);
+        java.util.Map<Integer, Double> downProbs = calculateDirectionProbabilities(downCandidates, magnitude);
 
-            // Start position: failed first roll
-            probabilities.put(startPosition, q);
+        // Combine: P(tier) = P(variance) * P(direction) * P(tier | direction)
+        for (java.util.Map.Entry<Integer, Double> e : upProbs.entrySet()) {
+            int pos = e.getKey();
+            double tierProb = varianceProb * upDirProb * e.getValue();
+            probabilities.put(pos, probabilities.get(pos) + tierProb);
+        }
 
-            for (int i = 0; i < numDownTiers; i++) {
-                int tierPosition = downwardPositions.get(i);
-                int steps = i + 1;
-
-                if (i == numDownTiers - 1) {
-                    // Bottom enabled tier: all rolls succeeded
-                    probabilities.put(tierPosition, Math.pow(p, steps));
-                } else {
-                    // Intermediate tier
-                    probabilities.put(tierPosition, Math.pow(p, steps) * q);
-                }
-            }
+        for (java.util.Map.Entry<Integer, Double> e : downProbs.entrySet()) {
+            int pos = e.getKey();
+            double tierProb = varianceProb * downDirProb * e.getValue();
+            probabilities.put(pos, probabilities.get(pos) + tierProb);
         }
 
         return probabilities;

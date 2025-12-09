@@ -59,7 +59,7 @@ public class RelicLinkPatch {
         return TierUtils.calculateModifiedTier(
                 originalTier,
                 chance -> AbstractDungeon.relicRng.randomBoolean(chance / 100.0f) ? 1 : 0,
-                size -> AbstractDungeon.relicRng.random(size - 1)
+                () -> (double) AbstractDungeon.relicRng.random()
         );
     }
 

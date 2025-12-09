@@ -9,14 +9,15 @@
     "TEXT": [
       "How many choices appear in combat and chest rewards",
       "Show relic tier labels on reward screen",
-      "Event relics have special requirements.",
-      "Additional options are from Common,",
-      "Uncommon, and Rare pools.",
+      "Options for event relics always come from other tiers.",
+      "",
+      "",
       "Chance for options to be a different tier",
       "Allow options from higher tiers",
       "Allow options from lower tiers",
       "Include shop relics as options",
-      "Include boss relics as options"
+      "Include boss relics as options",
+      "Magnitude of tier change"
     ]
   },
   "pickyrelics:Probability": {

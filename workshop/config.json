@@ -1,0 +1,7 @@
+{
+  "title": "Picky Relics",
+  "description": "Choose from multiple relic options when earning relics. Configurable choices per tier (1-5, default: 2). Supports many languages.",
+  "visibility": "private",
+  "changeNote": "Initial release",
+  "tags": ["Rewards", "Relics", "English", "Simplified Chinese", "Korean"]
+}

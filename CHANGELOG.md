@@ -13,7 +13,7 @@
 - **Visual tier labels**: Color-coded tier indicators on relic rewards
 - **Settings UI preview**: Live preview of relic choice layout in settings
 - **Probability display**: Real-time probability table for tier outcomes
-- **18-language localization**: English, Chinese, Japanese, Korean, German, French, Spanish, Russian, Portuguese, Turkish, Italian, Greek, Ukrainian, Vietnamese, Polish, Indonesian, Thai, Serbian
+- **AI Generated Language localizations**: Simplified Chinese, Japanese, Korean, German, French, Spanish, Russian, Portuguese, Turkish, Italian, Greek, Ukrainian, Vietnamese, Polish, Indonesian, Thai, Serbian
 
 ### Technical
 - Built with ModTheSpire and BaseMod

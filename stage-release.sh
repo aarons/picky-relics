@@ -296,7 +296,7 @@ log_info "Setting up Steam Workshop workspace..."
 # Create workspace if it doesn't exist
 if [ ! -d "$WORKSPACE" ]; then
     log_info "Creating new workspace..."
-    run_cmd "cd \"$STS_DIR\" && java -jar mod-uploader.jar new -w pickyrelics"
+    run_cmd "(cd \"$STS_DIR\" && java -jar mod-uploader.jar new -w pickyrelics)"
 fi
 
 # Copy files to workspace

@@ -59,6 +59,8 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
     private static final String CONFIG_BOSS_CHOICES = "bossChoices";
     private static final String CONFIG_SHOP_CHOICES = "shopChoices";
     private static final String CONFIG_SPECIAL_CHOICES = "specialChoices";
+    private static final String CONFIG_TARGET_TIER_PERCENT = "targetTierPercent";
+    // Legacy key for migration
     private static final String CONFIG_TIER_CHANGE_CHANCE = "tierChangeChance";
     private static final String CONFIG_ALLOW_HIGHER_TIERS = "allowHigherTiers";
     private static final String CONFIG_ALLOW_LOWER_TIERS = "allowLowerTiers";
@@ -83,8 +85,9 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
     public static int shopChoices = 2;
     public static int specialChoices = 2;
 
-    // Tier change chance: 0 to 100 (probability that tier will change)
-    public static int tierChangeChance = 0;
+    // Target tier percent: 0 to 100 (where in the tier range to target)
+    // 0% = lowest available tier, 100% = highest available tier, 50% = original tier
+    public static int targetTierPercent = 50;
 
     // Tier direction options (which tiers can be selected when tier changes)
     public static boolean allowHigherTiers = false;  // Can tier go up (toward Rare/Boss)
@@ -328,7 +331,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
             defaults.setProperty(CONFIG_BOSS_CHOICES, "2");
             defaults.setProperty(CONFIG_SHOP_CHOICES, "2");
             defaults.setProperty(CONFIG_SPECIAL_CHOICES, "2");
-            defaults.setProperty(CONFIG_TIER_CHANGE_CHANCE, "0");
+            defaults.setProperty(CONFIG_TARGET_TIER_PERCENT, "50");
             defaults.setProperty(CONFIG_ALLOW_HIGHER_TIERS, "false");
             defaults.setProperty(CONFIG_ALLOW_LOWER_TIERS, "false");
             defaults.setProperty(CONFIG_ALLOW_SHOP_RELICS, "false");
@@ -344,7 +347,13 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
             bossChoices = clamp(config.getInt(CONFIG_BOSS_CHOICES), 1, 5);
             shopChoices = clamp(config.getInt(CONFIG_SHOP_CHOICES), 1, 5);
             specialChoices = clamp(config.getInt(CONFIG_SPECIAL_CHOICES), 1, 5);
-            tierChangeChance = clamp(config.getInt(CONFIG_TIER_CHANGE_CHANCE), 0, 100);
+            // Migrate from old tierChangeChance key if present
+            if (config.has(CONFIG_TIER_CHANGE_CHANCE) && !config.has(CONFIG_TARGET_TIER_PERCENT)) {
+                targetTierPercent = clamp(config.getInt(CONFIG_TIER_CHANGE_CHANCE), 0, 100);
+                Log.info("Migrated tierChangeChance to targetTierPercent: " + targetTierPercent);
+            } else {
+                targetTierPercent = clamp(config.getInt(CONFIG_TARGET_TIER_PERCENT), 0, 100);
+            }
 
             // Check for migration from old format
             if (config.has(CONFIG_TIER_DIRECTION) && !config.has(CONFIG_ALLOW_HIGHER_TIERS)) {
@@ -385,7 +394,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
                     ", starter=" + starterChoices + ", common=" + commonChoices +
                     ", uncommon=" + uncommonChoices + ", rare=" + rareChoices +
                     ", boss=" + bossChoices + ", shop=" + shopChoices + ", special=" + specialChoices +
-                    ", tierChangeChance=" + tierChangeChance +
+                    ", targetTierPercent=" + targetTierPercent +
                     ", allowHigher=" + allowHigherTiers + ", allowLower=" + allowLowerTiers +
                     ", allowShop=" + allowShopRelics + ", allowBoss=" + allowBossRelics);
         } catch (IOException e) {
@@ -407,7 +416,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
             config.setInt(CONFIG_BOSS_CHOICES, bossChoices);
             config.setInt(CONFIG_SHOP_CHOICES, shopChoices);
             config.setInt(CONFIG_SPECIAL_CHOICES, specialChoices);
-            config.setInt(CONFIG_TIER_CHANGE_CHANCE, tierChangeChance);
+            config.setInt(CONFIG_TARGET_TIER_PERCENT, targetTierPercent);
             config.setBool(CONFIG_ALLOW_HIGHER_TIERS, allowHigherTiers);
             config.setBool(CONFIG_ALLOW_LOWER_TIERS, allowLowerTiers);
             config.setBool(CONFIG_ALLOW_SHOP_RELICS, allowShopRelics);
@@ -582,10 +591,10 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
         // ===== PAGE 1: Algorithms =====
         yPos = contentY;
 
-        // Tier change chance slider (0-100%)
+        // Target tier percent slider (0-100%)
         addPagedSliderRow(settingsPanel, PAGE_ALGORITHMS, settingsStrings.TEXT[5], xPos, sliderX + 210.0f, yPos, sliderYOffset,
-                tierChangeChance, 0.0f, 100.0f, "%.0f%%",
-                (val) -> { tierChangeChance = val; saveConfig(); });
+                targetTierPercent, 0.0f, 100.0f, "%.0f%%",
+                (val) -> { targetTierPercent = val; saveConfig(); });
 
         yPos -= rowHeight + 30.0f;
 

@@ -25,6 +25,10 @@ The mod uses SpirePatch annotations to modify game behavior:
 - `@SpirePostfixPatch` - Runs after the original method
 - First parameter `__instance` receives the patched object instance
 
+### Localization
+
+Only update English (`eng`) localization files. Other languages are handled separately.
+
 ### Reference Materials
 
 Reference materials for exploring game APIs are in `references/`:

@@ -12,7 +12,7 @@
       "Event relics have special requirements.",
       "Additional options are from Common,",
       "Uncommon, and Rare pools.",
-      "Chance for options to be a different tier",
+      "Target tier (0% lowest, 100% highest)",
       "Allow options from higher tiers",
       "Allow options from lower tiers",
       "Include shop relics as options",

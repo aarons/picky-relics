@@ -12,7 +12,8 @@
       "Bash(javap:*)",
       "Bash(grep:*)",
       "Bash(magick:*)",
-      "Bash(mvn compile:*)"
+      "Bash(mvn compile:*)",
+      "WebFetch(domain:partner.steamgames.com)"
     ],
     "deny": [],
     "ask": []

@@ -9,14 +9,15 @@
     "TEXT": [
       "Koliko izbora se pojavljuje u borbenim i sanducima nagrada",
       "Prikaži oznake nivoa relikvija na ekranu nagrada",
-      "Relikvije događaja imaju posebne uslove.",
-      "Dodatne opcije su iz uobičajenih,",
-      "neuobičajenih i retkih fondova.",
+      "Opcije za relikvije događaja uvek dolaze iz drugih nivoa.",
+      "",
+      "",
       "Šansa da opcije budu drugačijeg nivoa",
       "Dozvoli opcije iz viših nivoa",
       "Dozvoli opcije iz nižih nivoa",
       "Uključi relikvije prodavnice kao opcije",
-      "Uključi relikvije šefa kao opcije"
+      "Uključi relikvije šefa kao opcije",
+      "Veličina promene nivoa"
     ]
   },
   "pickyrelics:Probability": {

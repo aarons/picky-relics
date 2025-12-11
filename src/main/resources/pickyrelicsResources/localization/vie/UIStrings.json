@@ -9,14 +9,15 @@
     "TEXT": [
       "Số lượng lựa chọn xuất hiện trong phần thưởng chiến đấu và rương",
       "Hiển thị nhãn cấp độ di vật trên màn hình phần thưởng",
-      "Di vật sự kiện có yêu cầu đặc biệt.",
-      "Các tùy chọn bổ sung đến từ các nhóm Thường,",
-      "Không phổ biến và Hiếm.",
+      "Các tùy chọn cho di vật sự kiện luôn đến từ các cấp độ khác.",
+      "",
+      "",
       "Khả năng các tùy chọn có cấp độ khác",
       "Cho phép tùy chọn từ các cấp độ cao hơn",
       "Cho phép tùy chọn từ các cấp độ thấp hơn",
       "Bao gồm di vật cửa hàng làm tùy chọn",
-      "Bao gồm di vật trùm làm tùy chọn"
+      "Bao gồm di vật trùm làm tùy chọn",
+      "Mức độ thay đổi cấp độ"
     ]
   },
   "pickyrelics:Probability": {

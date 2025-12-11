@@ -9,14 +9,15 @@
     "TEXT": [
       "Savaş ve sandık ödüllerinde kaç seçenek görüneceği",
       "Ödül ekranında kalıntı seviyesi etiketlerini göster",
-      "Olay kalıntılarının özel gereksinimleri vardır.",
-      "Ek seçenekler Yaygın,",
-      "Nadir ve Çok Nadir havuzlarından gelir.",
+      "Olay kalıntıları için seçenekler her zaman diğer seviyelerden gelir.",
+      "",
+      "",
       "Seçeneklerin farklı bir seviye olma olasılığı",
       "Üst seviyelerden seçeneklere izin ver",
       "Alt seviyelerden seçeneklere izin ver",
       "Seçenekler olarak dükkan kalıntılarını dahil et",
-      "Seçenekler olarak patron kalıntılarını dahil et"
+      "Seçenekler olarak patron kalıntılarını dahil et",
+      "Seviye değişiminin büyüklüğü"
     ]
   },
   "pickyrelics:Probability": {

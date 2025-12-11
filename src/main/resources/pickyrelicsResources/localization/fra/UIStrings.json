@@ -9,14 +9,15 @@
     "TEXT": [
       "Nombre de choix qui apparaissent dans les récompenses de combat et de coffre",
       "Afficher les étiquettes de niveau de relique sur l'écran de récompense",
-      "Les reliques d'événement ont des exigences spéciales.",
-      "Les options supplémentaires proviennent des réserves",
-      "Commune, Peu commune et Rare.",
+      "Les options pour les reliques d'événement proviennent toujours d'autres niveaux.",
+      "",
+      "",
       "Chance que les options soient d'un niveau différent",
       "Autoriser les options de niveaux supérieurs",
       "Autoriser les options de niveaux inférieurs",
       "Inclure les reliques de boutique comme options",
-      "Inclure les reliques de boss comme options"
+      "Inclure les reliques de boss comme options",
+      "Ampleur du changement de niveau"
     ]
   },
   "pickyrelics:Probability": {

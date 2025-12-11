@@ -9,14 +9,15 @@
     "TEXT": [
       "Wie viele Auswahlmöglichkeiten in Kampf- und Truhenbelohnungen erscheinen",
       "Relikt-Stufenbezeichnungen auf dem Belohnungsbildschirm anzeigen",
-      "Ereignis-Relikte haben besondere Anforderungen.",
-      "Zusätzliche Optionen stammen aus Gewöhnlichen,",
-      "Ungewöhnlichen und Seltenen Pools.",
+      "Optionen für Ereignis-Relikte stammen immer aus anderen Stufen.",
+      "",
+      "",
       "Chance, dass Optionen eine andere Stufe haben",
       "Optionen aus höheren Stufen erlauben",
       "Optionen aus niedrigeren Stufen erlauben",
       "Laden-Relikte als Optionen einbeziehen",
-      "Boss-Relikte als Optionen einbeziehen"
+      "Boss-Relikte als Optionen einbeziehen",
+      "Ausmaß der Stufenänderung"
     ]
   },
   "pickyrelics:Probability": {

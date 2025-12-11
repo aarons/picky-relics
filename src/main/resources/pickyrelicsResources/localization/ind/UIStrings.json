@@ -9,14 +9,15 @@
     "TEXT": [
       "Berapa banyak pilihan yang muncul di hadiah pertempuran dan peti",
       "Tampilkan label tingkat relik di layar hadiah",
-      "Relik acara memiliki persyaratan khusus.",
-      "Pilihan tambahan berasal dari kumpulan",
-      "Umum, Tidak Umum, dan Langka.",
+      "Pilihan untuk relik acara selalu berasal dari tingkat lain.",
+      "",
+      "",
       "Peluang untuk pilihan menjadi tingkat yang berbeda",
       "Izinkan pilihan dari tingkat yang lebih tinggi",
       "Izinkan pilihan dari tingkat yang lebih rendah",
       "Sertakan relik toko sebagai pilihan",
-      "Sertakan relik bos sebagai pilihan"
+      "Sertakan relik bos sebagai pilihan",
+      "Besaran perubahan tingkat"
     ]
   },
   "pickyrelics:Probability": {

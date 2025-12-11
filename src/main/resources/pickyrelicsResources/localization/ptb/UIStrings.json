@@ -9,14 +9,15 @@
     "TEXT": [
       "Quantas opções aparecem em recompensas de combate e baús",
       "Mostrar rótulos de nível de relíquia na tela de recompensas",
-      "Relíquias de evento têm requisitos especiais.",
-      "Opções adicionais são dos conjuntos Comum,",
-      "Incomum e Raro.",
+      "Opções para relíquias de evento sempre vêm de outros níveis.",
+      "",
+      "",
       "Chance das opções serem de um nível diferente",
       "Permitir opções de níveis superiores",
       "Permitir opções de níveis inferiores",
       "Incluir relíquias de loja como opções",
-      "Incluir relíquias de chefe como opções"
+      "Incluir relíquias de chefe como opções",
+      "Magnitude da mudança de nível"
     ]
   },
   "pickyrelics:Probability": {

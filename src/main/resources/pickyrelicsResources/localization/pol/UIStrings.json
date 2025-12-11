@@ -9,14 +9,15 @@
     "TEXT": [
       "Ile opcji pojawia się w nagrodach z walki i skrzyń",
       "Pokaż etykiety kategorii reliktów na ekranie nagród",
-      "Relікty z wydarzeń mają specjalne wymagania.",
-      "Dodatkowe opcje pochodzą z pul Pospolitych,",
-      "Niepospolitych i Rzadkich.",
+      "Opcje dla reliktów z wydarzeń zawsze pochodzą z innych kategorii.",
+      "",
+      "",
       "Szansa na opcje z innej kategorii",
       "Zezwól na opcje z wyższych kategorii",
       "Zezwól na opcje z niższych kategorii",
       "Uwzględnij relікty sklepowe jako opcje",
-      "Uwzględnij relікty bossów jako opcje"
+      "Uwzględnij relікty bossów jako opcje",
+      "Wielkość zmiany kategorii"
     ]
   },
   "pickyrelics:Probability": {

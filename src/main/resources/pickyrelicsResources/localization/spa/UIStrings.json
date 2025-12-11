@@ -9,14 +9,15 @@
     "TEXT": [
       "Cuántas opciones aparecen en recompensas de combate y cofres",
       "Mostrar etiquetas de nivel de reliquia en la pantalla de recompensas",
-      "Las reliquias de evento tienen requisitos especiales.",
-      "Las opciones adicionales son de las reservas Común,",
-      "Poco Común y Rara.",
+      "Las opciones para reliquias de evento siempre provienen de otros niveles.",
+      "",
+      "",
       "Probabilidad de que las opciones sean de un nivel diferente",
       "Permitir opciones de niveles superiores",
       "Permitir opciones de niveles inferiores",
       "Incluir reliquias de tienda como opciones",
-      "Incluir reliquias de jefe como opciones"
+      "Incluir reliquias de jefe como opciones",
+      "Magnitud del cambio de nivel"
     ]
   },
   "pickyrelics:Probability": {

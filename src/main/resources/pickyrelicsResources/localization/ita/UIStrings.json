@@ -9,14 +9,15 @@
     "TEXT": [
       "Quante scelte appaiono nelle ricompense da combattimento e forziere",
       "Mostra etichette del livello reliquia nella schermata ricompense",
-      "Le reliquie evento hanno requisiti speciali.",
-      "Le opzioni aggiuntive provengono dai gruppi",
-      "Comuni, Non comuni e Rari.",
+      "Le opzioni per le reliquie evento provengono sempre da altri livelli.",
+      "",
+      "",
       "Probabilità che le opzioni siano di un livello diverso",
       "Consenti opzioni da livelli superiori",
       "Consenti opzioni da livelli inferiori",
       "Includi reliquie negozio come opzioni",
-      "Includi reliquie boss come opzioni"
+      "Includi reliquie boss come opzioni",
+      "Magnitudine del cambio di livello"
     ]
   },
   "pickyrelics:Probability": {

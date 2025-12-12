@@ -136,6 +136,45 @@ update_change_note() {
     fi
 }
 
+# Style cleanup via second LLM call with strict rules
+cleanup_changelog_style() {
+    local raw_notes="$1"
+
+    if command -v claude &> /dev/null; then
+        local cleaned=$(claude --print "Clean up this changelog entry to follow these strict rules:
+
+NEVER:
+- Use **bold** formatting
+- Use 'Feature: explanation' format (describe features directly)
+- Include technical/engineering sections
+- Use jargon players won't understand
+
+ALWAYS:
+- Group related features under section headers
+- Use plain, clear language
+- Use nested bullets for sub-features
+
+Return ONLY the cleaned changelog, no explanation.
+
+Changelog to clean:
+$raw_notes" 2>/dev/null || echo "")
+
+        if [ -n "$cleaned" ]; then
+            echo "$cleaned"
+            return
+        fi
+    fi
+
+    echo "$raw_notes"
+}
+
+# Programmatic enforcement of blanket formatting rules
+enforce_programmatic_rules() {
+    local notes="$1"
+    # Remove all ** markers (silent)
+    echo "$notes" | sed 's/\*\*//g'
+}
+
 echo ""
 echo -e "${BLUE}========================================${NC}"
 echo -e "${BLUE}  Picky Relics - Update Changelog${NC}"
@@ -196,16 +235,35 @@ else
         if command -v claude &> /dev/null; then
             log_info "Using Claude to generate release notes..."
 
+            # Read existing changelog for style reference
+            EXISTING_STYLE=$(head -30 "$CHANGELOG")
+
             RELEASE_NOTES=$(claude --print "Generate a concise changelog entry for a Slay the Spire mod release.
-Format as bullet points, focusing on user-facing changes.
-Be concise - max 5 bullet points.
+
+STYLE GUIDE:
+- Write for players, not engineers
+- Describe features directly (not 'Feature: explanation' format)
+- Group related items under section headers
+- Use nested bullets for sub-features
+- Max 5-7 bullet points total
+- Follow this existing style:
+
+$EXISTING_STYLE
+
 Commits since last release:
 $COMMITS" 2>/dev/null || echo "")
 
             if [ -z "$RELEASE_NOTES" ]; then
                 log_warn "Claude failed to generate notes, using commit summary"
                 RELEASE_NOTES=$(echo "$COMMITS" | head -5 | sed 's/^[a-f0-9]* /- /')
+            else
+                # Phase 2: Style cleanup via LLM (always runs)
+                log_info "Running style cleanup pass..."
+                RELEASE_NOTES=$(cleanup_changelog_style "$RELEASE_NOTES")
             fi
+
+            # Phase 3: Programmatic enforcement (silent)
+            RELEASE_NOTES=$(enforce_programmatic_rules "$RELEASE_NOTES")
         else
             log_warn "Claude CLI not found, using commit summary"
             RELEASE_NOTES=$(echo "$COMMITS" | head -5 | sed 's/^[a-f0-9]* /- /')

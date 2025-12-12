@@ -1,6 +1,6 @@
 {
   "title": "Picky Relics",
-  "description": "Choose from multiple relic options when earning relics. Configurable choices per tier (1-5, default: 2). Supports many languages.",
+  "description": "Choose from multiple options when earning relics. Like the Bossy Relics mod, except configurable.",
   "visibility": "private",
   "changeNote": "v1.0.0: Initial release",
   "tags": [

@@ -1,20 +1,13 @@
 # Changelog
 
-## [1.0.0] - 2025-12-08
+## [1.0.0] - 2025-12-11
 
 ### Features
-- **Configurable relic choices**: Choose from 1-5 relic options per reward (default: 2)
-- **Per-tier settings**: Configure choices separately for each relic tier:
-  - Starter, Common, Uncommon, Rare, Boss, Shop, Event
-- **Tier modification system**: Configurable chance for relics to shift tiers
-  - Allow higher tier relics
-  - Allow lower tier relics
-  - Include shop/boss relics in pools
-- **Visual tier labels**: Color-coded tier indicators on relic rewards
-- **Settings UI preview**: Live preview of relic choice layout in settings
-- **Probability display**: Real-time probability table for tier outcomes
-- **AI Generated Language localizations**: Simplified Chinese, Japanese, Korean, German, French, Spanish, Russian, Portuguese, Turkish, Italian, Greek, Ukrainian, Vietnamese, Polish, Indonesian, Thai, Serbian
-
-### Technical
-- Built with ModTheSpire and BaseMod
-- MIT License
+- Configurable number of relic options from 1-5 (default: 2)
+  - Each relic tier can be configured independently
+- Configurable chance for relic options to shift reward tier (common to uncommon for example).
+- Optionally add labels of the relic's tier to reward screens
+- Live simulation of settings
+  - Pereview the impact when changing the number of choices for each tier
+  - Preview the probability breakdown when changing the upgrade and downgrade algorithm
+- AI Generated Localizations: Simplified Chinese, Japanese, Korean, German, French, Spanish, Russian, Portuguese, Turkish, Italian, Greek, Ukrainian, Vietnamese, Polish, Indonesian, Thai, Serbian

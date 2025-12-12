@@ -2,13 +2,28 @@
 
 A mod for Slay The Spire.
 
-Picky Relics is like the excellent Bossy Relics mod, except it is configurable. Instead of selecting one relic from a choice of 3, this mod provides a choice of 2 by default... or more; you can configure the behavior in the config menu.
+Picky Relics is like the excellent Bossy Relics mod, except it is configurable. Instead of receiving a single relic reward, choose from multiple options. Configure how many choices you want (1-5) for each relic tier independently.
 
 ## Features
 
-- **Configurable Choices**: Choose how many relic options you want (1-5, default: 2)
-- **Separate Settings**: Configure combat rewards and treasure chests independently
-- **Original Behavior**: Set to 1 to restore vanilla game behavior for either context
+- **Configurable Choices (1-5)**: Set the number of relic options for each tier independently:
+  - Starter, Common, Uncommon, Rare, Shop, Event, and Boss tiers
+  - Default: 2 choices per tier
+  - Set to 1 to restore vanilla behavior for any tier
+
+- **Tier Shifting Algorithm**: Optionally allow additional relic choices to come from different tiers:
+  - **Tier Change Chance** (0-100%): Probability that a relic's tier will shift
+  - **Tier Change Magnitude** (0-100%): How far the tier can drift (0 = adjacent only, 100 = maximum drift)
+  - **Direction Controls**: Allow shifts toward higher tiers, lower tiers, or both
+  - **Pool Controls**: Optionally include Shop and Boss relics in the tier pool
+
+- **Tier Labels**: Optionally display the relic's tier on reward screens for quick identification
+
+- **Live Preview**: See a sample of relic choices update in real-time as you adjust settings
+
+- **Probability Display**: View the exact tier outcome probabilities based on your algorithm settings
+
+- **17+ Languages**: AI-generated localizations for Simplified Chinese, Japanese, Korean, German, French, Spanish, Russian, Portuguese, Turkish, Italian, Greek, Ukrainian, Vietnamese, Polish, Indonesian, Thai, and Serbian
 
 ## Installation
 
@@ -30,12 +45,17 @@ Picky Relics is like the excellent Bossy Relics mod, except it is configurable. 
 
 ## Configuration
 
-Access the mod settings through the in-game mod config menu:
+Access the mod settings through the in-game mod config menu. Settings are organized into two pages:
 
-- **Combat Rewards**: Number of relic choices for combat rewards like elite fights (1-5, default: 2)
-- **Treasure Chests**: Number of relic choices for treasure chest rewards (1-5, default: 2)
+### Page 1: Choices Per Tier
+- Sliders for each relic tier (Starter, Common, Uncommon, Rare, Shop, Event, Boss)
+- Live preview showing sample relics based on current settings
+- Toggle to show/hide tier labels on reward screens
 
-Set either option to 1 for original game behavior in that context.
+### Page 2: Tier Algorithm
+- Tier change chance and magnitude sliders
+- Checkboxes for direction (higher/lower tiers) and pool (shop/boss relics)
+- Probability table showing exact outcome chances for each starting tier
 
 ## Development Setup
 
@@ -74,113 +94,40 @@ Set either option to 1 for original game behavior in that context.
 
 5. The JAR will be built to `target/PickyRelics.jar` and automatically copied to your mods folder.
 
-### Testing
-
-1. Launch Slay the Spire through ModTheSpire
-2. Enable the mod in the mod selection screen
-3. Start a run and defeat an elite to see the relic choice in action
-4. Check the mod config menu to adjust settings
-
 ### Project Structure
 
 ```
 picky-relics/
 ├── pom.xml                                    # Maven build config
-├── readme.md
+├── README.md
+├── CHANGELOG.md
 ├── scripts/
 │   └── extract-api-reference.sh              # API extraction script
 └── src/main/
     ├── java/pickyrelics/
     │   ├── PickyRelicsMod.java               # Main mod class, config UI
-    │   └── patches/
-    │       └── RelicRewardPatch.java         # Core patching logic
+    │   ├── patches/
+    │   │   └── RelicLinkPatch.java           # Linked relic rewards
+    │   ├── ui/
+    │   │   ├── PagedElement.java             # Paged settings support
+    │   │   ├── PageNavigator.java            # Page switching UI
+    │   │   ├── ProbabilityDisplay.java       # Tier probability table
+    │   │   └── RelicChoicePreview.java       # Live relic preview
+    │   └── util/
+    │       ├── Log.java                      # Logging utilities
+    │       └── TierUtils.java                # Tier calculation logic
     └── resources/
-        └── ModTheSpire.json                  # Mod metadata
+        ├── ModTheSpire.json                  # Mod metadata
+        └── pickyrelicsResources/
+            ├── badge.png                     # Mod badge icon
+            └── localization/
+                └── {eng,zhs,jpn,...}/        # Language files
+                    └── UIStrings.json
 ```
-
-### API Reference
-
-The game and BaseMod don't provide source JARs, so we extract the compiled JARs for API exploration. Run the setup script after cloning:
-
-```bash
-./scripts/extract-api-reference.sh
-```
-
-This creates (gitignored):
-```
-references/
-├── slaythespire/                        # Extracted desktop-1.0.jar
-│   └── com/megacrit/cardcrawl/          # Game classes
-│       ├── relics/                      # AbstractRelic, relic implementations
-│       ├── rewards/                     # RewardItem, RewardType
-│       ├── rooms/                       # AbstractRoom, MonsterRoom, etc.
-│       ├── dungeons/                    # AbstractDungeon
-│       └── ...
-├── basemod/                             # Extracted BaseMod.jar
-│   └── basemod/                         # Mod utilities
-│       ├── BaseMod.class                # Main mod registration
-│       ├── ModPanel.class               # Settings UI
-│       ├── ModMinMaxSlider.class        # UI components
-│       ├── interfaces/                  # Subscriber interfaces
-│       └── patches/                     # SpirePatch utilities
-├── sts-orison-mod/                      # Reference mod for reward mechanics
-├── ProTemplate/                         # Advanced mod template
-├── corruptthespire/                     # Mod with custom treasure rooms, useful for rendering issues
-└── bugs/                                # Bug investigation notes
-```
-
-#### Browsing the API
-
-**List class members with strings:**
-```bash
-strings references/slaythespire/com/megacrit/cardcrawl/rewards/RewardItem.class
-```
-
-**Decompile a class with javap:**
-```bash
-# Show all members (including private)
-javap -p references/slaythespire/com/megacrit/cardcrawl/rewards/RewardItem.class
-
-# Show method signatures with types
-javap -s references/slaythespire/com/megacrit/cardcrawl/relics/AbstractRelic.class
-```
-
-**Search for classes by name:**
-```bash
-find references -name "*.class" | grep -i reward
-```
-
-**Search for method/field names across all classes:**
-```bash
-# Find classes that reference "relicLink"
-grep -r "relicLink" references --include="*.class" -l
-
-# Search with strings for more context
-for f in references/slaythespire/com/megacrit/cardcrawl/rewards/*.class; do
-  echo "=== $f ===" && strings "$f" | grep -i "relic"
-done
-```
-
-**Find enum values:**
-```bash
-strings references/slaythespire/com/megacrit/cardcrawl/rewards/RewardItem\$RewardType.class
-```
-
-#### Key Classes
-
-| Class | Purpose |
-|-------|---------|
-| `AbstractRoom` | Base room class, has `addRelicToRewards()` |
-| `RewardItem` | Individual reward entry (relic, gold, card, etc.) |
-| `AbstractRelic` | Base relic class with `tier` field |
-| `AbstractDungeon` | Static methods like `returnRandomRelic()` |
-| `BaseMod` | Mod registration and subscriptions |
-| `ModPanel` / `ModMinMaxSlider` | Settings UI components |
-| `SpireConfig` | Persistent mod configuration |
 
 ### How It Works
 
-The mod uses SpirePatch to intercept the `RewardItem` constructor when a relic reward is created. It then converts the single-relic reward into a linked relic reward (the same mechanism used for boss relic choices), adding additional random relics of the same tier.
+The mod uses SpirePatch to intercept relic rewards. When a relic reward is created, it converts the single-relic reward into a linked relic reward (the same mechanism the game uses for boss relic choices), adding additional random relics based on your tier settings.
 
 ## Credits
 

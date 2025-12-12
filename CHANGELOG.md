@@ -8,6 +8,6 @@
 - Configurable chance for relic options to shift reward tier (common to uncommon for example).
 - Optionally add labels of the relic's tier to reward screens
 - Live simulation of settings
-  - Pereview the impact when changing the number of choices for each tier
+  - Preview the impact when changing the number of choices for each tier
   - Preview the probability breakdown when changing the upgrade and downgrade algorithm
 - AI Generated Localizations: Simplified Chinese, Japanese, Korean, German, French, Spanish, Russian, Portuguese, Turkish, Italian, Greek, Ukrainian, Vietnamese, Polish, Indonesian, Thai, Serbian

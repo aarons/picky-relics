@@ -280,12 +280,14 @@ $COMMITS" 2>/dev/null || echo "")
             # Create new changelog entry
             NEW_ENTRY="## [$NEW_VERSION] - $DATE
 
-$RELEASE_NOTES
-"
-            # Insert after the first line (# Changelog)
-            sed -i '' "2i\\
-\\
-$NEW_ENTRY" "$CHANGELOG"
+$RELEASE_NOTES"
+
+            # Use Claude to insert the new entry after the header
+            claude --print --allowedTools Edit "Insert this changelog entry into $CHANGELOG immediately after the '# Changelog' header line (before any existing version entries):
+
+$NEW_ENTRY
+
+Use the Edit tool to make this change. Do not add any extra text or formatting." > /dev/null
 
             log_success "CHANGELOG.md updated"
         fi

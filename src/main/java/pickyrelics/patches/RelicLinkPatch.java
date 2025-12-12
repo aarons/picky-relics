@@ -243,11 +243,7 @@ public class RelicLinkPatch {
             RewardItem newReward = new RewardItem(additionalRelic);
             RelicLinkFields.addedByPickyRelics.set(newReward, true);
             rewards.add(insertIndex, newReward);
-
-            // Position the new reward so it renders immediately (mirrors CombatRewardScreen.positionRewards)
-            float yPos = (float)Settings.HEIGHT / 2.0F - 124.0F * Settings.scale
-                         - (float)insertIndex * 100.0F * Settings.scale;
-            newReward.move(yPos);
+            // Note: Position will be set by positionRewards() call after all relics are added
 
             insertIndex++;
             group.add(newReward);
@@ -405,7 +401,12 @@ public class RelicLinkPatch {
     public static class ProcessRelicRewardsOnSetup {
         @SpirePostfixPatch
         public static void Postfix(CombatRewardScreen __instance) {
-            processRelicRewards(__instance.rewards, "SETUP");
+            int processed = processRelicRewards(__instance.rewards, "SETUP");
+            // Reposition ALL rewards after adding new ones to ensure correct layout
+            // This must happen synchronously before the first render frame
+            if (processed > 0) {
+                __instance.positionRewards();
+            }
         }
     }
 
@@ -437,9 +438,10 @@ public class RelicLinkPatch {
                 int sizeBefore = __instance.rewards.size();
                 int processed = processRelicRewards(__instance.rewards, "UPDATE");
 
-                // If we added relics, reposition everything
+                // If we added relics, reposition EVERYTHING (not just new items)
+                // This ensures chain links and all items render in correct positions
                 if (__instance.rewards.size() != sizeBefore) {
-                    Log.debug("[UPDATE] Repositioning rewards after adding " +
+                    Log.debug("[UPDATE] Repositioning all rewards after adding " +
                             (__instance.rewards.size() - sizeBefore) + " new relic(s)");
                     __instance.positionRewards();
                 }

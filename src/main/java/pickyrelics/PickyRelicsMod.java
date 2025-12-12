@@ -7,6 +7,7 @@ import basemod.ModLabeledToggleButton;
 import basemod.ModPanel;
 import basemod.ModMinMaxSlider;
 import basemod.interfaces.EditStringsSubscriber;
+import basemod.interfaces.PostBattleSubscriber;
 import basemod.interfaces.PostInitializeSubscriber;
 import com.badlogic.gdx.graphics.Texture;
 import com.evacipated.cardcrawl.modthespire.lib.SpireConfig;
@@ -17,6 +18,8 @@ import com.megacrit.cardcrawl.helpers.FontHelper;
 import com.megacrit.cardcrawl.localization.UIStrings;
 import com.megacrit.cardcrawl.helpers.RelicLibrary;
 import com.megacrit.cardcrawl.relics.AbstractRelic;
+import com.megacrit.cardcrawl.rooms.AbstractRoom;
+import pickyrelics.patches.RelicLinkPatch;
 import pickyrelics.ui.PagedElement;
 import pickyrelics.ui.PageNavigator;
 import pickyrelics.ui.ProbabilityDisplay;
@@ -34,7 +37,7 @@ import java.util.Random;
 import java.util.Set;
 
 @SpireInitializer
-public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubscriber {
+public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubscriber, PostBattleSubscriber {
 
     public static final String MOD_ID = "pickyrelics";
     public static final String MOD_NAME = "Picky Relics";
@@ -448,6 +451,13 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
     private void loadLocalization(String lang) {
         BaseMod.loadCustomStringsFile(UIStrings.class,
                 MOD_ID + "Resources/localization/" + lang + "/UIStrings.json");
+    }
+
+    @Override
+    public void receivePostBattle(AbstractRoom room) {
+        if (room == null || room.rewards == null) return;
+        Log.debug("[PostBattle] Processing relic rewards in AbstractRoom.rewards");
+        RelicLinkPatch.processRelicRewards(room.rewards, "PostBattle");
     }
 
     @Override

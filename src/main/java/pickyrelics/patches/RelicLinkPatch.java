@@ -49,6 +49,8 @@ public class RelicLinkPatch {
         public static SpireField<Boolean> addedByPickyRelics = new SpireField<>(() -> false);
         // The original relicLink that existed before we modified the chain (e.g., Sapphire Key)
         public static SpireField<RewardItem> originalRelicLink = new SpireField<>(() -> null);
+        // Whether this reward was processed during the PostBattle phase (to avoid double-processing)
+        public static SpireField<Boolean> processedInPostBattle = new SpireField<>(() -> false);
     }
 
     /**
@@ -130,6 +132,19 @@ public class RelicLinkPatch {
         // All pools exhausted
         Log.debug("Picky Relics: All fallback tiers exhausted");
         return relic; // Will be Circlet
+    }
+
+    /**
+     * Check if this rewards list is AbstractRoom.rewards (vs CombatRewardScreen.rewards).
+     * PostBattle adds to AbstractRoom.rewards, so BaseMod handles positioning automatically.
+     * setupItemReward patch adds to CombatRewardScreen.rewards, so we need manual positioning.
+     *
+     * @param rewards The rewards list to check
+     * @return true if this is AbstractRoom.rewards, false otherwise
+     */
+    private static boolean isInAbstractRoomRewards(ArrayList<RewardItem> rewards) {
+        return AbstractDungeon.getCurrRoom() != null &&
+               AbstractDungeon.getCurrRoom().rewards == rewards;
     }
 
     /**
@@ -244,10 +259,14 @@ public class RelicLinkPatch {
             RelicLinkFields.addedByPickyRelics.set(newReward, true);
             rewards.add(insertIndex, newReward);
 
-            // Position the new reward so it renders immediately (mirrors CombatRewardScreen.positionRewards)
-            float yPos = (float)Settings.HEIGHT / 2.0F - 124.0F * Settings.scale
-                         - (float)insertIndex * 100.0F * Settings.scale;
-            newReward.move(yPos);
+            // Only manually position if we're NOT in AbstractRoom.rewards.
+            // PostBattle adds to AbstractRoom.rewards, which gets auto-positioned by setupItemReward().
+            // The setupItemReward patch adds to CombatRewardScreen.rewards after animation, so needs manual positioning.
+            if (!isInAbstractRoomRewards(rewards)) {
+                float yPos = (float)Settings.HEIGHT / 2.0F - 124.0F * Settings.scale
+                             - (float)insertIndex * 100.0F * Settings.scale;
+                newReward.move(yPos);
+            }
 
             insertIndex++;
             group.add(newReward);
@@ -397,9 +416,11 @@ public class RelicLinkPatch {
     }
 
     /**
-     * Primary hook: Process relic rewards at display time.
-     * This runs after setupItemReward() copies rewards from room to screen,
-     * catching ALL relics regardless of their source (combat, events, chests, etc.).
+     * Fallback hook: Process relic rewards for non-combat sources (events, chests).
+     * PostBattleSubscriber handles combat rewards, but events and chests don't trigger
+     * that hook, so this catches them when the reward screen is displayed.
+     *
+     * Relics already processed by PostBattle are skipped via the processedInPostBattle field.
      */
     @SpirePatch2(clz = CombatRewardScreen.class, method = "setupItemReward")
     public static class ProcessRelicRewardsOnSetup {
@@ -410,7 +431,7 @@ public class RelicLinkPatch {
     }
 
     /**
-     * Secondary hook: Catches relics added after setupItemReward() by other mods.
+     * Safety net hook: Catches relics added after setupItemReward() by other mods.
      * Some mods add relics directly to combatRewardScreen.rewards after setup,
      * bypassing AbstractRoom.addRelicToRewards(). This hook ensures we process them.
      */
@@ -453,10 +474,12 @@ public class RelicLinkPatch {
      *
      * @param rewards The rewards list to process
      * @param source  Logging source to identify which hook triggered processing
-     *                (e.g., "SETUP", "UPDATE")
+     *                (e.g., "PostBattle", "SETUP")
      * @return The number of relics that were processed (had linked groups created)
      */
     public static int processRelicRewards(ArrayList<RewardItem> rewards, String source) {
+        boolean isPostBattle = "PostBattle".equals(source);
+
         // Count total relics for logging
         int totalRelicRewards = 0;
         for (RewardItem r : rewards) {
@@ -464,12 +487,19 @@ public class RelicLinkPatch {
                 totalRelicRewards++;
             }
         }
-        Log.debug("[" + source + "] Found " + totalRelicRewards + " relic reward(s) in screen");
+        Log.debug("[" + source + "] Found " + totalRelicRewards + " relic reward(s)");
 
         // Find all relic rewards that don't already have linked groups
         ArrayList<RewardItem> unlinkedRelics = new ArrayList<>();
         for (RewardItem r : rewards) {
             if (r.type == RewardItem.RewardType.RELIC && r.relic != null) {
+                // Skip relics already processed in PostBattle (to avoid double-processing in SETUP)
+                if (!isPostBattle && RelicLinkFields.processedInPostBattle.get(r)) {
+                    Log.debug("[" + source + "] Skipping " + r.relic.relicId +
+                            " (already processed in PostBattle)");
+                    continue;
+                }
+
                 ArrayList<RewardItem> existingGroup = RelicLinkFields.linkedRelics.get(r);
                 if (existingGroup == null) {
                     // Get tier-specific choice count
@@ -494,6 +524,11 @@ public class RelicLinkPatch {
             Log.debug("[" + source + "] Creating linked group for " + original.relic.relicId +
                     " (tier: " + original.relic.tier + ") with " + tierChoices + " choices");
             createLinkedRelicGroup(rewards, original, tierChoices);
+
+            // Mark as processed in PostBattle to prevent double-processing in SETUP
+            if (isPostBattle) {
+                RelicLinkFields.processedInPostBattle.set(original, true);
+            }
         }
 
         return unlinkedRelics.size();

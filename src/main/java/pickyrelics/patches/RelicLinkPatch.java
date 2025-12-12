@@ -263,7 +263,7 @@ public class RelicLinkPatch {
             // PostBattle adds to AbstractRoom.rewards, which gets auto-positioned by setupItemReward().
             // The setupItemReward patch adds to CombatRewardScreen.rewards after animation, so needs manual positioning.
             if (!isInAbstractRoomRewards(rewards)) {
-                float yPos = (float)Settings.HEIGHT / 2.0F - 124.0F * Settings.scale
+                float yPos = (float)Settings.HEIGHT / 2.0F + 124.0F * Settings.scale
                              - (float)insertIndex * 100.0F * Settings.scale;
                 newReward.move(yPos);
             }
@@ -426,7 +426,13 @@ public class RelicLinkPatch {
     public static class ProcessRelicRewardsOnSetup {
         @SpirePostfixPatch
         public static void Postfix(CombatRewardScreen __instance) {
+            int sizeBefore = __instance.rewards.size();
             processRelicRewards(__instance.rewards, "SETUP");
+
+            // If we added relics, reposition everything to fix layout
+            if (__instance.rewards.size() != sizeBefore) {
+                __instance.positionRewards();
+            }
         }
     }
 

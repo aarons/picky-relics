@@ -26,3 +26,6 @@ Thumbs.db
 
 # References (extracted from game/mod JARs - regenerate with setup script)
 references/
+
+# x86_64 JDK for mod-uploader on Apple Silicon
+.java-x86_64/

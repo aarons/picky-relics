@@ -1,6 +1,6 @@
 {
   "pickyrelics:ModInfo": {
-    "TEXT": ["Picky Relics", "Aaron", "Wähle aus mehreren Relikt-Optionen pro Stufe. Konfigurierbar (Standard: 2)."]
+    "TEXT": ["Picky Relics", "Laethos", "Wähle aus mehreren Relikt-Optionen pro Stufe. Konfigurierbar (Standard: 2)."]
   },
   "pickyrelics:TierNames": {
     "TEXT": ["Starter", "Gewöhnlich", "Ungewöhnlich", "Selten", "Boss", "Laden", "Ereignis"]

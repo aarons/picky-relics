@@ -1,6 +1,6 @@
 {
   "pickyrelics:ModInfo": {
-    "TEXT": ["Picky Relics", "Aaron", "티어당 여러 유물 선택지를 제공합니다. 설정 가능 (기본값: 2)."]
+    "TEXT": ["Picky Relics", "Laethos", "티어당 여러 유물 선택지를 제공합니다. 설정 가능 (기본값: 2)."]
   },
   "pickyrelics:TierNames": {
     "TEXT": ["시작", "일반", "희귀", "레어", "보스", "상점", "이벤트"]

@@ -1,6 +1,6 @@
 {
   "pickyrelics:ModInfo": {
-    "TEXT": ["Picky Relics", "Aaron", "Pilih dari beberapa pilihan relik per tingkat. Dapat dikonfigurasi (bawaan: 2)."]
+    "TEXT": ["Picky Relics", "Laethos", "Pilih dari beberapa pilihan relik per tingkat. Dapat dikonfigurasi (bawaan: 2)."]
   },
   "pickyrelics:TierNames": {
     "TEXT": ["Pemula", "Umum", "Tidak Umum", "Langka", "Bos", "Toko", "Acara"]

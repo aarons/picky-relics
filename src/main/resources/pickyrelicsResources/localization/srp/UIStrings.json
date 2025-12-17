@@ -1,6 +1,6 @@
 {
   "pickyrelics:ModInfo": {
-    "TEXT": ["Picky Relics", "Aaron", "Biranje između više opcija relikvija po nivou. Podesivo (podrazumevano: 2)."]
+    "TEXT": ["Picky Relics", "Laethos", "Biranje između više opcija relikvija po nivou. Podesivo (podrazumevano: 2)."]
   },
   "pickyrelics:TierNames": {
     "TEXT": ["Početna", "Uobičajena", "Neuobičajena", "Retka", "Šef", "Prodavnica", "Događaj"]

@@ -1,6 +1,6 @@
 {
   "pickyrelics:ModInfo": {
-    "TEXT": ["Picky Relics", "Aaron", "Wybieraj spośród wielu opcji reliktów w każdej kategorii. Konfigurowalne (domyślnie: 2)."]
+    "TEXT": ["Picky Relics", "Laethos", "Wybieraj spośród wielu opcji reliktów w każdej kategorii. Konfigurowalne (domyślnie: 2)."]
   },
   "pickyrelics:TierNames": {
     "TEXT": ["Startowy", "Pospolity", "Niepospolity", "Rzadki", "Boss", "Sklep", "Wydarzenie"]

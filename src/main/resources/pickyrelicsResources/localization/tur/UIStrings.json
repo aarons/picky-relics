@@ -1,6 +1,6 @@
 {
   "pickyrelics:ModInfo": {
-    "TEXT": ["Picky Relics", "Aaron", "Her seviye için birden fazla kalıntı seçeneği sunar. Yapılandırılabilir (varsayılan: 2)."]
+    "TEXT": ["Picky Relics", "Laethos", "Her seviye için birden fazla kalıntı seçeneği sunar. Yapılandırılabilir (varsayılan: 2)."]
   },
   "pickyrelics:TierNames": {
     "TEXT": ["Başlangıç", "Yaygın", "Nadir", "Çok Nadir", "Patron", "Dükkan", "Olay"]

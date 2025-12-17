@@ -1,6 +1,6 @@
 {
   "pickyrelics:ModInfo": {
-    "TEXT": ["挑剔遗物", "Aaron", "每层级可从多个遗物选项中选择。可配置（默认：2）。"]
+    "TEXT": ["挑剔遗物", "Laethos", "每层级可从多个遗物选项中选择。可配置（默认：2）。"]
   },
   "pickyrelics:TierNames": {
     "TEXT": ["初始", "普通", "罕见", "稀有", "Boss", "商店", "事件"]

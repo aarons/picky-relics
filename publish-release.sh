@@ -133,7 +133,29 @@ fi
 log_info "Uploading to Steam Workshop..."
 
 cd "$STS_DIR"
-java -jar mod-uploader.jar upload -w pickyrelics
+
+# mod-uploader.jar requires x86_64 JDK (steamworks4j lacks ARM64 support)
+if [[ "$(uname -m)" == "arm64" ]]; then
+    X86_JAVA_DIR="$SCRIPT_DIR/.java-x86_64"
+    X86_JAVA="$X86_JAVA_DIR/jdk-21.0.5+11/Contents/Home/bin/java"
+
+    if [ ! -f "$X86_JAVA" ]; then
+        log_info "Downloading x86_64 JDK for mod-uploader (one-time setup)..."
+        mkdir -p "$X86_JAVA_DIR"
+        curl -fsSL "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.5%2B11/OpenJDK21U-jdk_x64_mac_hotspot_21.0.5_11.tar.gz" \
+            | tar -xz -C "$X86_JAVA_DIR"
+
+        if [ ! -f "$X86_JAVA" ]; then
+            log_error "Failed to download/extract x86_64 JDK"
+            exit 1
+        fi
+        log_success "x86_64 JDK installed to $X86_JAVA_DIR"
+    fi
+
+    arch -x86_64 "$X86_JAVA" -jar mod-uploader.jar upload -w pickyrelics
+else
+    java -jar mod-uploader.jar upload -w pickyrelics
+fi
 
 log_success "Uploaded to Steam Workshop!"
 

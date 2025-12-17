@@ -1,6 +1,6 @@
 {
   "pickyrelics:ModInfo": {
-    "TEXT": ["Picky Relics", "Aaron", "ティアごとに複数のレリック選択肢から選べます。設定可能(デフォルト: 2)。"]
+    "TEXT": ["Picky Relics", "Laethos", "ティアごとに複数のレリック選択肢から選べます。設定可能(デフォルト: 2)。"]
   },
   "pickyrelics:TierNames": {
     "TEXT": ["スターター", "コモン", "アンコモン", "レア", "ボス", "ショップ", "イベント"]

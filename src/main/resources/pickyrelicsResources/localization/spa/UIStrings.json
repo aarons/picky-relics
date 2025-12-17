@@ -1,6 +1,6 @@
 {
   "pickyrelics:ModInfo": {
-    "TEXT": ["Picky Relics", "Aaron", "Elige entre múltiples opciones de reliquia por nivel. Configurable (por defecto: 2)."]
+    "TEXT": ["Picky Relics", "Laethos", "Elige entre múltiples opciones de reliquia por nivel. Configurable (por defecto: 2)."]
   },
   "pickyrelics:TierNames": {
     "TEXT": ["Inicial", "Común", "Poco Común", "Rara", "Jefe", "Tienda", "Evento"]

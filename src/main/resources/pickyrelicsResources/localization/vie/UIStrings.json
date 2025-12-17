@@ -1,6 +1,6 @@
 {
   "pickyrelics:ModInfo": {
-    "TEXT": ["Picky Relics", "Aaron", "Chọn từ nhiều tùy chọn di vật theo từng cấp. Có thể cấu hình (mặc định: 2)."]
+    "TEXT": ["Picky Relics", "Laethos", "Chọn từ nhiều tùy chọn di vật theo từng cấp. Có thể cấu hình (mặc định: 2)."]
   },
   "pickyrelics:TierNames": {
     "TEXT": ["Ban đầu", "Thường", "Không phổ biến", "Hiếm", "Trùm", "Cửa hàng", "Sự kiện"]

@@ -1,13 +1,28 @@
 {
   "title": "Picky Relics",
-  "description": "Choose from multiple options when earning relics. Like the Bossy Relics mod, except configurable.",
+  "description": "This mod is just like Bossy Relics, but configurable. Relic rewards will provide one choice out of many.\n\nConfigurable from 0 to 5 choices for each type of relic. You can also choose if relics have a chance to be higher or lower tier than the original.\n\n---\n\nThere are 18 ai-generated language localizations, although the text is mostly just labels in the config menus. Any translation corrections are welcome!",
   "visibility": "private",
   "changeNote": "v1.0.0: Initial release",
   "tags": [
     "Rewards",
     "Relics",
     "English",
-    "Simplified Chinese",
-    "Korean"
+    "French",
+    "German",
+    "Greek",
+    "Indonesian",
+    "Italian",
+    "Japanese",
+    "Korean",
+    "Polish",
+    "Brazilian Portuguese",
+    "Russian",
+    "Spanish",
+    "Serbian",
+    "Thai",
+    "Turkish",
+    "Ukrainian",
+    "Vietnamese",
+    "Simplified Chinese"
   ]
 }

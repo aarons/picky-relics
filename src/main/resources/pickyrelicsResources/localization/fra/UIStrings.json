@@ -1,6 +1,6 @@
 {
   "pickyrelics:ModInfo": {
-    "TEXT": ["Reliques Difficiles", "Aaron", "Choisissez parmi plusieurs options de reliques par niveau. Configurable (par défaut : 2)."]
+    "TEXT": ["Reliques Difficiles", "Laethos", "Choisissez parmi plusieurs options de reliques par niveau. Configurable (par défaut : 2)."]
   },
   "pickyrelics:TierNames": {
     "TEXT": ["Départ", "Commune", "Peu commune", "Rare", "Boss", "Boutique", "Événement"]

@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.1] - 2025-12-16
+
+### Changed
+- Updated Steam Workshop tags and description
+
 ## [1.0.0] - 2025-12-11
 
 ### Features

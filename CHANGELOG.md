@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.2] - 2025-12-20
+
+### Fixed
+- First relic in chest rewards now properly highlights red when hovering other linked relics
+
 ## [1.0.1] - 2025-12-16
 
 ### Changed

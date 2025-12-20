@@ -1,0 +1,7 @@
+Please update the changelog and version to reflect our recent work
+
+- CHANGELOG.md
+- pom.xml - Version bump
+- ModTheSpire.json - Version bump
+
+Do we need to update any of our descriptions or documentation as well?

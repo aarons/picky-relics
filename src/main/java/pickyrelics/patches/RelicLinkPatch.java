@@ -300,6 +300,14 @@ public class RelicLinkPatch {
             // Last item links to the original link (e.g., Sapphire Key) if it exists
             relics.get(relics.size() - 1).relicLink = originalLink;
         }
+
+        // Add originalLink (e.g., Sapphire Key) to the linked group so it's handled uniformly
+        // for highlighting. This ensures the key becomes the "last item" so our UpdateHighlightPatch
+        // runs AFTER the key's native update() and can correct any redText values it overwrites.
+        if (originalLink != null) {
+            relics.add(originalLink);
+            RelicLinkFields.linkedRelics.set(originalLink, relics);
+        }
     }
 
     /**

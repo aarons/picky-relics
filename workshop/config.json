@@ -2,8 +2,7 @@
   "steamPublishedID": "3625414460",
   "title": "Picky Relics",
   "description": "This mod is just like Bossy Relics, but configurable. Relic rewards will provide one choice out of many.\n\nConfigurable from 0 to 5 choices for each type of relic. You can also choose if relics have a chance to be higher or lower tier than the original.\n\n---\n\nThere are many ai-generated language localizations, although the text is mostly just labels in the config menus. All translation corrections are welcome!\n\n---\n\nDieser Mod ist wie Bossy Relics, aber konfigurierbar. Reliktbelohnungen bieten eine Auswahl aus mehreren Optionen.\n\nKonfigurierbar von 0 bis 5 Auswahlmöglichkeiten für jeden Relikttyp. Du kannst auch einstellen, ob Relikte eine Chance haben, eine höhere oder niedrigere Stufe als das Original zu sein.\n\n---\n\nEste mod es como Bossy Relics, pero configurable. Las recompensas de reliquias ofrecen una elección entre varias opciones.\n\nConfigurable de 0 a 5 opciones para cada tipo de reliquia. También puedes elegir si las reliquias tienen la posibilidad de ser de un nivel superior o inferior al original.\n\n---\n\nЭтот мод похож на Bossy Relics, но с настройками. Награды в виде реликвий предоставляют выбор из нескольких вариантов.\n\nНастраивается от 0 до 5 вариантов для каждого типа реликвии. Вы также можете выбрать, будут ли реликвии иметь шанс быть выше или ниже уровнем, чем оригинал.\n\n---\n\n这个模组类似于Bossy Relics，但可自定义配置。遗物奖励将提供多个选项供你选择。\n\n每种遗物类型可配置0到5个选项。你还可以选择遗物是否有机会比原来的等级更高或更低。\n\n---\n\nこのMODはBossy Relicsに似ていますが、設定可能です。レリック報酬は複数の選択肢から1つを選べます。\n\n各レリックタイプごとに0から5個の選択肢を設定できます。また、レリックが元のティアより高いまたは低いティアになる確率を設定することもできます。\n\n---\n\n이 모드는 Bossy Relics와 비슷하지만 설정이 가능합니다. 유물 보상에서 여러 선택지 중 하나를 고를 수 있습니다.\n\n각 유물 유형별로 0개에서 5개까지 선택지를 설정할 수 있습니다. 또한 유물이 원래 등급보다 높거나 낮은 등급이 될 확률을 설정할 수도 있습니다.",
-  "visibility": "private",
-  "changeNote": "v1.0.1: Updated Tags",
+  "visibility": "public",
   "tags": [
     "Rewards",
     "Relics",

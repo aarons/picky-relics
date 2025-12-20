@@ -14,7 +14,6 @@ NC='\033[0m' # No Color
 # Paths
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MOD_JSON="$SCRIPT_DIR/src/main/resources/ModTheSpire.json"
-WORKSHOP_CONFIG="$SCRIPT_DIR/workshop/config.json"
 CHANGELOG="$SCRIPT_DIR/CHANGELOG.md"
 
 # Parse arguments
@@ -117,22 +116,6 @@ update_mod_version() {
         echo -e "${YELLOW}[DRY-RUN]${NC} Would update ModTheSpire.json version to $new_version"
     else
         sed -i '' "s/\"version\"[[:space:]]*:[[:space:]]*\"[^\"]*\"/\"version\": \"$new_version\"/" "$MOD_JSON"
-    fi
-}
-
-# Update changeNote in workshop/config.json
-update_change_note() {
-    local note=$1
-    if [ "$DRY_RUN" = true ]; then
-        echo -e "${YELLOW}[DRY-RUN]${NC} Would update workshop/config.json changeNote"
-    else
-        # Use jq if available, otherwise sed
-        if command -v jq &> /dev/null; then
-            local tmp=$(mktemp)
-            jq --arg note "$note" '.changeNote = $note' "$WORKSHOP_CONFIG" > "$tmp" && mv "$tmp" "$WORKSHOP_CONFIG"
-        else
-            sed -i '' "s/\"changeNote\"[[:space:]]*:[[:space:]]*\"[^\"]*\"/\"changeNote\": \"$note\"/" "$WORKSHOP_CONFIG"
-        fi
     fi
 }
 
@@ -292,12 +275,7 @@ $NEW_ENTRY" "$CHANGELOG"
     fi
 fi
 
-# Step 5: Update workshop/config.json changeNote
-log_info "Updating workshop/config.json changeNote..."
-update_change_note "v$NEW_VERSION: ${RELEASE_NOTES%%$'\n'*}"
-log_success "Workshop config updated"
-
-# Step 6: Create git commit and tag
+# Step 5: Create git commit and tag
 TAG_NAME="v$NEW_VERSION"
 if git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
     log_warn "Tag $TAG_NAME already exists"

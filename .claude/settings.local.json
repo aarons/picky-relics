@@ -15,7 +15,8 @@
       "Bash(mvn compile:*)",
       "WebFetch(domain:partner.steamgames.com)",
       "Bash(ls:*)",
-      "Bash(git -C /Users/aaron/code/sts/picky-relics log --oneline -20)"
+      "Bash(git -C /Users/aaron/code/sts/picky-relics log --oneline -20)",
+      "Bash(git log:*)"
     ],
     "deny": [],
     "ask": []

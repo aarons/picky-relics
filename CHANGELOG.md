@@ -4,6 +4,7 @@
 
 ### Fixed
 - First relic in chest rewards now properly highlights red when hovering other linked relics
+- Improved compatibility with mods that multiply relic rewards (e.g., Generosity Charm from strops mod) - all linked relics now highlight correctly
 
 ## [1.0.1] - 2025-12-16
 

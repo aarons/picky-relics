@@ -338,49 +338,84 @@ public class RelicLinkPatch {
     }
 
     /**
-     * When hovering over a linked relic, highlight all other linked relics with red text.
-     * Uses a postfix patch so we run AFTER the game's native relicLink handling.
-     * Only the LAST item in each group performs the logic - this ensures we execute after
-     * all native relicLink updates have completed (native code sets relicLink.redText = hovered,
-     * which would overwrite our values if we ran earlier in the chain).
+     * Unified highlighting for all linked relics. Runs once per frame on the reward screen,
+     * AFTER all individual RewardItem.update() calls have completed.
+     *
+     * This approach:
+     * 1. Scans all rewards to build a bidirectional connection graph via relicLink
+     * 2. Finds connected components (groups of linked relics)
+     * 3. For each group: if any item is hovered, all others get redText=true
+     *
+     * This handles items added by any mod (e.g., Generosity Charm) since we discover
+     * connections dynamically from the actual relicLink references.
      */
-    @SpirePatch2(clz = RewardItem.class, method = "update")
-    public static class UpdateHighlightPatch {
+    @SpirePatch2(clz = CombatRewardScreen.class, method = "update")
+    public static class UnifiedHighlightPatch {
         @SpirePostfixPatch
-        public static void Postfix(RewardItem __instance) {
-            ArrayList<RewardItem> linked = RelicLinkFields.linkedRelics.get(__instance);
-            if (linked == null || linked.isEmpty()) return;
+        public static void Postfix(CombatRewardScreen __instance) {
+            ArrayList<RewardItem> rewards = __instance.rewards;
+            if (rewards == null || rewards.isEmpty()) return;
 
-            // Only the LAST item in the group handles redText for the whole group
-            // This ensures we run AFTER all native relicLink updates have occurred
-            // (Native code: each item sets relicLink.redText = hovered, which can overwrite our values)
-            if (linked.get(linked.size() - 1) != __instance) return;
+            // Build bidirectional adjacency map for relic rewards
+            // If A.relicLink = B, we record both A→B and B→A
+            java.util.Map<RewardItem, java.util.Set<RewardItem>> adj = new java.util.IdentityHashMap<>();
 
-            // Get the original link (e.g., Sapphire Key) from the first item in the group
-            RewardItem originalLink = RelicLinkFields.originalRelicLink.get(linked.get(0));
-
-            // Find which item (if any) is being hovered
-            for (RewardItem hoveredItem : linked) {
-                if (hoveredItem.hb.hovered) {
-                    // Set redText on all OTHER linked items
-                    for (RewardItem other : linked) {
-                        other.redText = (other != hoveredItem);
-                    }
-                    // Also set redText on the original link (e.g., Sapphire Key)
-                    if (originalLink != null) {
-                        originalLink.redText = true;
-                    }
-                    return;
+            for (RewardItem r : rewards) {
+                if (r.type != RewardItem.RewardType.RELIC) continue;
+                if (r.relicLink != null) {
+                    adj.computeIfAbsent(r, k -> new java.util.HashSet<>()).add(r.relicLink);
+                    adj.computeIfAbsent(r.relicLink, k -> new java.util.HashSet<>()).add(r);
                 }
             }
 
-            // Nobody in the group is hovered, reset all redText
-            for (RewardItem r : linked) {
-                r.redText = false;
-            }
-            // Also reset redText on the original link
-            if (originalLink != null) {
-                originalLink.redText = false;
+            // Find connected components and apply highlighting
+            java.util.Set<RewardItem> visited = new java.util.HashSet<>();
+
+            for (RewardItem r : rewards) {
+                if (r.type != RewardItem.RewardType.RELIC) continue;
+                if (visited.contains(r)) continue;
+
+                // BFS to find all items in this connected component
+                java.util.Set<RewardItem> component = new java.util.LinkedHashSet<>();
+                java.util.ArrayDeque<RewardItem> queue = new java.util.ArrayDeque<>();
+                queue.add(r);
+
+                while (!queue.isEmpty()) {
+                    RewardItem current = queue.poll();
+                    if (visited.contains(current)) continue;
+                    visited.add(current);
+                    component.add(current);
+
+                    java.util.Set<RewardItem> neighbors = adj.get(current);
+                    if (neighbors != null) {
+                        for (RewardItem neighbor : neighbors) {
+                            if (!visited.contains(neighbor)) {
+                                queue.add(neighbor);
+                            }
+                        }
+                    }
+                }
+
+                // Skip solo relics (no connections)
+                if (component.size() <= 1) continue;
+
+                // Find if any item in this component is hovered
+                RewardItem hoveredItem = null;
+                for (RewardItem item : component) {
+                    if (item.hb != null && item.hb.hovered) {
+                        hoveredItem = item;
+                        break;
+                    }
+                }
+
+                // Set redText: true for all non-hovered items when something is hovered
+                for (RewardItem item : component) {
+                    if (hoveredItem != null) {
+                        item.redText = (item != hoveredItem);
+                    } else {
+                        item.redText = false;
+                    }
+                }
             }
         }
     }

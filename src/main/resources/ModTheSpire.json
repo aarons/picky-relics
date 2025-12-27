@@ -3,7 +3,7 @@
   "name": "Picky Relics",
   "author_list": ["Aaron"],
   "description": "Like Bossy Relics, but picky. Choose from multiple relic options when earning relics. Configurable number of choices (default: 2).",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "sts_version": "12-18-2022",
   "mts_version": "3.18.0",
   "dependencies": ["basemod"]

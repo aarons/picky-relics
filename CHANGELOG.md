@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+- Improved compatibility with other mods by processing combat relic rewards in PostBattle phase
+- Fixed reward layout stability after relic insertion
+
 ## [1.0.0] - 2025-12-11
 
 ### Features

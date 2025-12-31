@@ -104,34 +104,56 @@ public class RelicLinkPatch {
 
     /**
      * Get a random relic from the specified tier, with fallback to other tiers
-     * if the pool is exhausted (returns Circlet).
+     * if the pool is exhausted (returns Circlet) or all relics fail canSpawn().
      *
      * @param tier The preferred tier
      * @return A relic from the preferred tier or a fallback tier, or Circlet if all exhausted
      */
     private static AbstractRelic getRelicWithFallback(AbstractRelic.RelicTier tier) {
+        final int MAX_ATTEMPTS = 10; // Prevent infinite loops
+
         // Try the requested tier first
-        AbstractRelic relic = AbstractDungeon.returnRandomRelic(tier);
-        if (!"Circlet".equals(relic.relicId)) {
-            return relic;
+        for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+            AbstractRelic relic = AbstractDungeon.returnRandomRelic(tier);
+
+            // Pool exhausted - try fallbacks
+            if ("Circlet".equals(relic.relicId)) {
+                break;
+            }
+
+            // Check if relic can spawn (respects filtering mods)
+            if (relic.canSpawn()) {
+                return relic;
+            }
+
+            Log.debug("Picky Relics: Skipping " + relic.relicId + " (canSpawn=false)");
         }
 
-        Log.debug("Picky Relics: " + tier + " pool exhausted, trying fallback tiers");
+        Log.debug("Picky Relics: " + tier + " pool exhausted or all blocked, trying fallback tiers");
 
         // Get fallback order based on tier
         AbstractRelic.RelicTier[] fallbacks = getFallbackTiers(tier);
 
         for (AbstractRelic.RelicTier fallbackTier : fallbacks) {
-            relic = AbstractDungeon.returnRandomRelic(fallbackTier);
-            if (!"Circlet".equals(relic.relicId)) {
-                Log.debug("Picky Relics: Using fallback tier " + fallbackTier);
-                return relic;
+            for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+                AbstractRelic relic = AbstractDungeon.returnRandomRelic(fallbackTier);
+
+                if ("Circlet".equals(relic.relicId)) {
+                    break; // This tier exhausted, try next
+                }
+
+                if (relic.canSpawn()) {
+                    Log.debug("Picky Relics: Using fallback tier " + fallbackTier);
+                    return relic;
+                }
+
+                Log.debug("Picky Relics: Skipping " + relic.relicId + " (canSpawn=false)");
             }
         }
 
-        // All pools exhausted
+        // All pools exhausted or blocked
         Log.debug("Picky Relics: All fallback tiers exhausted");
-        return relic; // Will be Circlet
+        return AbstractDungeon.returnRandomRelic(tier); // Will return Circlet
     }
 
     /**
@@ -154,6 +176,8 @@ public class RelicLinkPatch {
      * @return A relic from C/U/R pools, or null if all pools exhausted
      */
     private static AbstractRelic getRandomNonEventRelic() {
+        final int MAX_ATTEMPTS = 10; // Prevent infinite loops
+
         // Standard tiers to try for event relic alternatives
         List<AbstractRelic.RelicTier> tiers = new ArrayList<>();
         tiers.add(AbstractRelic.RelicTier.COMMON);
@@ -166,9 +190,19 @@ public class RelicLinkPatch {
         // Try each tier in random order
         for (int i = 0; i < tiers.size(); i++) {
             AbstractRelic.RelicTier tierToTry = tiers.get((startIndex + i) % tiers.size());
-            AbstractRelic relic = AbstractDungeon.returnRandomRelic(tierToTry);
-            if (!"Circlet".equals(relic.relicId)) {
-                return relic;
+
+            for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+                AbstractRelic relic = AbstractDungeon.returnRandomRelic(tierToTry);
+
+                if ("Circlet".equals(relic.relicId)) {
+                    break; // This tier exhausted
+                }
+
+                if (relic.canSpawn()) {
+                    return relic;
+                }
+
+                Log.debug("Picky Relics: Skipping event relic " + relic.relicId + " (canSpawn=false)");
             }
         }
 

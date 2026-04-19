@@ -1,13 +1,13 @@
 {
   "pickyrelics:ModInfo": {
-    "TEXT": ["Picky Relics", "Laethos", "Choose from multiple relic options per tier. Configurable (default: 2)."]
+    "TEXT": ["Picky Relics", "Laethos", "Choose from multiple relic options per tier. Configurable (default: 1 additional)."]
   },
   "pickyrelics:TierNames": {
     "TEXT": ["Starter", "Common", "Uncommon", "Rare", "Boss", "Shop", "Event"]
   },
   "pickyrelics:Settings": {
     "TEXT": [
-      "How many choices appear in combat and chest rewards",
+      "When a relic of this tier is awarded from combat or found in a chest, the slider represents how many additional choices you would like to be able to select from.",
       "Show relic tier labels on reward screen",
       "Options for event relics always come from other tiers.",
       "",

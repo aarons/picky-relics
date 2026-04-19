@@ -61,13 +61,13 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
 
     // Config keys
     private static final String CONFIG_SHOW_TIER_LABELS = "showTierLabels";
-    private static final String CONFIG_STARTER_CHOICES = "starterChoices";
-    private static final String CONFIG_COMMON_CHOICES = "commonChoices";
-    private static final String CONFIG_UNCOMMON_CHOICES = "uncommonChoices";
-    private static final String CONFIG_RARE_CHOICES = "rareChoices";
-    private static final String CONFIG_BOSS_CHOICES = "bossChoices";
-    private static final String CONFIG_SHOP_CHOICES = "shopChoices";
-    private static final String CONFIG_SPECIAL_CHOICES = "specialChoices";
+    private static final String CONFIG_STARTER_ADDITIONAL = "starterAdditional";
+    private static final String CONFIG_COMMON_ADDITIONAL = "commonAdditional";
+    private static final String CONFIG_UNCOMMON_ADDITIONAL = "uncommonAdditional";
+    private static final String CONFIG_RARE_ADDITIONAL = "rareAdditional";
+    private static final String CONFIG_BOSS_ADDITIONAL = "bossAdditional";
+    private static final String CONFIG_SHOP_ADDITIONAL = "shopAdditional";
+    private static final String CONFIG_SPECIAL_ADDITIONAL = "specialAdditional";
     private static final String CONFIG_TIER_CHANGE_CHANCE = "tierChangeChance";
     private static final String CONFIG_TIER_CHANGE_MAGNITUDE = "tierChangeMagnitude";
     private static final String CONFIG_ALLOW_HIGHER_TIERS = "allowHigherTiers";
@@ -79,20 +79,28 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
     private static final String CONFIG_TIER_DIRECTION = "tierDirection";
     private static final String CONFIG_TIER_SHOP_ENABLED = "tierShopEnabled";
     private static final String CONFIG_TIER_BOSS_ENABLED = "tierBossEnabled";
+    // Legacy per-tier "total choices" keys (1-5); migrate to *Additional (0-4) by subtracting 1.
+    private static final String LEGACY_STARTER_CHOICES = "starterChoices";
+    private static final String LEGACY_COMMON_CHOICES = "commonChoices";
+    private static final String LEGACY_UNCOMMON_CHOICES = "uncommonChoices";
+    private static final String LEGACY_RARE_CHOICES = "rareChoices";
+    private static final String LEGACY_BOSS_CHOICES = "bossChoices";
+    private static final String LEGACY_SHOP_CHOICES = "shopChoices";
+    private static final String LEGACY_SPECIAL_CHOICES = "specialChoices";
 
     // Display settings
     public static boolean showTierLabels = true;
 
-    // Per-tier choice counts (1-5, default 2)
-    // 1 = original game behavior (no extra choices)
-    // 2-5 = that many total options presented
-    public static int starterChoices = 2;
-    public static int commonChoices = 2;
-    public static int uncommonChoices = 2;
-    public static int rareChoices = 2;
-    public static int bossChoices = 2;
-    public static int shopChoices = 2;
-    public static int specialChoices = 2;
+    // Per-tier additional-choice counts (0-4, default 1)
+    // 0 = original game behavior (no extra choices)
+    // 1-4 = that many extra options presented alongside the original
+    public static int starterAdditional = 1;
+    public static int commonAdditional = 1;
+    public static int uncommonAdditional = 1;
+    public static int rareAdditional = 1;
+    public static int bossAdditional = 1;
+    public static int shopAdditional = 1;
+    public static int specialAdditional = 1;
 
     // Tier change chance: 0 to 100 (probability that tier will change)
     public static int tierChangeChance = 0;
@@ -298,28 +306,28 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
     }
 
     /**
-     * Get the configured choice count for a given relic tier.
+     * Get the configured number of additional relic choices for a given tier.
      * @param tier The relic tier
-     * @return Number of choices (1-5) for that tier
+     * @return Number of additional choices (0-4) for that tier
      */
-    public static int getChoicesForTier(AbstractRelic.RelicTier tier) {
+    public static int getAdditionalChoicesForTier(AbstractRelic.RelicTier tier) {
         switch (tier) {
             case STARTER:
-                return starterChoices;
+                return starterAdditional;
             case COMMON:
-                return commonChoices;
+                return commonAdditional;
             case UNCOMMON:
-                return uncommonChoices;
+                return uncommonAdditional;
             case RARE:
-                return rareChoices;
+                return rareAdditional;
             case BOSS:
-                return bossChoices;
+                return bossAdditional;
             case SHOP:
-                return shopChoices;
+                return shopAdditional;
             case SPECIAL:
-                return specialChoices;
+                return specialAdditional;
             default:
-                return 1; // DEPRECATED or unknown - no extra choices
+                return 0; // DEPRECATED or unknown - no extra choices
         }
     }
 
@@ -337,13 +345,13 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
         try {
             Properties defaults = new Properties();
             defaults.setProperty(CONFIG_SHOW_TIER_LABELS, "true");
-            defaults.setProperty(CONFIG_STARTER_CHOICES, "2");
-            defaults.setProperty(CONFIG_COMMON_CHOICES, "2");
-            defaults.setProperty(CONFIG_UNCOMMON_CHOICES, "2");
-            defaults.setProperty(CONFIG_RARE_CHOICES, "2");
-            defaults.setProperty(CONFIG_BOSS_CHOICES, "2");
-            defaults.setProperty(CONFIG_SHOP_CHOICES, "2");
-            defaults.setProperty(CONFIG_SPECIAL_CHOICES, "2");
+            defaults.setProperty(CONFIG_STARTER_ADDITIONAL, "1");
+            defaults.setProperty(CONFIG_COMMON_ADDITIONAL, "1");
+            defaults.setProperty(CONFIG_UNCOMMON_ADDITIONAL, "1");
+            defaults.setProperty(CONFIG_RARE_ADDITIONAL, "1");
+            defaults.setProperty(CONFIG_BOSS_ADDITIONAL, "1");
+            defaults.setProperty(CONFIG_SHOP_ADDITIONAL, "1");
+            defaults.setProperty(CONFIG_SPECIAL_ADDITIONAL, "1");
             defaults.setProperty(CONFIG_TIER_CHANGE_CHANCE, "0");
             defaults.setProperty(CONFIG_TIER_CHANGE_MAGNITUDE, "0");
             defaults.setProperty(CONFIG_ALLOW_HIGHER_TIERS, "true");
@@ -355,13 +363,13 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
             config = new SpireConfig(MOD_ID, "config", defaults);
 
             showTierLabels = config.getBool(CONFIG_SHOW_TIER_LABELS);
-            starterChoices = clamp(config.getInt(CONFIG_STARTER_CHOICES), 1, 5);
-            commonChoices = clamp(config.getInt(CONFIG_COMMON_CHOICES), 1, 5);
-            uncommonChoices = clamp(config.getInt(CONFIG_UNCOMMON_CHOICES), 1, 5);
-            rareChoices = clamp(config.getInt(CONFIG_RARE_CHOICES), 1, 5);
-            bossChoices = clamp(config.getInt(CONFIG_BOSS_CHOICES), 1, 5);
-            shopChoices = clamp(config.getInt(CONFIG_SHOP_CHOICES), 1, 5);
-            specialChoices = clamp(config.getInt(CONFIG_SPECIAL_CHOICES), 1, 5);
+            starterAdditional = loadAdditional(CONFIG_STARTER_ADDITIONAL, LEGACY_STARTER_CHOICES);
+            commonAdditional = loadAdditional(CONFIG_COMMON_ADDITIONAL, LEGACY_COMMON_CHOICES);
+            uncommonAdditional = loadAdditional(CONFIG_UNCOMMON_ADDITIONAL, LEGACY_UNCOMMON_CHOICES);
+            rareAdditional = loadAdditional(CONFIG_RARE_ADDITIONAL, LEGACY_RARE_CHOICES);
+            bossAdditional = loadAdditional(CONFIG_BOSS_ADDITIONAL, LEGACY_BOSS_CHOICES);
+            shopAdditional = loadAdditional(CONFIG_SHOP_ADDITIONAL, LEGACY_SHOP_CHOICES);
+            specialAdditional = loadAdditional(CONFIG_SPECIAL_ADDITIONAL, LEGACY_SPECIAL_CHOICES);
             tierChangeChance = clamp(config.getInt(CONFIG_TIER_CHANGE_CHANCE), 0, 100);
             tierChangeMagnitude = clamp(config.getInt(CONFIG_TIER_CHANGE_MAGNITUDE), 0, 100);
 
@@ -403,15 +411,28 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
             cyclePoolsEnabled = config.getBool(CONFIG_CYCLE_POOLS);
 
             Log.debug("Config loaded: showTierLabels=" + showTierLabels +
-                    ", starter=" + starterChoices + ", common=" + commonChoices +
-                    ", uncommon=" + uncommonChoices + ", rare=" + rareChoices +
-                    ", boss=" + bossChoices + ", shop=" + shopChoices + ", special=" + specialChoices +
+                    ", starter=" + starterAdditional + ", common=" + commonAdditional +
+                    ", uncommon=" + uncommonAdditional + ", rare=" + rareAdditional +
+                    ", boss=" + bossAdditional + ", shop=" + shopAdditional + ", special=" + specialAdditional +
                     ", tierChangeChance=" + tierChangeChance + ", tierChangeMagnitude=" + tierChangeMagnitude +
                     ", allowHigher=" + allowHigherTiers + ", allowLower=" + allowLowerTiers +
                     ", allowShop=" + allowShopRelics + ", allowBoss=" + allowBossRelics);
         } catch (IOException e) {
             Log.error("Failed to load config", e);
         }
+    }
+
+    /**
+     * Load an additional-choices value (0-4) from the new key, falling back to
+     * migrating the legacy "total choices" key (1-5) by subtracting 1.
+     */
+    private static int loadAdditional(String newKey, String legacyKey) {
+        if (!config.has(newKey) && config.has(legacyKey)) {
+            int migrated = config.getInt(legacyKey) - 1;
+            Log.debug("Migrated " + legacyKey + "=" + (migrated + 1) + " to " + newKey + "=" + migrated);
+            return clamp(migrated, 0, 4);
+        }
+        return clamp(config.getInt(newKey), 0, 4);
     }
 
     private static int clamp(int value, int min, int max) {
@@ -421,13 +442,13 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
     public static void saveConfig() {
         try {
             config.setBool(CONFIG_SHOW_TIER_LABELS, showTierLabels);
-            config.setInt(CONFIG_STARTER_CHOICES, starterChoices);
-            config.setInt(CONFIG_COMMON_CHOICES, commonChoices);
-            config.setInt(CONFIG_UNCOMMON_CHOICES, uncommonChoices);
-            config.setInt(CONFIG_RARE_CHOICES, rareChoices);
-            config.setInt(CONFIG_BOSS_CHOICES, bossChoices);
-            config.setInt(CONFIG_SHOP_CHOICES, shopChoices);
-            config.setInt(CONFIG_SPECIAL_CHOICES, specialChoices);
+            config.setInt(CONFIG_STARTER_ADDITIONAL, starterAdditional);
+            config.setInt(CONFIG_COMMON_ADDITIONAL, commonAdditional);
+            config.setInt(CONFIG_UNCOMMON_ADDITIONAL, uncommonAdditional);
+            config.setInt(CONFIG_RARE_ADDITIONAL, rareAdditional);
+            config.setInt(CONFIG_BOSS_ADDITIONAL, bossAdditional);
+            config.setInt(CONFIG_SHOP_ADDITIONAL, shopAdditional);
+            config.setInt(CONFIG_SPECIAL_ADDITIONAL, specialAdditional);
             config.setInt(CONFIG_TIER_CHANGE_CHANCE, tierChangeChance);
             config.setInt(CONFIG_TIER_CHANGE_MAGNITUDE, tierChangeMagnitude);
             config.setBool(CONFIG_ALLOW_HIGHER_TIERS, allowHigherTiers);
@@ -509,58 +530,88 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
         // ===== PAGE 0: Choices Per Tier =====
         float yPos = contentY;
 
-        // Explanation
+        // Wrapped explanation (reflows to fit ~700px width)
+        final float explanationX = xPos;
+        final float explanationY = yPos;
+        final float explanationWidth = 700.0f;
+        addPagedElement(settingsPanel, PAGE_CHOICES, new IUIElement() {
+            @Override
+            public void render(com.badlogic.gdx.graphics.g2d.SpriteBatch sb) {
+                FontHelper.renderSmartText(sb, FontHelper.tipBodyFont,
+                        settingsStrings.TEXT[0],
+                        explanationX * Settings.scale,
+                        explanationY * Settings.scale,
+                        explanationWidth * Settings.scale,
+                        28.0f * Settings.scale,
+                        Settings.GOLD_COLOR);
+            }
+            @Override public void update() {}
+            @Override public int renderLayer() { return 1; }
+            @Override public int updateOrder() { return 1; }
+        });
+
+        yPos -= 80.0f; // Room for up to 3 wrapped lines
+
+        // Column headers
         addPagedElement(settingsPanel, PAGE_CHOICES, new ModLabel(
-                settingsStrings.TEXT[0],
+                "Awarded Relic Tier",
                 xPos, yPos,
-                Settings.GOLD_COLOR,
-                FontHelper.tipBodyFont,
+                Settings.CREAM_COLOR,
+                FontHelper.tipHeaderFont,
                 settingsPanel,
-                (label) -> {}
+                (l) -> {}
+        ));
+        addPagedElement(settingsPanel, PAGE_CHOICES, new ModLabel(
+                "Additional Choices",
+                sliderX, yPos,
+                Settings.CREAM_COLOR,
+                FontHelper.tipHeaderFont,
+                settingsPanel,
+                (l) -> {}
         ));
 
-        yPos -= 40.0f;
+        yPos -= 30.0f;
 
         // Starter tier slider
         addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Starter (" + RelicLibrary.starterList.size() + ")",
-                xPos, sliderX, yPos, sliderYOffset, starterChoices,
-                (val) -> { starterChoices = val; saveConfig(); updatePreview(AbstractRelic.RelicTier.STARTER, val); });
+                xPos, sliderX, yPos, sliderYOffset, starterAdditional,
+                (val) -> { starterAdditional = val; saveConfig(); updatePreview(AbstractRelic.RelicTier.STARTER, val + 1); });
         yPos -= rowHeight;
 
         // Common tier slider
         addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Common (" + RelicLibrary.commonList.size() + ")",
-                xPos, sliderX, yPos, sliderYOffset, commonChoices,
-                (val) -> { commonChoices = val; saveConfig(); updatePreview(AbstractRelic.RelicTier.COMMON, val); });
+                xPos, sliderX, yPos, sliderYOffset, commonAdditional,
+                (val) -> { commonAdditional = val; saveConfig(); updatePreview(AbstractRelic.RelicTier.COMMON, val + 1); });
         yPos -= rowHeight;
 
         // Uncommon tier slider
         addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Uncommon (" + RelicLibrary.uncommonList.size() + ")",
-                xPos, sliderX, yPos, sliderYOffset, uncommonChoices,
-                (val) -> { uncommonChoices = val; saveConfig(); updatePreview(AbstractRelic.RelicTier.UNCOMMON, val); });
+                xPos, sliderX, yPos, sliderYOffset, uncommonAdditional,
+                (val) -> { uncommonAdditional = val; saveConfig(); updatePreview(AbstractRelic.RelicTier.UNCOMMON, val + 1); });
         yPos -= rowHeight;
 
         // Rare tier slider
         addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Rare (" + RelicLibrary.rareList.size() + ")",
-                xPos, sliderX, yPos, sliderYOffset, rareChoices,
-                (val) -> { rareChoices = val; saveConfig(); updatePreview(AbstractRelic.RelicTier.RARE, val); });
+                xPos, sliderX, yPos, sliderYOffset, rareAdditional,
+                (val) -> { rareAdditional = val; saveConfig(); updatePreview(AbstractRelic.RelicTier.RARE, val + 1); });
         yPos -= rowHeight;
 
         // Shop tier slider
         addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Shop (" + RelicLibrary.shopList.size() + ")",
-                xPos, sliderX, yPos, sliderYOffset, shopChoices,
-                (val) -> { shopChoices = val; saveConfig(); updatePreview(AbstractRelic.RelicTier.SHOP, val); });
+                xPos, sliderX, yPos, sliderYOffset, shopAdditional,
+                (val) -> { shopAdditional = val; saveConfig(); updatePreview(AbstractRelic.RelicTier.SHOP, val + 1); });
         yPos -= rowHeight;
 
         // Event tier slider (Special tier in game code)
         addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Event (" + RelicLibrary.specialList.size() + ")",
-                xPos, sliderX, yPos, sliderYOffset, specialChoices,
-                (val) -> { specialChoices = val; saveConfig(); updatePreview(AbstractRelic.RelicTier.SPECIAL, val); });
+                xPos, sliderX, yPos, sliderYOffset, specialAdditional,
+                (val) -> { specialAdditional = val; saveConfig(); updatePreview(AbstractRelic.RelicTier.SPECIAL, val + 1); });
         yPos -= rowHeight;
 
         // Boss tier slider
         addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Boss (" + RelicLibrary.bossList.size() + ")",
-                xPos, sliderX, yPos, sliderYOffset, bossChoices,
-                (val) -> { bossChoices = val; saveConfig(); updatePreview(AbstractRelic.RelicTier.BOSS, val); });
+                xPos, sliderX, yPos, sliderYOffset, bossAdditional,
+                (val) -> { bossAdditional = val; saveConfig(); updatePreview(AbstractRelic.RelicTier.BOSS, val + 1); });
         yPos -= rowHeight;
 
         // Visual preview on right side
@@ -727,7 +778,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
                                    float yPos, float sliderYOffset, int currentValue,
                                    java.util.function.IntConsumer onChange) {
         addPagedSliderRow(panel, page, label, labelX, sliderX, yPos, sliderYOffset,
-                currentValue, 1.0f, 5.0f, "%.0f", onChange);
+                currentValue, 0.0f, 4.0f, "%.0f", onChange);
     }
 
     private void addPagedSliderRow(ModPanel panel, int page, String label, float labelX, float sliderX,

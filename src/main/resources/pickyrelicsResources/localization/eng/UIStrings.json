@@ -17,7 +17,8 @@
       "Allow options from lower tiers",
       "Include shop relics as options",
       "Include boss relics as options",
-      "Magnitude of tier change"
+      "Magnitude of tier change",
+      "Refill a tier's pool with skipped relics once exhausted"
     ]
   },
   "pickyrelics:Probability": {

@@ -6,9 +6,12 @@ import basemod.ModLabel;
 import basemod.ModLabeledToggleButton;
 import basemod.ModPanel;
 import basemod.ModMinMaxSlider;
+import basemod.devcommands.ConsoleCommand;
 import basemod.interfaces.EditStringsSubscriber;
 import basemod.interfaces.PostBattleSubscriber;
+import basemod.interfaces.PostDungeonInitializeSubscriber;
 import basemod.interfaces.PostInitializeSubscriber;
+import basemod.interfaces.StartGameSubscriber;
 import com.badlogic.gdx.graphics.Texture;
 import com.evacipated.cardcrawl.modthespire.lib.SpireConfig;
 import com.evacipated.cardcrawl.modthespire.lib.SpireInitializer;
@@ -19,12 +22,14 @@ import com.megacrit.cardcrawl.localization.UIStrings;
 import com.megacrit.cardcrawl.helpers.RelicLibrary;
 import com.megacrit.cardcrawl.relics.AbstractRelic;
 import com.megacrit.cardcrawl.rooms.AbstractRoom;
+import pickyrelics.devcommands.PickyPoolCommand;
 import pickyrelics.patches.RelicLinkPatch;
 import pickyrelics.ui.PagedElement;
 import pickyrelics.ui.PageNavigator;
 import pickyrelics.ui.ProbabilityDisplay;
 import pickyrelics.ui.RelicChoicePreview;
 import pickyrelics.util.Log;
+import pickyrelics.util.RelicPoolTracker;
 import pickyrelics.util.TierUtils;
 
 import java.io.IOException;
@@ -37,7 +42,8 @@ import java.util.Random;
 import java.util.Set;
 
 @SpireInitializer
-public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubscriber, PostBattleSubscriber {
+public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubscriber, PostBattleSubscriber,
+        PostDungeonInitializeSubscriber, StartGameSubscriber {
 
     public static final String MOD_ID = "pickyrelics";
     public static final String MOD_NAME = "Picky Relics";
@@ -68,6 +74,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
     private static final String CONFIG_ALLOW_LOWER_TIERS = "allowLowerTiers";
     private static final String CONFIG_ALLOW_SHOP_RELICS = "allowShopRelics";
     private static final String CONFIG_ALLOW_BOSS_RELICS = "allowBossRelics";
+    private static final String CONFIG_CYCLE_POOLS = "cyclePoolsEnabled";
     // Legacy config keys for migration
     private static final String CONFIG_TIER_DIRECTION = "tierDirection";
     private static final String CONFIG_TIER_SHOP_ENABLED = "tierShopEnabled";
@@ -99,6 +106,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
     public static boolean allowLowerTiers = false;   // Can tier go down (toward Common)
     public static boolean allowShopRelics = false;   // Include Shop tier in pool
     public static boolean allowBossRelics = false;   // Include Boss tier in pool
+    public static boolean cyclePoolsEnabled = false; // Refill exhausted tier pools with skipped relics
 
     // UI page tracking
     private static final int PAGE_CHOICES = 0;
@@ -342,6 +350,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
             defaults.setProperty(CONFIG_ALLOW_LOWER_TIERS, "false");
             defaults.setProperty(CONFIG_ALLOW_SHOP_RELICS, "false");
             defaults.setProperty(CONFIG_ALLOW_BOSS_RELICS, "false");
+            defaults.setProperty(CONFIG_CYCLE_POOLS, "false");
 
             config = new SpireConfig(MOD_ID, "config", defaults);
 
@@ -391,6 +400,8 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
                 allowBossRelics = config.getBool(CONFIG_ALLOW_BOSS_RELICS);
             }
 
+            cyclePoolsEnabled = config.getBool(CONFIG_CYCLE_POOLS);
+
             Log.debug("Config loaded: showTierLabels=" + showTierLabels +
                     ", starter=" + starterChoices + ", common=" + commonChoices +
                     ", uncommon=" + uncommonChoices + ", rare=" + rareChoices +
@@ -423,6 +434,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
             config.setBool(CONFIG_ALLOW_LOWER_TIERS, allowLowerTiers);
             config.setBool(CONFIG_ALLOW_SHOP_RELICS, allowShopRelics);
             config.setBool(CONFIG_ALLOW_BOSS_RELICS, allowBossRelics);
+            config.setBool(CONFIG_CYCLE_POOLS, cyclePoolsEnabled);
             config.save();
         } catch (IOException e) {
             Log.error("Failed to save config", e);
@@ -458,6 +470,16 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
         if (room == null || room.rewards == null) return;
         Log.debug("[PostBattle] Processing relic rewards in AbstractRoom.rewards");
         RelicLinkPatch.processRelicRewards(room.rewards, "PostBattle");
+    }
+
+    @Override
+    public void receiveStartGame() {
+        RelicPoolTracker.reset();
+    }
+
+    @Override
+    public void receivePostDungeonInitialize() {
+        RelicPoolTracker.captureSnapshots();
     }
 
     @Override
@@ -668,8 +690,25 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
                 (toggle) -> { allowBossRelics = toggle.enabled; saveConfig(); }
         ));
 
+        yPos -= 50.0f;
+
+        // Cycle pools: refill exhausted tiers with skipped relics
+        addPagedElement(settingsPanel, PAGE_ALGORITHMS, new ModLabeledToggleButton(
+                settingsStrings.TEXT[11],
+                checkboxX, yPos,
+                Settings.CREAM_COLOR,
+                FontHelper.tipBodyFont,
+                cyclePoolsEnabled,
+                settingsPanel,
+                (label) -> {},
+                (toggle) -> { cyclePoolsEnabled = toggle.enabled; saveConfig(); }
+        ));
+
         // Probability simulator display (right side of Algorithms page)
         addPagedElement(settingsPanel, PAGE_ALGORITHMS, new ProbabilityDisplay(850.0f, contentY - 72.0f));
+
+        // Dev console command for pool diagnostics and testing
+        ConsoleCommand.addCommand("pickypool", PickyPoolCommand.class);
 
         BaseMod.registerModBadge(
                 badgeTexture,

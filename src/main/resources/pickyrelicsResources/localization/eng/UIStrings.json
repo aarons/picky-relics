@@ -7,9 +7,9 @@
   },
   "pickyrelics:Settings": {
     "TEXT": [
-      "When a relic of this tier is awarded from combat or found in a chest, the slider represents how many additional choices you would like to be able to select from.",
+      "This page configures how many choices you get when a relic of a particular tier is found. Each tier can be configured separately. For example, if the reward is a Common relic, and the slider for Common is set to 2, you will get the original Common relic plus 2 additional choices.",
       "Show relic tier labels on reward screen",
-      "Options for event relics always come from other tiers.",
+      "Event relic choices come from other tiers.",
       "",
       "",
       "Chance for options to be a different tier",

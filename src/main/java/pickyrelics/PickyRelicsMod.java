@@ -515,7 +515,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
         ModPanel settingsPanel = new ModPanel();
 
         float xPos = 380.0f;
-        float sliderX = xPos + 220.0f;
+        float sliderX = xPos + 280.0f;
         float sliderYOffset = 6.0f;
         float rowHeight = 42.0f;
 
@@ -530,31 +530,9 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
         // ===== PAGE 0: Choices Per Tier =====
         float yPos = contentY;
 
-        // Wrapped explanation (reflows to fit ~700px width)
-        final float explanationX = xPos;
-        final float explanationY = yPos;
-        final float explanationWidth = 700.0f;
-        addPagedElement(settingsPanel, PAGE_CHOICES, new IUIElement() {
-            @Override
-            public void render(com.badlogic.gdx.graphics.g2d.SpriteBatch sb) {
-                FontHelper.renderSmartText(sb, FontHelper.tipBodyFont,
-                        settingsStrings.TEXT[0],
-                        explanationX * Settings.scale,
-                        explanationY * Settings.scale,
-                        explanationWidth * Settings.scale,
-                        28.0f * Settings.scale,
-                        Settings.GOLD_COLOR);
-            }
-            @Override public void update() {}
-            @Override public int renderLayer() { return 1; }
-            @Override public int updateOrder() { return 1; }
-        });
-
-        yPos -= 80.0f; // Room for up to 3 wrapped lines
-
         // Column headers
         addPagedElement(settingsPanel, PAGE_CHOICES, new ModLabel(
-                "Awarded Relic Tier",
+                "Original relic's tier",
                 xPos, yPos,
                 Settings.CREAM_COLOR,
                 FontHelper.tipHeaderFont,
@@ -570,14 +548,13 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
                 (l) -> {}
         ));
 
-        yPos -= 30.0f;
+        yPos -= 42.0f;
 
         // Starter tier slider
         addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Starter (" + RelicLibrary.starterList.size() + ")",
                 xPos, sliderX, yPos, sliderYOffset, starterAdditional,
                 (val) -> { starterAdditional = val; saveConfig(); updatePreview(AbstractRelic.RelicTier.STARTER, val + 1); });
         yPos -= rowHeight;
-
         // Common tier slider
         addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Common (" + RelicLibrary.commonList.size() + ")",
                 xPos, sliderX, yPos, sliderYOffset, commonAdditional,
@@ -638,8 +615,10 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
         ));
 
         // Event tier explanation text (shown when Event slider is active with count > 1)
-        float eventTextX = xPos;
-        float eventTextY = yPos - 50.0f;
+        // Rendered on the right side, beneath the Loot Preview, so it doesn't collide
+        // with the main explanation block on the left.
+        float eventTextX = 1090.0f;
+        float eventTextY = 340.0f;
         addPagedElement(settingsPanel, PAGE_CHOICES, new IUIElement() {
             @Override
             public void render(com.badlogic.gdx.graphics.g2d.SpriteBatch sb) {
@@ -670,18 +649,38 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
             public int updateOrder() { return 1; }
         });
 
+        // Bottom-of-page explanation (wraps to ~700px width)
+        final float bottomExplanationX = xPos;
+        final float bottomExplanationY = 380.0f;
+        final float bottomExplanationWidth = 700.0f;
+        addPagedElement(settingsPanel, PAGE_CHOICES, new IUIElement() {
+            @Override
+            public void render(com.badlogic.gdx.graphics.g2d.SpriteBatch sb) {
+                FontHelper.renderSmartText(sb, FontHelper.tipBodyFont,
+                        settingsStrings.TEXT[0],
+                        bottomExplanationX * Settings.scale,
+                        bottomExplanationY * Settings.scale,
+                        bottomExplanationWidth * Settings.scale,
+                        28.0f * Settings.scale,
+                        Settings.GOLD_COLOR);
+            }
+            @Override public void update() {}
+            @Override public int renderLayer() { return 1; }
+            @Override public int updateOrder() { return 1; }
+        });
+
         // ===== PAGE 1: Algorithms =====
         yPos = contentY;
 
         // Tier change chance slider (0-100%)
-        addPagedSliderRow(settingsPanel, PAGE_ALGORITHMS, settingsStrings.TEXT[5], xPos, sliderX + 210.0f, yPos, sliderYOffset,
+        addPagedSliderRow(settingsPanel, PAGE_ALGORITHMS, settingsStrings.TEXT[5], xPos, sliderX + 150.0f, yPos, sliderYOffset,
                 tierChangeChance, 0.0f, 100.0f, "%.0f%%",
                 (val) -> { tierChangeChance = val; saveConfig(); });
 
         yPos -= rowHeight;
 
         // Magnitude of change slider (0-100%)
-        addPagedSliderRow(settingsPanel, PAGE_ALGORITHMS, settingsStrings.TEXT[10], xPos, sliderX + 210.0f, yPos, sliderYOffset,
+        addPagedSliderRow(settingsPanel, PAGE_ALGORITHMS, settingsStrings.TEXT[10], xPos, sliderX + 150.0f, yPos, sliderYOffset,
                 tierChangeMagnitude, 0.0f, 100.0f, "%.0f%%",
                 (val) -> { tierChangeMagnitude = val; saveConfig(); });
 

@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.1.0] - 2026-04-21
+
+### Features
+- Relic pool refill: when a tier runs out of relics you haven't obtained, choices are filled with relics you've never seen before
+  - Applies to both relic reward screens and shop relic slots
+- New tab bar for the settings screen, replacing the previous page navigator
+  - Added contextual explanations throughout each settings tab
+
+### Changed
+- Renamed the `choice` config option to `additional` for clarity (existing settings migrate automatically)
+- Cleaner layout and wording in the relic choice settings
+
+### Fixed
+- Tab labels now display in the correct translation for every supported language
+- Clearer wording when a relic tier is exhausted and fewer choices can be offered
+
 ## [1.0.2] - 2025-12-20
 
 ### Fixed

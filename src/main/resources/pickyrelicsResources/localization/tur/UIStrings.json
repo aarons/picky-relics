@@ -18,7 +18,7 @@
       "Seçenekler olarak dükkan kalıntılarını dahil et",
       "Seçenekler olarak patron kalıntılarını dahil et",
       "Seviye değişiminin büyüklüğü",
-      "Bir seviyenin havuzu tükendiğinde atlanan kalıntılarla yeniden doldur",
+      "Bir seviye bittiğinde atlanan kalıntıları tekrar sun",
       "Bu sayfa, ek kalıntı seçeneklerinin orijinal ödülün seviyesini mi paylaşacağını yoksa farklı bir seviyeden gelme olasılığı mı olacağını yapılandırır. Seviye değişikliklerinin olasılığını ve büyüklüğünü ayarlayın ve hangi seviyelerin uygun olduğuna karar vermek için onay kutularını kullanın."
     ]
   },

@@ -18,7 +18,7 @@
       "Include shop relics as options",
       "Include boss relics as options",
       "Magnitude of tier change",
-      "Refill a tier's pool with skipped relics once exhausted",
+      "Offer skipped relics again when a tier runs out",
       "This page configures whether additional relic choices share the tier of the original reward, or have a chance to come from a different tier. Adjust the chance and magnitude of tier changes, and use the checkboxes to decide which tiers are eligible."
     ]
   },

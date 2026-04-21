@@ -18,7 +18,7 @@
       "Uwzględnij relikty sklepowe jako opcje",
       "Uwzględnij relikty bossów jako opcje",
       "Wielkość zmiany kategorii",
-      "Uzupełnij pulę kategorii pominiętymi reliktami, gdy się wyczerpie",
+      "Pokazuj pominięte relikty ponownie, gdy kategoria się skończy",
       "Ta strona konfiguruje, czy dodatkowe opcje reliktów mają tę samą kategorię co oryginalna nagroda, czy mają szansę pochodzić z innej kategorii. Dostosuj szansę i wielkość zmian kategorii oraz użyj pól wyboru, aby określić, które kategorie są dozwolone."
     ]
   },

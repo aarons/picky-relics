@@ -18,7 +18,7 @@
       "Inclure les reliques de boutique comme options",
       "Inclure les reliques de boss comme options",
       "Ampleur du changement de niveau",
-      "Recharger le pool d'un niveau avec les reliques ignorées une fois épuisé",
+      "Proposer à nouveau les reliques ignorées quand un niveau est vide",
       "Cette page configure si les choix supplémentaires de reliques partagent le niveau de la récompense d'origine, ou s'ils ont une chance de provenir d'un niveau différent. Ajustez la probabilité et l'ampleur des changements de niveau, et utilisez les cases à cocher pour décider quels niveaux sont éligibles."
     ]
   },

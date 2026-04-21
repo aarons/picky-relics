@@ -27,7 +27,7 @@
     "TEXT": ["Anteprima Bottino", "???"]
   },
   "pickyrelics:Tabs": {
-    "TEXT": ["Choices", "Probabilities", "Refills"]
+    "TEXT": ["Scelte", "Probabilità", "Ricariche"]
   },
   "pickyrelics:Tooltip": {
     "TEXT": ["Collegate", "Ottenere questa reliquia rimuoverà le altre #y%d scelte di reliquie collegate."]

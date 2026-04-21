@@ -27,7 +27,7 @@
     "TEXT": ["Prévia de Saque", "???"]
   },
   "pickyrelics:Tabs": {
-    "TEXT": ["Choices", "Probabilities", "Refills"]
+    "TEXT": ["Escolhas", "Probabilidades", "Recargas"]
   },
   "pickyrelics:Tooltip": {
     "TEXT": ["Vinculada", "Obter esta relíquia removerá as outras #y%d opções de relíquia vinculadas."]

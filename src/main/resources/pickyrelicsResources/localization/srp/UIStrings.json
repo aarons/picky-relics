@@ -27,7 +27,7 @@
     "TEXT": ["Pregled plena", "???"]
   },
   "pickyrelics:Tabs": {
-    "TEXT": ["Choices", "Probabilities", "Refills"]
+    "TEXT": ["Izbori", "Verovatnoće", "Dopune"]
   },
   "pickyrelics:Tooltip": {
     "TEXT": ["Povezano", "Dobijanje ove relikvije će ukloniti drugih #y%d povezanih izbora relikvija."]

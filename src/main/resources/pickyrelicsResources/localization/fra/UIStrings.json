@@ -27,7 +27,7 @@
     "TEXT": ["Aperçu du Butin", "???"]
   },
   "pickyrelics:Tabs": {
-    "TEXT": ["Choices", "Probabilities", "Refills"]
+    "TEXT": ["Choix", "Probabilités", "Recharges"]
   },
   "pickyrelics:Tooltip": {
     "TEXT": ["Liée", "Obtenir cette relique supprimera les #y%d autres choix de reliques liées."]

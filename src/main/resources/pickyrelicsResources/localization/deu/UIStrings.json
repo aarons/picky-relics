@@ -27,7 +27,7 @@
     "TEXT": ["Beute-Vorschau", "???"]
   },
   "pickyrelics:Tabs": {
-    "TEXT": ["Choices", "Probabilities", "Refills"]
+    "TEXT": ["Auswahl", "Wahrscheinlichkeiten", "Auffüllen"]
   },
   "pickyrelics:Tooltip": {
     "TEXT": ["Verknüpft", "Das Erhalten dieses Relikts wird die anderen #y%d verknüpften Relikt-Auswahlmöglichkeiten entfernen."]

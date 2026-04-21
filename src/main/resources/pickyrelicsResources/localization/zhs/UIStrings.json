@@ -27,7 +27,7 @@
     "TEXT": ["战利品预览", "???"]
   },
   "pickyrelics:Tabs": {
-    "TEXT": ["Choices", "Probabilities", "Refills"]
+    "TEXT": ["选择", "概率", "补充"]
   },
   "pickyrelics:Tooltip": {
     "TEXT": ["已关联", "获得此遗物将移除其他 #y%d 个关联的遗物选项。"]

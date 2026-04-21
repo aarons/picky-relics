@@ -27,7 +27,7 @@
     "TEXT": ["Pratinjau Jarahan", "???"]
   },
   "pickyrelics:Tabs": {
-    "TEXT": ["Choices", "Probabilities", "Refills"]
+    "TEXT": ["Pilihan", "Probabilitas", "Pengisian Ulang"]
   },
   "pickyrelics:Tooltip": {
     "TEXT": ["Terhubung", "Mendapatkan relik ini akan menghapus #y%d pilihan relik terhubung lainnya."]

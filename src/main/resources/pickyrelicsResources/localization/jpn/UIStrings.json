@@ -27,7 +27,7 @@
     "TEXT": ["戦利品プレビュー", "???"]
   },
   "pickyrelics:Tabs": {
-    "TEXT": ["Choices", "Probabilities", "Refills"]
+    "TEXT": ["選択肢", "確率", "補充"]
   },
   "pickyrelics:Tooltip": {
     "TEXT": ["リンク済み", "このレリックを取得すると、他の #y%d個 のリンクされたレリック選択肢が削除されます。"]

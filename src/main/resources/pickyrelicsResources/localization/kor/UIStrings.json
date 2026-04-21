@@ -26,8 +26,8 @@
   "pickyrelics:Preview": {
     "TEXT": ["전리품 미리보기", "???"]
   },
-  "pickyrelics:PageNav": {
-    "TEXT": ["%d / %d 페이지"]
+  "pickyrelics:Tabs": {
+    "TEXT": ["Choices", "Probabilities", "Refills"]
   },
   "pickyrelics:Tooltip": {
     "TEXT": ["연결됨", "이 유물을 획득하면 연결된 다른 #y%d개의 유물 선택지가 제거됩니다."]

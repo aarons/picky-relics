@@ -26,8 +26,8 @@
   "pickyrelics:Preview": {
     "TEXT": ["Попередній Перегляд Здобичі", "???"]
   },
-  "pickyrelics:PageNav": {
-    "TEXT": ["сторінка %d з %d"]
+  "pickyrelics:Tabs": {
+    "TEXT": ["Choices", "Probabilities", "Refills"]
   },
   "pickyrelics:Tooltip": {
     "TEXT": ["Зв'язано", "Отримання цієї реліквії видалить інші #y%d зв'язані варіанти реліквій."]

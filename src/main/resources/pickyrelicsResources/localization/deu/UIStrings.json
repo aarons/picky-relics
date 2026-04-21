@@ -26,8 +26,8 @@
   "pickyrelics:Preview": {
     "TEXT": ["Beute-Vorschau", "???"]
   },
-  "pickyrelics:PageNav": {
-    "TEXT": ["Seite %d von %d"]
+  "pickyrelics:Tabs": {
+    "TEXT": ["Choices", "Probabilities", "Refills"]
   },
   "pickyrelics:Tooltip": {
     "TEXT": ["Verknüpft", "Das Erhalten dieses Relikts wird die anderen #y%d verknüpften Relikt-Auswahlmöglichkeiten entfernen."]

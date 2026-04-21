@@ -26,8 +26,8 @@
   "pickyrelics:Preview": {
     "TEXT": ["Предпросмотр Добычи", "???"]
   },
-  "pickyrelics:PageNav": {
-    "TEXT": ["страница %d из %d"]
+  "pickyrelics:Tabs": {
+    "TEXT": ["Choices", "Probabilities", "Refills"]
   },
   "pickyrelics:Tooltip": {
     "TEXT": ["Связана", "Получение этой реликвии удалит #y%d других связанных вариантов реликвий."]

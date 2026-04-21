@@ -26,8 +26,8 @@
   "pickyrelics:Preview": {
     "TEXT": ["Pregled plena", "???"]
   },
-  "pickyrelics:PageNav": {
-    "TEXT": ["strana %d od %d"]
+  "pickyrelics:Tabs": {
+    "TEXT": ["Choices", "Probabilities", "Refills"]
   },
   "pickyrelics:Tooltip": {
     "TEXT": ["Povezano", "Dobijanje ove relikvije će ukloniti drugih #y%d povezanih izbora relikvija."]

@@ -26,8 +26,8 @@
   "pickyrelics:Preview": {
     "TEXT": ["ดูตัวอย่างของรางวัล", "???"]
   },
-  "pickyrelics:PageNav": {
-    "TEXT": ["หน้า %d จาก %d"]
+  "pickyrelics:Tabs": {
+    "TEXT": ["Choices", "Probabilities", "Refills"]
   },
   "pickyrelics:Tooltip": {
     "TEXT": ["เชื่อมโยง", "การได้รับเรลิกนี้จะลบตัวเลือกเรลิกที่เชื่อมโยงอีก #y%d รายการ"]

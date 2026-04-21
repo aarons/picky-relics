@@ -25,9 +25,9 @@ import com.megacrit.cardcrawl.rooms.AbstractRoom;
 import pickyrelics.devcommands.PickyPoolCommand;
 import pickyrelics.patches.RelicLinkPatch;
 import pickyrelics.ui.PagedElement;
-import pickyrelics.ui.PageNavigator;
 import pickyrelics.ui.ProbabilityDisplay;
 import pickyrelics.ui.RelicChoicePreview;
+import pickyrelics.ui.TabBar;
 import pickyrelics.util.Log;
 import pickyrelics.util.RelicPoolTracker;
 import pickyrelics.util.TierUtils;
@@ -116,10 +116,11 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
     public static boolean allowBossRelics = false;   // Include Boss tier in pool
     public static boolean cyclePoolsEnabled = false; // Refill exhausted tier pools with skipped relics
 
-    // UI page tracking
-    private static final int PAGE_CHOICES = 0;
-    private static final int PAGE_ALGORITHMS = 1;
-    private static int currentPage = PAGE_CHOICES;
+    // UI tab tracking
+    private static final int TAB_CHOICES = 0;
+    private static final int TAB_PROBABILITIES = 1;
+    private static final int TAB_REFILLS = 2;
+    private static int currentTab = TAB_CHOICES;
 
     // Preview state tracking
     private static AbstractRelic.RelicTier previewTier = AbstractRelic.RelicTier.COMMON;
@@ -128,12 +129,12 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
     private static final Random previewRandom = new Random();
     private static final int MAX_PREVIEW_NAME_LENGTH = 12;
 
-    public static int getCurrentPage() {
-        return currentPage;
+    public static int getCurrentTab() {
+        return currentTab;
     }
 
-    public static void setCurrentPage(int page) {
-        currentPage = page;
+    public static void setCurrentTab(int tab) {
+        currentTab = tab;
     }
 
     public static AbstractRelic.RelicTier getPreviewTier() {
@@ -519,19 +520,20 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
         float sliderYOffset = 6.0f;
         float rowHeight = 42.0f;
 
-        // Page navigator at the top (centered)
-        float navY = 820.0f;
-        float navCenterX = 640.0f;
-        settingsPanel.addUIElement(new PageNavigator(2, navCenterX, navY,
-                PickyRelicsMod::getCurrentPage, PickyRelicsMod::setCurrentPage));
+        // Tab bar at the top (centered)
+        float tabBarY = 820.0f;
+        float tabBarCenterX = 640.0f;
+        UIStrings tabStrings = CardCrawlGame.languagePack.getUIString(makeID("Tabs"));
+        settingsPanel.addUIElement(new TabBar(tabStrings.TEXT, tabBarCenterX, tabBarY,
+                PickyRelicsMod::getCurrentTab, PickyRelicsMod::setCurrentTab));
 
-        float contentY = navY - 60.0f;
+        float contentY = tabBarY - 60.0f;
 
-        // ===== PAGE 0: Choices Per Tier =====
+        // ===== TAB 0: Choices Per Tier =====
         float yPos = contentY;
 
         // Column headers
-        addPagedElement(settingsPanel, PAGE_CHOICES, new ModLabel(
+        addPagedElement(settingsPanel, TAB_CHOICES, new ModLabel(
                 "Original relic's tier",
                 xPos, yPos,
                 Settings.CREAM_COLOR,
@@ -539,7 +541,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
                 settingsPanel,
                 (l) -> {}
         ));
-        addPagedElement(settingsPanel, PAGE_CHOICES, new ModLabel(
+        addPagedElement(settingsPanel, TAB_CHOICES, new ModLabel(
                 "Additional Choices",
                 sliderX, yPos,
                 Settings.CREAM_COLOR,
@@ -551,42 +553,42 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
         yPos -= 42.0f;
 
         // Starter tier slider
-        addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Starter (" + RelicLibrary.starterList.size() + ")",
+        addPagedSliderRow(settingsPanel, TAB_CHOICES, "Starter (" + RelicLibrary.starterList.size() + ")",
                 xPos, sliderX, yPos, sliderYOffset, starterAdditional,
                 (val) -> { starterAdditional = val; saveConfig(); updatePreview(AbstractRelic.RelicTier.STARTER, val + 1); });
         yPos -= rowHeight;
         // Common tier slider
-        addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Common (" + RelicLibrary.commonList.size() + ")",
+        addPagedSliderRow(settingsPanel, TAB_CHOICES, "Common (" + RelicLibrary.commonList.size() + ")",
                 xPos, sliderX, yPos, sliderYOffset, commonAdditional,
                 (val) -> { commonAdditional = val; saveConfig(); updatePreview(AbstractRelic.RelicTier.COMMON, val + 1); });
         yPos -= rowHeight;
 
         // Uncommon tier slider
-        addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Uncommon (" + RelicLibrary.uncommonList.size() + ")",
+        addPagedSliderRow(settingsPanel, TAB_CHOICES, "Uncommon (" + RelicLibrary.uncommonList.size() + ")",
                 xPos, sliderX, yPos, sliderYOffset, uncommonAdditional,
                 (val) -> { uncommonAdditional = val; saveConfig(); updatePreview(AbstractRelic.RelicTier.UNCOMMON, val + 1); });
         yPos -= rowHeight;
 
         // Rare tier slider
-        addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Rare (" + RelicLibrary.rareList.size() + ")",
+        addPagedSliderRow(settingsPanel, TAB_CHOICES, "Rare (" + RelicLibrary.rareList.size() + ")",
                 xPos, sliderX, yPos, sliderYOffset, rareAdditional,
                 (val) -> { rareAdditional = val; saveConfig(); updatePreview(AbstractRelic.RelicTier.RARE, val + 1); });
         yPos -= rowHeight;
 
         // Shop tier slider
-        addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Shop (" + RelicLibrary.shopList.size() + ")",
+        addPagedSliderRow(settingsPanel, TAB_CHOICES, "Shop (" + RelicLibrary.shopList.size() + ")",
                 xPos, sliderX, yPos, sliderYOffset, shopAdditional,
                 (val) -> { shopAdditional = val; saveConfig(); updatePreview(AbstractRelic.RelicTier.SHOP, val + 1); });
         yPos -= rowHeight;
 
         // Event tier slider (Special tier in game code)
-        addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Event (" + RelicLibrary.specialList.size() + ")",
+        addPagedSliderRow(settingsPanel, TAB_CHOICES, "Event (" + RelicLibrary.specialList.size() + ")",
                 xPos, sliderX, yPos, sliderYOffset, specialAdditional,
                 (val) -> { specialAdditional = val; saveConfig(); updatePreview(AbstractRelic.RelicTier.SPECIAL, val + 1); });
         yPos -= rowHeight;
 
         // Boss tier slider
-        addPagedSliderRow(settingsPanel, PAGE_CHOICES, "Boss (" + RelicLibrary.bossList.size() + ")",
+        addPagedSliderRow(settingsPanel, TAB_CHOICES, "Boss (" + RelicLibrary.bossList.size() + ")",
                 xPos, sliderX, yPos, sliderYOffset, bossAdditional,
                 (val) -> { bossAdditional = val; saveConfig(); updatePreview(AbstractRelic.RelicTier.BOSS, val + 1); });
         yPos -= rowHeight;
@@ -594,7 +596,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
         // Visual preview on right side
         float previewX = 1100.0f;
         float previewY = contentY - 60.0f;
-        addPagedElement(settingsPanel, PAGE_CHOICES, new RelicChoicePreview(
+        addPagedElement(settingsPanel, TAB_CHOICES, new RelicChoicePreview(
                 previewX, previewY,
                 PickyRelicsMod::getPreviewTier,
                 PickyRelicsMod::getPreviewChoiceCount,
@@ -603,7 +605,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
 
         // Show tier labels checkbox
         yPos -= 30.0f;
-        addPagedElement(settingsPanel, PAGE_CHOICES, new ModLabeledToggleButton(
+        addPagedElement(settingsPanel, TAB_CHOICES, new ModLabeledToggleButton(
                 settingsStrings.TEXT[1],
                 xPos, yPos,
                 Settings.CREAM_COLOR,
@@ -619,7 +621,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
         // with the main explanation block on the left.
         float eventTextX = 1090.0f;
         float eventTextY = 340.0f;
-        addPagedElement(settingsPanel, PAGE_CHOICES, new IUIElement() {
+        addPagedElement(settingsPanel, TAB_CHOICES, new IUIElement() {
             @Override
             public void render(com.badlogic.gdx.graphics.g2d.SpriteBatch sb) {
                 if (previewTier == AbstractRelic.RelicTier.SPECIAL && previewChoiceCount > 1) {
@@ -653,7 +655,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
         final float bottomExplanationX = xPos;
         final float bottomExplanationY = 380.0f;
         final float bottomExplanationWidth = 700.0f;
-        addPagedElement(settingsPanel, PAGE_CHOICES, new IUIElement() {
+        addPagedElement(settingsPanel, TAB_CHOICES, new IUIElement() {
             @Override
             public void render(com.badlogic.gdx.graphics.g2d.SpriteBatch sb) {
                 FontHelper.renderSmartText(sb, FontHelper.tipBodyFont,
@@ -669,18 +671,18 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
             @Override public int updateOrder() { return 1; }
         });
 
-        // ===== PAGE 1: Algorithms =====
+        // ===== TAB 1: Probabilities =====
         yPos = contentY;
 
         // Tier change chance slider (0-100%)
-        addPagedSliderRow(settingsPanel, PAGE_ALGORITHMS, settingsStrings.TEXT[5], xPos, sliderX + 150.0f, yPos, sliderYOffset,
+        addPagedSliderRow(settingsPanel, TAB_PROBABILITIES, settingsStrings.TEXT[5], xPos, sliderX + 150.0f, yPos, sliderYOffset,
                 tierChangeChance, 0.0f, 100.0f, "%.0f%%",
                 (val) -> { tierChangeChance = val; saveConfig(); });
 
         yPos -= rowHeight;
 
         // Magnitude of change slider (0-100%)
-        addPagedSliderRow(settingsPanel, PAGE_ALGORITHMS, settingsStrings.TEXT[10], xPos, sliderX + 150.0f, yPos, sliderYOffset,
+        addPagedSliderRow(settingsPanel, TAB_PROBABILITIES, settingsStrings.TEXT[10], xPos, sliderX + 150.0f, yPos, sliderYOffset,
                 tierChangeMagnitude, 0.0f, 100.0f, "%.0f%%",
                 (val) -> { tierChangeMagnitude = val; saveConfig(); });
 
@@ -689,7 +691,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
         float checkboxX = xPos + 20.0f;
 
         // Tier direction checkboxes
-        addPagedElement(settingsPanel, PAGE_ALGORITHMS, new ModLabeledToggleButton(
+        addPagedElement(settingsPanel, TAB_PROBABILITIES, new ModLabeledToggleButton(
                 settingsStrings.TEXT[6],
                 checkboxX, yPos,
                 Settings.CREAM_COLOR,
@@ -702,7 +704,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
 
         yPos -= 35.0f;
 
-        addPagedElement(settingsPanel, PAGE_ALGORITHMS, new ModLabeledToggleButton(
+        addPagedElement(settingsPanel, TAB_PROBABILITIES, new ModLabeledToggleButton(
                 settingsStrings.TEXT[7],
                 checkboxX, yPos,
                 Settings.CREAM_COLOR,
@@ -716,7 +718,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
         yPos -= 50.0f;
 
         // Shop/Boss relic section
-        addPagedElement(settingsPanel, PAGE_ALGORITHMS, new ModLabeledToggleButton(
+        addPagedElement(settingsPanel, TAB_PROBABILITIES, new ModLabeledToggleButton(
                 settingsStrings.TEXT[8],
                 checkboxX, yPos,
                 Settings.CREAM_COLOR,
@@ -729,7 +731,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
 
         yPos -= 35.0f;
 
-        addPagedElement(settingsPanel, PAGE_ALGORITHMS, new ModLabeledToggleButton(
+        addPagedElement(settingsPanel, TAB_PROBABILITIES, new ModLabeledToggleButton(
                 settingsStrings.TEXT[9],
                 checkboxX, yPos,
                 Settings.CREAM_COLOR,
@@ -740,10 +742,14 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
                 (toggle) -> { allowBossRelics = toggle.enabled; saveConfig(); }
         ));
 
-        yPos -= 50.0f;
+        // Probability simulator display (right side of Probabilities tab)
+        addPagedElement(settingsPanel, TAB_PROBABILITIES, new ProbabilityDisplay(850.0f, contentY - 72.0f));
+
+        // ===== TAB 2: Refills =====
+        yPos = contentY;
 
         // Cycle pools: refill exhausted tiers with skipped relics
-        addPagedElement(settingsPanel, PAGE_ALGORITHMS, new ModLabeledToggleButton(
+        addPagedElement(settingsPanel, TAB_REFILLS, new ModLabeledToggleButton(
                 settingsStrings.TEXT[11],
                 checkboxX, yPos,
                 Settings.CREAM_COLOR,
@@ -753,9 +759,6 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
                 (label) -> {},
                 (toggle) -> { cyclePoolsEnabled = toggle.enabled; saveConfig(); }
         ));
-
-        // Probability simulator display (right side of Algorithms page)
-        addPagedElement(settingsPanel, PAGE_ALGORITHMS, new ProbabilityDisplay(850.0f, contentY - 72.0f));
 
         // Dev console command for pool diagnostics and testing
         ConsoleCommand.addCommand("pickypool", PickyPoolCommand.class);
@@ -770,7 +773,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
     }
 
     private void addPagedElement(ModPanel panel, int page, IUIElement element) {
-        panel.addUIElement(new PagedElement(element, page, PickyRelicsMod::getCurrentPage));
+        panel.addUIElement(new PagedElement(element, page, PickyRelicsMod::getCurrentTab));
     }
 
     private void addPagedSliderRow(ModPanel panel, int page, String label, float labelX, float sliderX,

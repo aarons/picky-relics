@@ -26,8 +26,8 @@
   "pickyrelics:Preview": {
     "TEXT": ["战利品预览", "???"]
   },
-  "pickyrelics:PageNav": {
-    "TEXT": ["第 %d 页，共 %d 页"]
+  "pickyrelics:Tabs": {
+    "TEXT": ["Choices", "Probabilities", "Refills"]
   },
   "pickyrelics:Tooltip": {
     "TEXT": ["已关联", "获得此遗物将移除其他 #y%d 个关联的遗物选项。"]

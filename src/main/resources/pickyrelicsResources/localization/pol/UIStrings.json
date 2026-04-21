@@ -26,8 +26,8 @@
   "pickyrelics:Preview": {
     "TEXT": ["Podgląd Łupu", "???"]
   },
-  "pickyrelics:PageNav": {
-    "TEXT": ["strona %d z %d"]
+  "pickyrelics:Tabs": {
+    "TEXT": ["Choices", "Probabilities", "Refills"]
   },
   "pickyrelics:Tooltip": {
     "TEXT": ["Powiązany", "Zdobycie tego reliktu usunie pozostałe #y%d powiązane opcje reliktów."]

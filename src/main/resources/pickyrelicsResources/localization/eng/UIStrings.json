@@ -27,8 +27,8 @@
   "pickyrelics:Preview": {
     "TEXT": ["Loot Preview", "???"]
   },
-  "pickyrelics:PageNav": {
-    "TEXT": ["page %d of %d"]
+  "pickyrelics:Tabs": {
+    "TEXT": ["Choices", "Probabilities", "Refills"]
   },
   "pickyrelics:Tooltip": {
     "TEXT": ["Linked", "Obtaining this relic will remove the other #y%d linked relic choices."]

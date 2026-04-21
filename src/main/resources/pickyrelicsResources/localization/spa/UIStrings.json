@@ -26,8 +26,8 @@
   "pickyrelics:Preview": {
     "TEXT": ["Vista Previa de Botín", "???"]
   },
-  "pickyrelics:PageNav": {
-    "TEXT": ["página %d de %d"]
+  "pickyrelics:Tabs": {
+    "TEXT": ["Choices", "Probabilities", "Refills"]
   },
   "pickyrelics:Tooltip": {
     "TEXT": ["Vinculada", "Obtener esta reliquia eliminará las otras #y%d opciones de reliquia vinculadas."]

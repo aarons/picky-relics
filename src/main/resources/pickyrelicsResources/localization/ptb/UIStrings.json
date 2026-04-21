@@ -26,8 +26,8 @@
   "pickyrelics:Preview": {
     "TEXT": ["Prévia de Saque", "???"]
   },
-  "pickyrelics:PageNav": {
-    "TEXT": ["página %d de %d"]
+  "pickyrelics:Tabs": {
+    "TEXT": ["Choices", "Probabilities", "Refills"]
   },
   "pickyrelics:Tooltip": {
     "TEXT": ["Vinculada", "Obter esta relíquia removerá as outras #y%d opções de relíquia vinculadas."]

@@ -26,8 +26,8 @@
   "pickyrelics:Preview": {
     "TEXT": ["Xem trước phần thưởng", "???"]
   },
-  "pickyrelics:PageNav": {
-    "TEXT": ["trang %d / %d"]
+  "pickyrelics:Tabs": {
+    "TEXT": ["Choices", "Probabilities", "Refills"]
   },
   "pickyrelics:Tooltip": {
     "TEXT": ["Liên kết", "Nhận di vật này sẽ loại bỏ #y%d lựa chọn di vật liên kết khác."]

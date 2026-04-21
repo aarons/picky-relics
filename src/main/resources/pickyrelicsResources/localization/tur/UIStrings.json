@@ -26,8 +26,8 @@
   "pickyrelics:Preview": {
     "TEXT": ["Ganimet Önizlemesi", "???"]
   },
-  "pickyrelics:PageNav": {
-    "TEXT": ["%d/%d sayfa"]
+  "pickyrelics:Tabs": {
+    "TEXT": ["Choices", "Probabilities", "Refills"]
   },
   "pickyrelics:Tooltip": {
     "TEXT": ["Bağlantılı", "Bu kalıntıyı almak, diğer #y%d bağlantılı kalıntı seçeneğini kaldıracaktır."]

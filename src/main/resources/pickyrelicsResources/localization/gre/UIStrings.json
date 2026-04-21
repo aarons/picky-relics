@@ -26,8 +26,8 @@
   "pickyrelics:Preview": {
     "TEXT": ["Προεπισκόπηση Λείας", "???"]
   },
-  "pickyrelics:PageNav": {
-    "TEXT": ["σελίδα %d από %d"]
+  "pickyrelics:Tabs": {
+    "TEXT": ["Choices", "Probabilities", "Refills"]
   },
   "pickyrelics:Tooltip": {
     "TEXT": ["Συνδεδεμένο", "Η απόκτηση αυτού του ειδώλου θα αφαιρέσει τις άλλες #y%d συνδεδεμένες επιλογές ειδώλων."]

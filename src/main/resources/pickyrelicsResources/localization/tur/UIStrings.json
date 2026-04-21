@@ -1,15 +1,15 @@
 {
   "pickyrelics:ModInfo": {
-    "TEXT": ["Picky Relics", "Laethos", "Her seviye için birden fazla kalıntı seçeneği sunar. Yapılandırılabilir (varsayılan: 2)."]
+    "TEXT": ["Picky Relics", "Laethos", "Her seviye için birden fazla kalıntı seçeneği sunar. Yapılandırılabilir (varsayılan: 1 ek)."]
   },
   "pickyrelics:TierNames": {
     "TEXT": ["Başlangıç", "Yaygın", "Nadir", "Çok Nadir", "Patron", "Dükkan", "Olay"]
   },
   "pickyrelics:Settings": {
     "TEXT": [
-      "Savaş ve sandık ödüllerinde kaç seçenek görüneceği",
+      "Bu sayfa, belirli bir seviyede bir kalıntı bulunduğunda kaç seçenek alacağınızı yapılandırır. Her seviye ayrı ayrı yapılandırılabilir. Örneğin, ödül Yaygın bir kalıntı ise ve Yaygın için kaydırıcı 2 olarak ayarlanmışsa, orijinal Yaygın kalıntıya ek olarak 2 ek seçenek alırsınız.",
       "Ödül ekranında kalıntı seviyesi etiketlerini göster",
-      "Olay kalıntıları için seçenekler her zaman diğer seviyelerden gelir.",
+      "Olay kalıntısı seçenekleri diğer seviyelerden gelir.",
       "",
       "",
       "Seçeneklerin farklı bir seviye olma olasılığı",
@@ -17,7 +17,9 @@
       "Alt seviyelerden seçeneklere izin ver",
       "Seçenekler olarak dükkan kalıntılarını dahil et",
       "Seçenekler olarak patron kalıntılarını dahil et",
-      "Seviye değişiminin büyüklüğü"
+      "Seviye değişiminin büyüklüğü",
+      "Bir seviyenin havuzu tükendiğinde atlanan kalıntılarla yeniden doldur",
+      "Bu sayfa, ek kalıntı seçeneklerinin orijinal ödülün seviyesini mi paylaşacağını yoksa farklı bir seviyeden gelme olasılığı mı olacağını yapılandırır. Seviye değişikliklerinin olasılığını ve büyüklüğünü ayarlayın ve hangi seviyelerin uygun olduğuna karar vermek için onay kutularını kullanın."
     ]
   },
   "pickyrelics:Probability": {

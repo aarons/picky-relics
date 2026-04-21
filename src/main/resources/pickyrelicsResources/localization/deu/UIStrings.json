@@ -1,15 +1,15 @@
 {
   "pickyrelics:ModInfo": {
-    "TEXT": ["Picky Relics", "Laethos", "Wähle aus mehreren Relikt-Optionen pro Stufe. Konfigurierbar (Standard: 2)."]
+    "TEXT": ["Picky Relics", "Laethos", "Wähle aus mehreren Relikt-Optionen pro Stufe. Konfigurierbar (Standard: 1 zusätzlich)."]
   },
   "pickyrelics:TierNames": {
     "TEXT": ["Starter", "Gewöhnlich", "Ungewöhnlich", "Selten", "Boss", "Laden", "Ereignis"]
   },
   "pickyrelics:Settings": {
     "TEXT": [
-      "Wie viele Auswahlmöglichkeiten in Kampf- und Truhenbelohnungen erscheinen",
+      "Auf dieser Seite wird eingestellt, wie viele Auswahlmöglichkeiten du erhältst, wenn ein Relikt einer bestimmten Stufe gefunden wird. Jede Stufe lässt sich separat einstellen. Wenn die Belohnung z. B. ein Gewöhnliches Relikt ist und der Schieberegler für Gewöhnlich auf 2 steht, erhältst du das ursprüngliche Gewöhnliche Relikt sowie 2 zusätzliche Auswahlmöglichkeiten.",
       "Relikt-Stufenbezeichnungen auf dem Belohnungsbildschirm anzeigen",
-      "Optionen für Ereignis-Relikte stammen immer aus anderen Stufen.",
+      "Ereignis-Relikt-Auswahl stammt aus anderen Stufen.",
       "",
       "",
       "Chance, dass Optionen eine andere Stufe haben",
@@ -17,7 +17,9 @@
       "Optionen aus niedrigeren Stufen erlauben",
       "Laden-Relikte als Optionen einbeziehen",
       "Boss-Relikte als Optionen einbeziehen",
-      "Ausmaß der Stufenänderung"
+      "Ausmaß der Stufenänderung",
+      "Reliktpool einer Stufe mit übersprungenen Relikten auffüllen, sobald erschöpft",
+      "Auf dieser Seite wird eingestellt, ob zusätzliche Relikt-Auswahlmöglichkeiten dieselbe Stufe wie die ursprüngliche Belohnung haben oder die Chance besteht, aus einer anderen Stufe zu stammen. Passe die Chance und das Ausmaß der Stufenänderung an und nutze die Kontrollkästchen, um festzulegen, welche Stufen infrage kommen."
     ]
   },
   "pickyrelics:Probability": {

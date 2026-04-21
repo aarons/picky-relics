@@ -1,15 +1,15 @@
 {
   "pickyrelics:ModInfo": {
-    "TEXT": ["Picky Relics", "Laethos", "Elige entre múltiples opciones de reliquia por nivel. Configurable (por defecto: 2)."]
+    "TEXT": ["Picky Relics", "Laethos", "Elige entre múltiples opciones de reliquia por nivel. Configurable (por defecto: 1 adicional)."]
   },
   "pickyrelics:TierNames": {
     "TEXT": ["Inicial", "Común", "Poco Común", "Rara", "Jefe", "Tienda", "Evento"]
   },
   "pickyrelics:Settings": {
     "TEXT": [
-      "Cuántas opciones aparecen en recompensas de combate y cofres",
+      "Esta página configura cuántas opciones obtienes cuando se encuentra una reliquia de un nivel determinado. Cada nivel se puede configurar por separado. Por ejemplo, si la recompensa es una reliquia Común y el control deslizante de Común está en 2, recibirás la reliquia Común original más 2 opciones adicionales.",
       "Mostrar etiquetas de nivel de reliquia en la pantalla de recompensas",
-      "Las opciones para reliquias de evento siempre provienen de otros niveles.",
+      "Las opciones de reliquias de evento provienen de otros niveles.",
       "",
       "",
       "Probabilidad de que las opciones sean de un nivel diferente",
@@ -17,7 +17,9 @@
       "Permitir opciones de niveles inferiores",
       "Incluir reliquias de tienda como opciones",
       "Incluir reliquias de jefe como opciones",
-      "Magnitud del cambio de nivel"
+      "Magnitud del cambio de nivel",
+      "Rellenar el grupo de un nivel con reliquias omitidas una vez agotado",
+      "Esta página configura si las opciones adicionales de reliquia comparten el nivel de la recompensa original, o si tienen la posibilidad de venir de un nivel diferente. Ajusta la probabilidad y la magnitud de los cambios de nivel, y usa las casillas de verificación para decidir qué niveles son elegibles."
     ]
   },
   "pickyrelics:Probability": {

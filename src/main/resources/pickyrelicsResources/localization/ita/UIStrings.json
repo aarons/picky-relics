@@ -1,15 +1,15 @@
 {
   "pickyrelics:ModInfo": {
-    "TEXT": ["Picky Relics", "Laethos", "Scegli tra più opzioni di reliquie per livello. Configurabile (predefinito: 2)."]
+    "TEXT": ["Picky Relics", "Laethos", "Scegli tra più opzioni di reliquie per livello. Configurabile (predefinito: 1 aggiuntiva)."]
   },
   "pickyrelics:TierNames": {
     "TEXT": ["Iniziale", "Comune", "Non comune", "Rara", "Boss", "Negozio", "Evento"]
   },
   "pickyrelics:Settings": {
     "TEXT": [
-      "Quante scelte appaiono nelle ricompense da combattimento e forziere",
+      "Questa pagina configura quante scelte ottieni quando viene trovata una reliquia di un determinato livello. Ogni livello può essere configurato separatamente. Ad esempio, se la ricompensa è una reliquia Comune e il cursore per Comune è impostato su 2, otterrai la reliquia Comune originale più 2 scelte aggiuntive.",
       "Mostra etichette del livello reliquia nella schermata ricompense",
-      "Le opzioni per le reliquie evento provengono sempre da altri livelli.",
+      "Le scelte di reliquie evento provengono da altri livelli.",
       "",
       "",
       "Probabilità che le opzioni siano di un livello diverso",
@@ -17,7 +17,9 @@
       "Consenti opzioni da livelli inferiori",
       "Includi reliquie negozio come opzioni",
       "Includi reliquie boss come opzioni",
-      "Magnitudine del cambio di livello"
+      "Magnitudine del cambio di livello",
+      "Ricarica il bacino di un livello con le reliquie saltate una volta esaurito",
+      "Questa pagina configura se le scelte aggiuntive di reliquie condividono il livello della ricompensa originale, o hanno la possibilità di provenire da un livello diverso. Regola la probabilità e la magnitudine dei cambi di livello e usa le caselle per decidere quali livelli sono idonei."
     ]
   },
   "pickyrelics:Probability": {

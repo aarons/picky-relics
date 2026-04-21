@@ -745,8 +745,27 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
         // Probability simulator display (right side of Probabilities tab)
         addPagedElement(settingsPanel, TAB_PROBABILITIES, new ProbabilityDisplay(850.0f, contentY - 72.0f));
 
+        // Bottom-of-page explanation for Probabilities tab (wraps to ~700px width)
+        addPagedElement(settingsPanel, TAB_PROBABILITIES, new IUIElement() {
+            @Override
+            public void render(com.badlogic.gdx.graphics.g2d.SpriteBatch sb) {
+                FontHelper.renderSmartText(sb, FontHelper.tipBodyFont,
+                        settingsStrings.TEXT[12],
+                        bottomExplanationX * Settings.scale,
+                        bottomExplanationY * Settings.scale,
+                        bottomExplanationWidth * Settings.scale,
+                        28.0f * Settings.scale,
+                        Settings.GOLD_COLOR);
+            }
+            @Override public void update() {}
+            @Override public int renderLayer() { return 1; }
+            @Override public int updateOrder() { return 1; }
+        });
+
         // ===== TAB 2: Refills =====
-        yPos = contentY;
+        // Toggle buttons render ~10px higher than labels/sliders at the same yPos,
+        // so nudge down to visually align with the first row on other tabs.
+        yPos = contentY - 10.0f;
 
         // Cycle pools: refill exhausted tiers with skipped relics
         addPagedElement(settingsPanel, TAB_REFILLS, new ModLabeledToggleButton(

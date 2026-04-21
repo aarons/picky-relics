@@ -1,23 +1,25 @@
 {
   "pickyrelics:ModInfo": {
-    "TEXT": ["Picky Relics", "Laethos", "Wybieraj spośród wielu opcji reliktów w każdej kategorii. Konfigurowalne (domyślnie: 2)."]
+    "TEXT": ["Picky Relics", "Laethos", "Wybieraj spośród wielu opcji reliktów w każdej kategorii. Konfigurowalne (domyślnie: 1 dodatkowa)."]
   },
   "pickyrelics:TierNames": {
     "TEXT": ["Startowy", "Pospolity", "Niepospolity", "Rzadki", "Boss", "Sklep", "Wydarzenie"]
   },
   "pickyrelics:Settings": {
     "TEXT": [
-      "Ile opcji pojawia się w nagrodach z walki i skrzyń",
+      "Ta strona konfiguruje, ile opcji otrzymujesz, gdy pojawi się relikt danej kategorii. Każdą kategorię można skonfigurować osobno. Na przykład, jeśli nagrodą jest Pospolity relikt, a suwak Pospolitych ustawiony jest na 2, otrzymasz oryginalny Pospolity relikt oraz 2 dodatkowe opcje.",
       "Pokaż etykiety kategorii reliktów na ekranie nagród",
-      "Opcje dla reliktów z wydarzeń zawsze pochodzą z innych kategorii.",
+      "Opcje reliktów z wydarzeń pochodzą z innych kategorii.",
       "",
       "",
       "Szansa na opcje z innej kategorii",
       "Zezwól na opcje z wyższych kategorii",
       "Zezwól na opcje z niższych kategorii",
-      "Uwzględnij relікty sklepowe jako opcje",
-      "Uwzględnij relікty bossów jako opcje",
-      "Wielkość zmiany kategorii"
+      "Uwzględnij relikty sklepowe jako opcje",
+      "Uwzględnij relikty bossów jako opcje",
+      "Wielkość zmiany kategorii",
+      "Uzupełnij pulę kategorii pominiętymi reliktami, gdy się wyczerpie",
+      "Ta strona konfiguruje, czy dodatkowe opcje reliktów mają tę samą kategorię co oryginalna nagroda, czy mają szansę pochodzić z innej kategorii. Dostosuj szansę i wielkość zmian kategorii oraz użyj pól wyboru, aby określić, które kategorie są dozwolone."
     ]
   },
   "pickyrelics:Probability": {

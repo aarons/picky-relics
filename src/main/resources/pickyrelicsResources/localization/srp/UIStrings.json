@@ -1,15 +1,15 @@
 {
   "pickyrelics:ModInfo": {
-    "TEXT": ["Picky Relics", "Laethos", "Biranje između više opcija relikvija po nivou. Podesivo (podrazumevano: 2)."]
+    "TEXT": ["Picky Relics", "Laethos", "Biranje između više opcija relikvija po nivou. Podesivo (podrazumevano: 1 dodatna)."]
   },
   "pickyrelics:TierNames": {
     "TEXT": ["Početna", "Uobičajena", "Neuobičajena", "Retka", "Šef", "Prodavnica", "Događaj"]
   },
   "pickyrelics:Settings": {
     "TEXT": [
-      "Koliko izbora se pojavljuje u borbenim i sanducima nagrada",
+      "Ova stranica podešava koliko izbora dobijate kada se pronađe relikvija određenog nivoa. Svaki nivo se može podesiti zasebno. Na primer, ako je nagrada Uobičajena relikvija i klizač za Uobičajene je postavljen na 2, dobićete originalnu Uobičajenu relikviju plus 2 dodatna izbora.",
       "Prikaži oznake nivoa relikvija na ekranu nagrada",
-      "Opcije za relikvije događaja uvek dolaze iz drugih nivoa.",
+      "Izbori relikvija događaja dolaze iz drugih nivoa.",
       "",
       "",
       "Šansa da opcije budu drugačijeg nivoa",
@@ -17,7 +17,9 @@
       "Dozvoli opcije iz nižih nivoa",
       "Uključi relikvije prodavnice kao opcije",
       "Uključi relikvije šefa kao opcije",
-      "Veličina promene nivoa"
+      "Veličina promene nivoa",
+      "Dopuni fond nivoa preskočenim relikvijama kada se iscrpi",
+      "Ova stranica podešava da li dodatni izbori relikvija dele nivo originalne nagrade ili imaju šansu da dođu iz drugog nivoa. Podesite šansu i veličinu promene nivoa i koristite polja za potvrdu da odredite koji nivoi su prihvatljivi."
     ]
   },
   "pickyrelics:Probability": {

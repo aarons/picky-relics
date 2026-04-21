@@ -1,15 +1,15 @@
 {
   "pickyrelics:ModInfo": {
-    "TEXT": ["Picky Relics", "Laethos", "Pilih dari beberapa pilihan relik per tingkat. Dapat dikonfigurasi (bawaan: 2)."]
+    "TEXT": ["Picky Relics", "Laethos", "Pilih dari beberapa pilihan relik per tingkat. Dapat dikonfigurasi (bawaan: 1 tambahan)."]
   },
   "pickyrelics:TierNames": {
     "TEXT": ["Pemula", "Umum", "Tidak Umum", "Langka", "Bos", "Toko", "Acara"]
   },
   "pickyrelics:Settings": {
     "TEXT": [
-      "Berapa banyak pilihan yang muncul di hadiah pertempuran dan peti",
+      "Halaman ini mengatur berapa banyak pilihan yang Anda dapatkan ketika relik dari tingkat tertentu ditemukan. Setiap tingkat dapat dikonfigurasi secara terpisah. Misalnya, jika hadiahnya adalah relik Umum dan slider untuk Umum diatur ke 2, Anda akan mendapatkan relik Umum asli ditambah 2 pilihan tambahan.",
       "Tampilkan label tingkat relik di layar hadiah",
-      "Pilihan untuk relik acara selalu berasal dari tingkat lain.",
+      "Pilihan relik acara berasal dari tingkat lain.",
       "",
       "",
       "Peluang untuk pilihan menjadi tingkat yang berbeda",
@@ -17,7 +17,9 @@
       "Izinkan pilihan dari tingkat yang lebih rendah",
       "Sertakan relik toko sebagai pilihan",
       "Sertakan relik bos sebagai pilihan",
-      "Besaran perubahan tingkat"
+      "Besaran perubahan tingkat",
+      "Isi ulang kolam suatu tingkat dengan relik yang dilewati setelah habis",
+      "Halaman ini mengatur apakah pilihan relik tambahan berada pada tingkat yang sama dengan hadiah asli, atau berpeluang berasal dari tingkat yang berbeda. Sesuaikan peluang dan besaran perubahan tingkat, dan gunakan kotak centang untuk menentukan tingkat mana yang memenuhi syarat."
     ]
   },
   "pickyrelics:Probability": {

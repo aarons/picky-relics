@@ -1,15 +1,15 @@
 {
   "pickyrelics:ModInfo": {
-    "TEXT": ["Reliques Difficiles", "Laethos", "Choisissez parmi plusieurs options de reliques par niveau. Configurable (par défaut : 2)."]
+    "TEXT": ["Reliques Difficiles", "Laethos", "Choisissez parmi plusieurs options de reliques par niveau. Configurable (par défaut : 1 supplémentaire)."]
   },
   "pickyrelics:TierNames": {
     "TEXT": ["Départ", "Commune", "Peu commune", "Rare", "Boss", "Boutique", "Événement"]
   },
   "pickyrelics:Settings": {
     "TEXT": [
-      "Nombre de choix qui apparaissent dans les récompenses de combat et de coffre",
+      "Cette page configure le nombre de choix que vous obtenez lorsqu'une relique d'un niveau donné est trouvée. Chaque niveau peut être configuré séparément. Par exemple, si la récompense est une relique Commune et que le curseur Commune est réglé sur 2, vous obtiendrez la relique Commune d'origine plus 2 choix supplémentaires.",
       "Afficher les étiquettes de niveau de relique sur l'écran de récompense",
-      "Les options pour les reliques d'événement proviennent toujours d'autres niveaux.",
+      "Les choix de reliques d'événement proviennent d'autres niveaux.",
       "",
       "",
       "Chance que les options soient d'un niveau différent",
@@ -17,7 +17,9 @@
       "Autoriser les options de niveaux inférieurs",
       "Inclure les reliques de boutique comme options",
       "Inclure les reliques de boss comme options",
-      "Ampleur du changement de niveau"
+      "Ampleur du changement de niveau",
+      "Recharger le pool d'un niveau avec les reliques ignorées une fois épuisé",
+      "Cette page configure si les choix supplémentaires de reliques partagent le niveau de la récompense d'origine, ou s'ils ont une chance de provenir d'un niveau différent. Ajustez la probabilité et l'ampleur des changements de niveau, et utilisez les cases à cocher pour décider quels niveaux sont éligibles."
     ]
   },
   "pickyrelics:Probability": {

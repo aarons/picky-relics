@@ -245,11 +245,11 @@ public class RelicLinkPatch {
      * Generates additional relics of the same tier, inserts them after the original,
      * marks them as added by Picky Relics, and links them all together.
      *
-     * @param rewards    The rewards list to modify
-     * @param original   The original relic reward to build a group around
-     * @param numChoices Total number of relics in the group (including original)
+     * @param rewards       The rewards list to modify
+     * @param original      The original relic reward to build a group around
+     * @param numAdditional Number of additional relic choices to add (the original is always included)
      */
-    public static void createLinkedRelicGroup(ArrayList<RewardItem> rewards, RewardItem original, int numChoices) {
+    public static void createLinkedRelicGroup(ArrayList<RewardItem> rewards, RewardItem original, int numAdditional) {
         // Save the original relicLink before we modify the chain (e.g., Sapphire Key)
         // Only save if we haven't already (handles refresh case)
         if (RelicLinkFields.originalRelicLink.get(original) == null && original.relicLink != null) {
@@ -264,7 +264,7 @@ public class RelicLinkPatch {
         int insertIndex = rewards.indexOf(original) + 1;
         AbstractRelic.RelicTier tier = original.relic.tier;
 
-        for (int i = 1; i < numChoices; i++) {
+        for (int i = 0; i < numAdditional; i++) {
             AbstractRelic additionalRelic;
 
             if (tier == AbstractRelic.RelicTier.SPECIAL) {
@@ -493,7 +493,7 @@ public class RelicLinkPatch {
                 if (r.type == RewardItem.RewardType.RELIC &&
                     RelicLinkFields.linkedRelics.get(r) == null) {
                     // Check if this tier should have extra choices
-                    if (r.relic != null && PickyRelicsMod.getChoicesForTier(r.relic.tier) <= 1) {
+                    if (r.relic != null && PickyRelicsMod.getAdditionalChoicesForTier(r.relic.tier) <= 0) {
                         continue;
                     }
                     hasUnlinked = true;
@@ -550,11 +550,11 @@ public class RelicLinkPatch {
 
                 ArrayList<RewardItem> existingGroup = RelicLinkFields.linkedRelics.get(r);
                 if (existingGroup == null) {
-                    // Get tier-specific choice count
-                    int tierChoices = PickyRelicsMod.getChoicesForTier(r.relic.tier);
-                    if (tierChoices <= 1) {
+                    // Get tier-specific additional-choice count
+                    int tierAdditional = PickyRelicsMod.getAdditionalChoicesForTier(r.relic.tier);
+                    if (tierAdditional <= 0) {
                         Log.debug("[" + source + "] Skipping " + r.relic.tier + " tier relic: " +
-                                r.relic.relicId + " (choices=1)");
+                                r.relic.relicId + " (additional=0)");
                         continue;
                     }
                     unlinkedRelics.add(r);
@@ -568,10 +568,10 @@ public class RelicLinkPatch {
 
         // Create linked groups for each unlinked relic
         for (RewardItem original : unlinkedRelics) {
-            int tierChoices = PickyRelicsMod.getChoicesForTier(original.relic.tier);
+            int tierAdditional = PickyRelicsMod.getAdditionalChoicesForTier(original.relic.tier);
             Log.debug("[" + source + "] Creating linked group for " + original.relic.relicId +
-                    " (tier: " + original.relic.tier + ") with " + tierChoices + " choices");
-            createLinkedRelicGroup(rewards, original, tierChoices);
+                    " (tier: " + original.relic.tier + ") with " + tierAdditional + " additional");
+            createLinkedRelicGroup(rewards, original, tierAdditional);
 
             // Mark as processed in PostBattle to prevent double-processing in SETUP
             if (isPostBattle) {

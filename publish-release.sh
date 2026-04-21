@@ -69,7 +69,7 @@ log_info "Checking for release tag..."
 CURRENT_TAG=$(git describe --tags --exact-match HEAD 2>/dev/null || echo "")
 
 if [ -z "$CURRENT_TAG" ]; then
-    log_error "HEAD is not tagged. Run stage-release.sh first."
+    log_error "HEAD is not tagged. Run /release-prep (Claude Code skill) first to bump the version, tag, and stage the workspace."
     exit 1
 fi
 
@@ -92,24 +92,26 @@ fi
 # Step 3: Validate workspace exists and has content
 log_info "Validating workspace..."
 
+STAGE_HINT="Run /release-prep (Claude Code skill) first to stage the workspace."
+
 if [ ! -d "$WORKSPACE" ]; then
     log_error "Workspace not found: $WORKSPACE"
-    log_error "Run stage-release.sh first."
+    log_error "$STAGE_HINT"
     exit 1
 fi
 
 if [ ! -f "$WORKSPACE/content/PickyRelics.jar" ]; then
-    log_error "JAR not found in workspace. Run stage-release.sh first."
+    log_error "JAR not found in workspace. $STAGE_HINT"
     exit 1
 fi
 
 if [ ! -f "$WORKSPACE/config.json" ]; then
-    log_error "config.json not found in workspace. Run stage-release.sh first."
+    log_error "config.json not found in workspace. $STAGE_HINT"
     exit 1
 fi
 
 if [ ! -f "$WORKSPACE/image.jpg" ]; then
-    log_error "image.jpg not found in workspace. Run stage-release.sh first."
+    log_error "image.jpg not found in workspace. $STAGE_HINT"
     exit 1
 fi
 

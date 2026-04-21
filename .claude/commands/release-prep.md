@@ -30,25 +30,32 @@ Default mapping:
 
 Propose a bump level, then confirm with the user. They may override with a specific version.
 
-## Step 3: Run the changelog/version updater
+## Step 3: Bump versions and write the changelog
+
+Edit all four version locations to the new `X.Y.Z`:
+- `pom.xml` — `<version>` near line 9
+- `src/main/resources/ModTheSpire.json` — `"version"` field
+- `workshop/config.json` — `"changeNote"` field (format: `"vX.Y.Z: <one-sentence summary of player-facing changes>"`)
+- `CHANGELOG.md` — prepend a new entry above the previous one
+
+Draft the `CHANGELOG.md` entry yourself from the commit log. Use the existing style — look at the top few entries in `CHANGELOG.md` for tone and structure. Rules of thumb:
+- Write for players, not engineers. Describe what changed in-game, not what changed in the code.
+- Group by `### Features` / `### Changed` / `### Fixed` (only include sections that apply).
+- Skip or fold together purely internal commits (refactors, infra, docs). A `refactor:` that players will notice as a config rename still belongs — as a player-facing note.
+- Nested bullets are fine for sub-features (see 1.0.0 and 1.1.0 entries).
+- Date format: `## [X.Y.Z] - YYYY-MM-DD` using today's date.
+
+Show the drafted CHANGELOG entry and the workshop `changeNote` to the user for review before committing. Offer to edit if they want different wording.
+
+Once approved, commit all four files in one commit and tag:
 
 ```
-./update-changelog.sh --bump <patch|minor|major>
+git add pom.xml src/main/resources/ModTheSpire.json workshop/config.json CHANGELOG.md
+git commit -m "Release X.Y.Z"
+git tag -a vX.Y.Z -m "Release X.Y.Z"
 ```
 
-(Or `--version X.Y.Z` if the user gave a specific number.)
-
-This will:
-- Bump the version in `src/main/resources/ModTheSpire.json`
-- Generate a changelog entry in `CHANGELOG.md` (uses Claude CLI for prose; falls back to commit summary)
-- Update `workshop/config.json` `changeNote`
-- Commit with message "Release X.Y.Z" and create tag `vX.Y.Z`
-
-⚠️ `update-changelog.sh` does NOT update `pom.xml`. After it finishes:
-- Edit `pom.xml` line 9 (`<version>X.Y.Z</version>`) to match the new version.
-- Amend it into the release commit: `git add pom.xml && git commit --amend --no-edit && git tag -f vX.Y.Z` (force-move the tag onto the amended commit).
-
-Review the generated CHANGELOG.md entry with the user before proceeding — offer to edit it if the auto-generated prose needs polish.
+No amend, no `tag -f` — just one clean commit with the tag pointing at it.
 
 ## Step 4: Stage the Steam Workshop workspace
 

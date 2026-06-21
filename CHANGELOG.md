@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.1] - 2026-06-21
+
+### Fixed
+- Fixed a crash (StackOverflowError) that could occur with relic pool refill enabled — most often when the shop rolled a relic late in a run, where a tier's remaining never-seen relics couldn't currently spawn
+
 ## [1.1.0] - 2026-04-21
 
 ### Features

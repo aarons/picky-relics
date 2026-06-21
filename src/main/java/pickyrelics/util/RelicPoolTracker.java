@@ -1,6 +1,7 @@
 package pickyrelics.util;
 
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
+import com.megacrit.cardcrawl.helpers.RelicLibrary;
 import com.megacrit.cardcrawl.relics.AbstractRelic;
 import pickyrelics.PickyRelicsMod;
 
@@ -58,7 +59,16 @@ public class RelicPoolTracker {
 
     /**
      * If cycling is enabled and the live pool for {@code tier} is empty, append
-     * every snapshot id that isn't currently in the pool and hasn't been obtained.
+     * every snapshot id that isn't currently in the pool, hasn't been obtained, and
+     * can currently spawn.
+     *
+     * <p>vanilla's {@code returnRandomRelicKey}/{@code returnEndRandomRelicKey}
+     * retry themselves whenever a popped relic fails {@code canSpawn()}, relying on
+     * the pool going empty to terminate. Re-adding un-spawnable relics (e.g. floor-gated
+     * relics past floor 48) would recurse forever ({@code StackOverflowError}).
+     * Filtering them out keeps the pool's empty-state reachable so vanilla falls through
+     * to its normal fallback.
+     *
      * @return number of ids added (0 if cycling disabled, pool non-empty, or nothing left to refill)
      */
     public static int refillIfEmpty(AbstractRelic.RelicTier tier) {
@@ -73,6 +83,7 @@ public class RelicPoolTracker {
         int added = 0;
         for (String id : snapshot) {
             if (everObtained.contains(id)) continue;
+            if (!RelicLibrary.getRelic(id).canSpawn()) continue;
             livePool.add(id);
             added++;
         }

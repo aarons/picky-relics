@@ -27,6 +27,7 @@ import pickyrelics.patches.RelicLinkPatch;
 import pickyrelics.ui.PagedElement;
 import pickyrelics.ui.ProbabilityDisplay;
 import pickyrelics.ui.RelicChoicePreview;
+import pickyrelics.ui.RelicExclusionGrid;
 import pickyrelics.ui.TabBar;
 import pickyrelics.util.ExclusionList;
 import pickyrelics.util.Log;
@@ -127,6 +128,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
     private static final int TAB_CHOICES = 0;
     private static final int TAB_PROBABILITIES = 1;
     private static final int TAB_REFILLS = 2;
+    private static final int TAB_EXCLUSIONS = 3;
     private static int currentTab = TAB_CHOICES;
 
     // Preview state tracking
@@ -173,7 +175,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
         }
     }
 
-    private static ArrayList<AbstractRelic> getRelicListForTier(AbstractRelic.RelicTier tier) {
+    public static ArrayList<AbstractRelic> getRelicListForTier(AbstractRelic.RelicTier tier) {
         switch (tier) {
             case STARTER:  return RelicLibrary.starterList;
             case COMMON:   return RelicLibrary.commonList;
@@ -816,6 +818,27 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
                 (label) -> {},
                 (toggle) -> { cyclePoolsEnabled = toggle.enabled; saveConfig(); }
         ));
+
+        // ===== TAB 3: Exclusions =====
+        UIStrings exclusionStrings = CardCrawlGame.languagePack.getUIString(makeID("Exclusions"));
+        addPagedElement(settingsPanel, TAB_EXCLUSIONS, new RelicExclusionGrid(xPos, contentY, exclusionStrings.TEXT));
+
+        // Bottom-of-page explanation for Exclusions tab (full content width)
+        addPagedElement(settingsPanel, TAB_EXCLUSIONS, new IUIElement() {
+            @Override
+            public void render(com.badlogic.gdx.graphics.g2d.SpriteBatch sb) {
+                FontHelper.renderSmartText(sb, FontHelper.tipBodyFont,
+                        exclusionStrings.TEXT[0],
+                        bottomExplanationX * Settings.scale,
+                        bottomExplanationY * Settings.scale,
+                        1050.0f * Settings.scale,
+                        28.0f * Settings.scale,
+                        Settings.GOLD_COLOR);
+            }
+            @Override public void update() {}
+            @Override public int renderLayer() { return 1; }
+            @Override public int updateOrder() { return 1; }
+        });
 
         // Dev console command for pool diagnostics and testing
         ConsoleCommand.addCommand("pickypool", PickyPoolCommand.class);

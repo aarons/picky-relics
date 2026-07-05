@@ -29,7 +29,15 @@
     "TEXT": ["Loot Preview", "???"]
   },
   "pickyrelics:Tabs": {
-    "TEXT": ["Choices", "Probabilities", "Refills"]
+    "TEXT": ["Choices", "Probabilities", "Refills", "Exclusions"]
+  },
+  "pickyrelics:Exclusions": {
+    "TEXT": [
+      "Click a relic to exclude it from Picky Relics. Excluded relics are never offered as additional choices, and when an excluded relic is the reward it is awarded as-is, with no extra choices. Excluded relics still drop normally from combat, shops, chests, and events.",
+      "Excluded only",
+      "Page %d of %d",
+      "No relics excluded."
+    ]
   },
   "pickyrelics:Tooltip": {
     "TEXT": ["Linked", "Obtaining this relic will remove the other #y%d linked relic choices."]

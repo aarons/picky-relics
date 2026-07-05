@@ -17,6 +17,12 @@ Picky Relics is like the excellent Bossy Relics mod, except it is configurable. 
   - **Direction Controls**: Allow shifts toward higher tiers, lower tiers, or both
   - **Pool Controls**: Optionally include Shop and Boss relics in the tier pool
 
+- **Relic Exclusions**: Browse all relics in a grid and exclude specific ones from the picky-relic treatment:
+  - Excluded relics are never offered as additional choices
+  - When an excluded relic drops as a reward, it is awarded as-is with no extra choices
+  - Excluded relics still appear normally in shops, chests, and events
+  - An "Excluded only" view shows everything you've excluded for easy re-enabling
+
 - **Tier Labels**: Optionally display the relic's tier on reward screens for quick identification
 
 - **Live Preview**: See a sample of relic choices update in real-time as you adjust settings
@@ -45,17 +51,24 @@ Picky Relics is like the excellent Bossy Relics mod, except it is configurable. 
 
 ## Configuration
 
-Access the mod settings through the in-game mod config menu. Settings are organized into two pages:
+Access the mod settings through the in-game mod config menu. Settings are organized into four tabs:
 
-### Page 1: Choices Per Tier
+### Choices
 - Sliders for each relic tier (Starter, Common, Uncommon, Rare, Shop, Event, Boss)
 - Live preview showing sample relics based on current settings
 - Toggle to show/hide tier labels on reward screens
 
-### Page 2: Tier Algorithm
+### Probabilities
 - Tier change chance and magnitude sliders
 - Checkboxes for direction (higher/lower tiers) and pool (shop/boss relics)
 - Probability table showing exact outcome chances for each starting tier
+
+### Refills
+- Toggle to offer skipped relics again when a tier's pool runs out
+
+### Exclusions
+- Relic grid with per-tier filters; click a relic to exclude or re-enable it
+- "Excluded only" filter to review everything you've excluded
 
 ## Development Setup
 

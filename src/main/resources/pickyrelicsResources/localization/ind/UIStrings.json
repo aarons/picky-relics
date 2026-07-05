@@ -29,7 +29,15 @@
     "TEXT": ["Pratinjau Jarahan", "???"]
   },
   "pickyrelics:Tabs": {
-    "TEXT": ["Pilihan", "Probabilitas", "Pengisian Ulang"]
+    "TEXT": ["Pilihan", "Probabilitas", "Pengisian Ulang", "Pengecualian"]
+  },
+  "pickyrelics:Exclusions": {
+    "TEXT": [
+      "Klik sebuah relik untuk mengecualikannya dari Picky Relics. Relik yang dikecualikan tidak akan pernah ditawarkan sebagai pilihan tambahan, dan ketika relik yang dikecualikan menjadi hadiah, relik itu diberikan apa adanya, tanpa pilihan tambahan. Relik yang dikecualikan tetap muncul secara normal dari pertarungan, toko, peti, dan acara.",
+      "Hanya yang dikecualikan",
+      "Halaman %d dari %d",
+      "Tidak ada relik yang dikecualikan."
+    ]
   },
   "pickyrelics:Tooltip": {
     "TEXT": ["Terhubung", "Mendapatkan relik ini akan menghapus #y%d pilihan relik terhubung lainnya."]

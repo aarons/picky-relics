@@ -29,7 +29,15 @@
     "TEXT": ["Vista Previa de Botín", "???"]
   },
   "pickyrelics:Tabs": {
-    "TEXT": ["Opciones", "Probabilidades", "Recargas"]
+    "TEXT": ["Opciones", "Probabilidades", "Recargas", "Exclusiones"]
+  },
+  "pickyrelics:Exclusions": {
+    "TEXT": [
+      "Haz clic en una reliquia para excluirla de Picky Relics. Las reliquias excluidas nunca se ofrecen como opciones adicionales, y cuando una reliquia excluida es la recompensa, se otorga tal cual, sin opciones adicionales. Las reliquias excluidas siguen apareciendo normalmente en combates, tiendas, cofres y eventos.",
+      "Solo excluidas",
+      "Página %d de %d",
+      "Ninguna reliquia excluida."
+    ]
   },
   "pickyrelics:Tooltip": {
     "TEXT": ["Vinculada", "Obtener esta reliquia eliminará las otras #y%d opciones de reliquia vinculadas."]

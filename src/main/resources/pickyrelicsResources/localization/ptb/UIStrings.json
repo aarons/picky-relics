@@ -29,7 +29,15 @@
     "TEXT": ["Prévia de Saque", "???"]
   },
   "pickyrelics:Tabs": {
-    "TEXT": ["Escolhas", "Probabilidades", "Recargas"]
+    "TEXT": ["Escolhas", "Probabilidades", "Recargas", "Exclusões"]
+  },
+  "pickyrelics:Exclusions": {
+    "TEXT": [
+      "Clique em uma relíquia para excluí-la do Picky Relics. Relíquias excluídas nunca são oferecidas como opções adicionais, e quando uma relíquia excluída é a recompensa, ela é concedida como está, sem opções extras. Relíquias excluídas ainda aparecem normalmente em combates, lojas, baús e eventos.",
+      "Apenas excluídas",
+      "Página %d de %d",
+      "Nenhuma relíquia excluída."
+    ]
   },
   "pickyrelics:Tooltip": {
     "TEXT": ["Vinculada", "Obter esta relíquia removerá as outras #y%d opções de relíquia vinculadas."]

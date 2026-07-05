@@ -29,7 +29,15 @@
     "TEXT": ["Podgląd Łupu", "???"]
   },
   "pickyrelics:Tabs": {
-    "TEXT": ["Wybory", "Prawdopodobieństwa", "Uzupełnianie"]
+    "TEXT": ["Wybory", "Prawdopodobieństwa", "Uzupełnianie", "Wykluczenia"]
+  },
+  "pickyrelics:Exclusions": {
+    "TEXT": [
+      "Kliknij relikt, aby wykluczyć go z Picky Relics. Wykluczone relikty nigdy nie są oferowane jako dodatkowe opcje, a gdy wykluczony relikt jest nagrodą, jest przyznawany bez zmian, bez dodatkowych opcji. Wykluczone relikty nadal wypadają normalnie z walk, sklepów, skrzyń i wydarzeń.",
+      "Tylko wykluczone",
+      "Strona %d z %d",
+      "Brak wykluczonych reliktów."
+    ]
   },
   "pickyrelics:Tooltip": {
     "TEXT": ["Powiązany", "Zdobycie tego reliktu usunie pozostałe #y%d powiązane opcje reliktów."]

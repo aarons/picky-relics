@@ -29,7 +29,15 @@
     "TEXT": ["Anteprima Bottino", "???"]
   },
   "pickyrelics:Tabs": {
-    "TEXT": ["Scelte", "Probabilità", "Ricariche"]
+    "TEXT": ["Scelte", "Probabilità", "Ricariche", "Esclusioni"]
+  },
+  "pickyrelics:Exclusions": {
+    "TEXT": [
+      "Clicca su una reliquia per escluderla da Picky Relics. Le reliquie escluse non vengono mai offerte come scelte aggiuntive e, quando una reliquia esclusa è la ricompensa, viene assegnata così com'è, senza scelte extra. Le reliquie escluse continuano a essere ottenute normalmente da combattimenti, negozi, forzieri ed eventi.",
+      "Solo escluse",
+      "Pagina %d di %d",
+      "Nessuna reliquia esclusa."
+    ]
   },
   "pickyrelics:Tooltip": {
     "TEXT": ["Collegate", "Ottenere questa reliquia rimuoverà le altre #y%d scelte di reliquie collegate."]

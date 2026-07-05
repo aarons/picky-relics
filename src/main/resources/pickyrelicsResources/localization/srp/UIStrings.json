@@ -29,7 +29,15 @@
     "TEXT": ["Pregled plena", "???"]
   },
   "pickyrelics:Tabs": {
-    "TEXT": ["Izbori", "Verovatnoće", "Dopune"]
+    "TEXT": ["Izbori", "Verovatnoće", "Dopune", "Isključenja"]
+  },
+  "pickyrelics:Exclusions": {
+    "TEXT": [
+      "Kliknite na relikviju da je isključite iz Picky Relics. Isključene relikvije se nikada ne nude kao dodatni izbori, a kada je isključena relikvija nagrada, dodeljuje se kakva jeste, bez dodatnih izbora. Isključene relikvije i dalje normalno ispadaju iz borbi, prodavnica, kovčega i događaja.",
+      "Samo isključene",
+      "Strana %d od %d",
+      "Nijedna relikvija nije isključena."
+    ]
   },
   "pickyrelics:Tooltip": {
     "TEXT": ["Povezano", "Dobijanje ove relikvije će ukloniti drugih #y%d povezanih izbora relikvija."]

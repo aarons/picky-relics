@@ -29,7 +29,15 @@
     "TEXT": ["Aperçu du Butin", "???"]
   },
   "pickyrelics:Tabs": {
-    "TEXT": ["Choix", "Probabilités", "Recharges"]
+    "TEXT": ["Choix", "Probabilités", "Recharges", "Exclusions"]
+  },
+  "pickyrelics:Exclusions": {
+    "TEXT": [
+      "Cliquez sur une relique pour l'exclure de Picky Relics. Les reliques exclues ne sont jamais proposées comme choix supplémentaires, et lorsqu'une relique exclue est la récompense, elle est attribuée telle quelle, sans choix supplémentaires. Les reliques exclues sont toujours obtenues normalement via les combats, les boutiques, les coffres et les événements.",
+      "Exclues uniquement",
+      "Page %d sur %d",
+      "Aucune relique exclue."
+    ]
   },
   "pickyrelics:Tooltip": {
     "TEXT": ["Liée", "Obtenir cette relique supprimera les #y%d autres choix de reliques liées."]

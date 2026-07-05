@@ -29,7 +29,15 @@
     "TEXT": ["Beute-Vorschau", "???"]
   },
   "pickyrelics:Tabs": {
-    "TEXT": ["Auswahl", "Wahrscheinlichkeiten", "Auffüllen"]
+    "TEXT": ["Auswahl", "Wahrscheinlichkeiten", "Auffüllen", "Ausschlüsse"]
+  },
+  "pickyrelics:Exclusions": {
+    "TEXT": [
+      "Klicke auf ein Relikt, um es von Picky Relics auszuschließen. Ausgeschlossene Relikte werden nie als zusätzliche Auswahlmöglichkeiten angeboten, und wenn ein ausgeschlossenes Relikt die Belohnung ist, wird es unverändert vergeben, ohne zusätzliche Auswahlmöglichkeiten. Ausgeschlossene Relikte erscheinen weiterhin normal in Kämpfen, Läden, Truhen und Ereignissen.",
+      "Nur Ausgeschlossene",
+      "Seite %d von %d",
+      "Keine Relikte ausgeschlossen."
+    ]
   },
   "pickyrelics:Tooltip": {
     "TEXT": ["Verknüpft", "Das Erhalten dieses Relikts wird die anderen #y%d verknüpften Relikt-Auswahlmöglichkeiten entfernen."]

@@ -29,7 +29,15 @@
     "TEXT": ["Xem trước phần thưởng", "???"]
   },
   "pickyrelics:Tabs": {
-    "TEXT": ["Lựa chọn", "Xác suất", "Làm đầy lại"]
+    "TEXT": ["Lựa chọn", "Xác suất", "Làm đầy lại", "Loại trừ"]
+  },
+  "pickyrelics:Exclusions": {
+    "TEXT": [
+      "Nhấp vào một di vật để loại trừ nó khỏi Picky Relics. Các di vật bị loại trừ không bao giờ được đưa ra làm lựa chọn bổ sung, và khi một di vật bị loại trừ là phần thưởng, nó sẽ được trao nguyên trạng, không có lựa chọn thêm. Các di vật bị loại trừ vẫn rơi bình thường từ chiến đấu, cửa hàng, rương và sự kiện.",
+      "Chỉ bị loại trừ",
+      "Trang %d / %d",
+      "Không có di vật nào bị loại trừ."
+    ]
   },
   "pickyrelics:Tooltip": {
     "TEXT": ["Liên kết", "Nhận di vật này sẽ loại bỏ #y%d lựa chọn di vật liên kết khác."]

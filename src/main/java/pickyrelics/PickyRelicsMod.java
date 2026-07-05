@@ -562,7 +562,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
 
         // Tab bar at the top (centered)
         float tabBarY = 820.0f;
-        float tabBarCenterX = 640.0f;
+        float tabBarCenterX = 773.0f;
         UIStrings tabStrings = CardCrawlGame.languagePack.getUIString(makeID("Tabs"));
         settingsPanel.addUIElement(new TabBar(tabStrings.TEXT, tabBarCenterX, tabBarY,
                 PickyRelicsMod::getCurrentTab, PickyRelicsMod::setCurrentTab));

@@ -33,7 +33,7 @@
   },
   "pickyrelics:Exclusions": {
     "TEXT": [
-      "Klicke auf ein Relikt, um es von Picky Relics auszuschließen. Ausgeschlossene Relikte werden nie als zusätzliche Auswahlmöglichkeiten angeboten, und wenn ein ausgeschlossenes Relikt die Belohnung ist, wird es unverändert vergeben, ohne zusätzliche Auswahlmöglichkeiten. Ausgeschlossene Relikte erscheinen weiterhin normal in Kämpfen, Läden, Truhen und Ereignissen.",
+      "Klicke auf ein Relikt, um es davon auszuschließen, zusätzliche Auswahlmöglichkeiten zu liefern oder selbst als Auswahl angeboten zu werden. Ausgeschlossene Relikte erscheinen weiterhin normal in Kämpfen, Läden, Truhen und Ereignissen.",
       "Nur Ausgeschlossene",
       "Seite %d von %d",
       "Keine Relikte ausgeschlossen."

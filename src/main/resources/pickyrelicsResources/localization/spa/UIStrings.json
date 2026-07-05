@@ -33,7 +33,7 @@
   },
   "pickyrelics:Exclusions": {
     "TEXT": [
-      "Haz clic en una reliquia para excluirla de Picky Relics. Las reliquias excluidas nunca se ofrecen como opciones adicionales, y cuando una reliquia excluida es la recompensa, se otorga tal cual, sin opciones adicionales. Las reliquias excluidas siguen apareciendo normalmente en combates, tiendas, cofres y eventos.",
+      "Haz clic en una reliquia para excluirla de proporcionar opciones adicionales o de ser ofrecida como opción. Las reliquias excluidas siguen apareciendo normalmente en combates, tiendas, cofres y eventos.",
       "Solo excluidas",
       "Página %d de %d",
       "Ninguna reliquia excluida."

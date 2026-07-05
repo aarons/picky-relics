@@ -33,7 +33,7 @@
   },
   "pickyrelics:Exclusions": {
     "TEXT": [
-      "Cliquez sur une relique pour l'exclure de Picky Relics. Les reliques exclues ne sont jamais proposées comme choix supplémentaires, et lorsqu'une relique exclue est la récompense, elle est attribuée telle quelle, sans choix supplémentaires. Les reliques exclues sont toujours obtenues normalement via les combats, les boutiques, les coffres et les événements.",
+      "Cliquez sur une relique pour l'empêcher de fournir des choix supplémentaires ou d'être proposée comme choix. Les reliques exclues sont toujours obtenues normalement via les combats, les boutiques, les coffres et les événements.",
       "Exclues uniquement",
       "Page %d sur %d",
       "Aucune relique exclue."

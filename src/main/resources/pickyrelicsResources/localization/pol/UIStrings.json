@@ -33,7 +33,7 @@
   },
   "pickyrelics:Exclusions": {
     "TEXT": [
-      "Kliknij relikt, aby wykluczyć go z Picky Relics. Wykluczone relikty nigdy nie są oferowane jako dodatkowe opcje, a gdy wykluczony relikt jest nagrodą, jest przyznawany bez zmian, bez dodatkowych opcji. Wykluczone relikty nadal wypadają normalnie z walk, sklepów, skrzyń i wydarzeń.",
+      "Kliknij relikt, aby wykluczyć go z dostarczania dodatkowych opcji oraz z bycia oferowanym jako opcja. Wykluczone relikty nadal wypadają normalnie z walk, sklepów, skrzyń i wydarzeń.",
       "Tylko wykluczone",
       "Strona %d z %d",
       "Brak wykluczonych reliktów."

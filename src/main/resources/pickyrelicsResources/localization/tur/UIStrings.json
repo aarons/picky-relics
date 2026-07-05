@@ -33,7 +33,7 @@
   },
   "pickyrelics:Exclusions": {
     "TEXT": [
-      "Bir kalıntıyı Picky Relics'ten hariç tutmak için üzerine tıklayın. Hariç tutulan kalıntılar asla ek seçenek olarak sunulmaz ve hariç tutulan bir kalıntı ödül olduğunda, ek seçenek olmadan olduğu gibi verilir. Hariç tutulan kalıntılar savaşlardan, dükkanlardan, sandıklardan ve olaylardan normal şekilde düşmeye devam eder.",
+      "Bir kalıntının ek seçenek sunmasını veya seçenek olarak sunulmasını engellemek için üzerine tıklayın. Hariç tutulan kalıntılar savaşlardan, dükkanlardan, sandıklardan ve olaylardan normal şekilde düşmeye devam eder.",
       "Yalnızca hariç tutulanlar",
       "Sayfa %d / %d",
       "Hariç tutulan kalıntı yok."

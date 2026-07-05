@@ -33,7 +33,7 @@
   },
   "pickyrelics:Exclusions": {
     "TEXT": [
-      "Clicca su una reliquia per escluderla da Picky Relics. Le reliquie escluse non vengono mai offerte come scelte aggiuntive e, quando una reliquia esclusa è la ricompensa, viene assegnata così com'è, senza scelte extra. Le reliquie escluse continuano a essere ottenute normalmente da combattimenti, negozi, forzieri ed eventi.",
+      "Clicca su una reliquia per escluderla dal fornire scelte extra o dall'essere offerta come scelta. Le reliquie escluse continuano a essere ottenute normalmente da combattimenti, negozi, forzieri ed eventi.",
       "Solo escluse",
       "Pagina %d di %d",
       "Nessuna reliquia esclusa."

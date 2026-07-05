@@ -103,6 +103,22 @@ public class RelicLinkPatch {
     }
 
     /**
+     * Whether a drawn relic may be offered as an extra choice: it must pass the
+     * vanilla spawn checks and not be on the user's exclusion list.
+     */
+    private static boolean isOfferable(AbstractRelic relic) {
+        if (!relic.canSpawn()) {
+            Log.debug("Picky Relics: Skipping " + relic.relicId + " (canSpawn=false)");
+            return false;
+        }
+        if (PickyRelicsMod.isExcluded(relic.relicId)) {
+            Log.debug("Picky Relics: Skipping " + relic.relicId + " (excluded)");
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * Get a random relic from the specified tier, with fallback to other tiers
      * if the pool is exhausted (returns Circlet) or all relics fail canSpawn().
      *
@@ -121,12 +137,10 @@ public class RelicLinkPatch {
                 break;
             }
 
-            // Check if relic can spawn (respects filtering mods)
-            if (relic.canSpawn()) {
+            // Check if relic can spawn (respects filtering mods) and isn't excluded
+            if (isOfferable(relic)) {
                 return relic;
             }
-
-            Log.debug("Picky Relics: Skipping " + relic.relicId + " (canSpawn=false)");
         }
 
         Log.debug("Picky Relics: " + tier + " pool exhausted or all blocked, trying fallback tiers");
@@ -142,12 +156,10 @@ public class RelicLinkPatch {
                     break; // This tier exhausted, try next
                 }
 
-                if (relic.canSpawn()) {
+                if (isOfferable(relic)) {
                     Log.debug("Picky Relics: Using fallback tier " + fallbackTier);
                     return relic;
                 }
-
-                Log.debug("Picky Relics: Skipping " + relic.relicId + " (canSpawn=false)");
             }
         }
 
@@ -198,11 +210,9 @@ public class RelicLinkPatch {
                     break; // This tier exhausted
                 }
 
-                if (relic.canSpawn()) {
+                if (isOfferable(relic)) {
                     return relic;
                 }
-
-                Log.debug("Picky Relics: Skipping event relic " + relic.relicId + " (canSpawn=false)");
             }
         }
 
@@ -490,12 +500,7 @@ public class RelicLinkPatch {
             // Quick check: any unlinked relics that should have extra choices?
             boolean hasUnlinked = false;
             for (RewardItem r : __instance.rewards) {
-                if (r.type == RewardItem.RewardType.RELIC &&
-                    RelicLinkFields.linkedRelics.get(r) == null) {
-                    // Check if this tier should have extra choices
-                    if (r.relic != null && PickyRelicsMod.getAdditionalChoicesForTier(r.relic.tier) <= 0) {
-                        continue;
-                    }
+                if (needsLinkedGroup(r)) {
                     hasUnlinked = true;
                     break;
                 }
@@ -514,6 +519,23 @@ public class RelicLinkPatch {
                 }
             }
         }
+    }
+
+    /**
+     * Whether this reward still needs a linked group built for it.
+     *
+     * Shared by processRelicRewards and the per-frame quick check in
+     * ProcessLateRelicRewards — the two must stay consistent, or a reward
+     * skipped by one but not the other keeps the quick check tripping every
+     * frame.
+     */
+    private static boolean needsLinkedGroup(RewardItem r) {
+        if (r.type != RewardItem.RewardType.RELIC || r.relic == null) return false;
+        if (RelicLinkFields.linkedRelics.get(r) != null) return false;
+        if (PickyRelicsMod.getAdditionalChoicesForTier(r.relic.tier) <= 0) return false;
+        // Excluded originals are awarded exactly as vanilla would - no group
+        if (PickyRelicsMod.isExcluded(r.relic.relicId)) return false;
+        return true;
     }
 
     /**
@@ -548,18 +570,11 @@ public class RelicLinkPatch {
                     continue;
                 }
 
-                ArrayList<RewardItem> existingGroup = RelicLinkFields.linkedRelics.get(r);
-                if (existingGroup == null) {
-                    // Get tier-specific additional-choice count
-                    int tierAdditional = PickyRelicsMod.getAdditionalChoicesForTier(r.relic.tier);
-                    if (tierAdditional <= 0) {
-                        Log.debug("[" + source + "] Skipping " + r.relic.tier + " tier relic: " +
-                                r.relic.relicId + " (additional=0)");
-                        continue;
-                    }
+                if (needsLinkedGroup(r)) {
                     unlinkedRelics.add(r);
                 } else {
-                    Log.debug("[" + source + "] Relic " + r.relic.relicId + " already has linked group, skipping");
+                    Log.debug("[" + source + "] Skipping " + r.relic.relicId +
+                            " (already linked, additional=0, or excluded)");
                 }
             }
         }

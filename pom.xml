@@ -54,6 +54,15 @@
             <scope>system</scope>
             <systemPath>${workshop.path}/${basemod.id}/BaseMod.jar</systemPath>
         </dependency>
+
+        <!-- Tests (game-free utility classes only; game classes can't be
+             instantiated outside a running ModTheSpire game) -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.2</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

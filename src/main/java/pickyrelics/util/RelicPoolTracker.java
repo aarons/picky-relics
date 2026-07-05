@@ -83,6 +83,8 @@ public class RelicPoolTracker {
         int added = 0;
         for (String id : snapshot) {
             if (everObtained.contains(id)) continue;
+            // Excluded relics would only be drawn and skipped again, burning attempts
+            if (PickyRelicsMod.isExcluded(id)) continue;
             if (!RelicLibrary.getRelic(id).canSpawn()) continue;
             livePool.add(id);
             added++;

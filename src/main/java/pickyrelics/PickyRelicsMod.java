@@ -28,6 +28,7 @@ import pickyrelics.ui.PagedElement;
 import pickyrelics.ui.ProbabilityDisplay;
 import pickyrelics.ui.RelicChoicePreview;
 import pickyrelics.ui.TabBar;
+import pickyrelics.util.ExclusionList;
 import pickyrelics.util.Log;
 import pickyrelics.util.RelicPoolTracker;
 import pickyrelics.util.TierUtils;
@@ -75,6 +76,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
     private static final String CONFIG_ALLOW_SHOP_RELICS = "allowShopRelics";
     private static final String CONFIG_ALLOW_BOSS_RELICS = "allowBossRelics";
     private static final String CONFIG_CYCLE_POOLS = "cyclePoolsEnabled";
+    private static final String CONFIG_EXCLUDED_RELICS = "excludedRelics";
     // Legacy config keys for migration
     private static final String CONFIG_TIER_DIRECTION = "tierDirection";
     private static final String CONFIG_TIER_SHOP_ENABLED = "tierShopEnabled";
@@ -115,6 +117,11 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
     public static boolean allowShopRelics = false;   // Include Shop tier in pool
     public static boolean allowBossRelics = false;   // Include Boss tier in pool
     public static boolean cyclePoolsEnabled = false; // Refill exhausted tier pools with skipped relics
+
+    // Relic IDs excluded from the picky-relic treatment (never offered as extra
+    // choices; awarded as-is when they're the original reward). May contain IDs
+    // from uninstalled mods — preserved across load/save, never pruned.
+    private static Set<String> excludedRelics = new java.util.LinkedHashSet<>();
 
     // UI tab tracking
     private static final int TAB_CHOICES = 0;
@@ -332,6 +339,33 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
         }
     }
 
+    /**
+     * Whether a relic is excluded from the picky-relic treatment: it is never
+     * offered as an extra choice, and gets no extra choices when awarded.
+     */
+    public static boolean isExcluded(String relicId) {
+        return excludedRelics.contains(relicId);
+    }
+
+    /**
+     * Add or remove a relic from the exclusion list, saving immediately
+     * (matching how every other setting saves on change).
+     */
+    public static void setExcluded(String relicId, boolean excluded) {
+        boolean changed = excluded ? excludedRelics.add(relicId) : excludedRelics.remove(relicId);
+        if (changed) {
+            saveConfig();
+        }
+    }
+
+    /**
+     * Excluded relic IDs in insertion order, for the settings UI.
+     * May contain IDs from mods that aren't currently installed.
+     */
+    public static Set<String> getExcludedRelicIds() {
+        return Collections.unmodifiableSet(excludedRelics);
+    }
+
     public PickyRelicsMod() {
         Log.info("Initializing " + MOD_NAME);
         BaseMod.subscribe(this);
@@ -360,6 +394,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
             defaults.setProperty(CONFIG_ALLOW_SHOP_RELICS, "false");
             defaults.setProperty(CONFIG_ALLOW_BOSS_RELICS, "false");
             defaults.setProperty(CONFIG_CYCLE_POOLS, "false");
+            defaults.setProperty(CONFIG_EXCLUDED_RELICS, "");
 
             config = new SpireConfig(MOD_ID, "config", defaults);
 
@@ -410,6 +445,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
             }
 
             cyclePoolsEnabled = config.getBool(CONFIG_CYCLE_POOLS);
+            excludedRelics = ExclusionList.deserialize(config.getString(CONFIG_EXCLUDED_RELICS));
 
             Log.debug("Config loaded: showTierLabels=" + showTierLabels +
                     ", starter=" + starterAdditional + ", common=" + commonAdditional +
@@ -417,7 +453,8 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
                     ", boss=" + bossAdditional + ", shop=" + shopAdditional + ", special=" + specialAdditional +
                     ", tierChangeChance=" + tierChangeChance + ", tierChangeMagnitude=" + tierChangeMagnitude +
                     ", allowHigher=" + allowHigherTiers + ", allowLower=" + allowLowerTiers +
-                    ", allowShop=" + allowShopRelics + ", allowBoss=" + allowBossRelics);
+                    ", allowShop=" + allowShopRelics + ", allowBoss=" + allowBossRelics +
+                    ", excluded=" + excludedRelics.size());
         } catch (IOException e) {
             Log.error("Failed to load config", e);
         }
@@ -457,6 +494,7 @@ public class PickyRelicsMod implements PostInitializeSubscriber, EditStringsSubs
             config.setBool(CONFIG_ALLOW_SHOP_RELICS, allowShopRelics);
             config.setBool(CONFIG_ALLOW_BOSS_RELICS, allowBossRelics);
             config.setBool(CONFIG_CYCLE_POOLS, cyclePoolsEnabled);
+            config.setString(CONFIG_EXCLUDED_RELICS, ExclusionList.serialize(excludedRelics));
             config.save();
         } catch (IOException e) {
             Log.error("Failed to save config", e);

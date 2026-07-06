@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0] - 2026-07-05
+
+### Features
+- New exclusion setting that lets you exclude specific relics from Picky Relics
+  - Excluded relics won't be provide as choices, and won't provide extra choices
+  - Excluded relics will drop normally from combat, shops, chests, and events
+
 ## [1.1.1] - 2026-06-21
 
 ### Fixed
